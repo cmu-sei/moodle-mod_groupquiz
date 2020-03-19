@@ -1,0 +1,207 @@
+/* -*-CSS-*- */
+
+/**
+Group Quiz Plugin for Moodle
+Copyright 2020 Carnegie Mellon University.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+This Software includes and/or makes use of the following Third-Party Software subject to its own license:
+1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+DM20-0197
+ */
+
+.groupquizplainbox {
+    padding: 10px;
+    margin: 10px;
+}
+
+.groupquizbox {
+    border: 1px solid;
+    border-radius: 8px;
+
+    padding: 20px;
+    margin: 10px;
+}
+
+.groupquizbox .row {
+    margin: 5px;
+}
+
+/** Edit page CSS **/
+
+.groupquizbox .questionlist li {
+    border: 1px solid;
+    border-radius: 5px;
+    min-height: 30px;
+    margin-top: 5px;
+    padding: 10px;
+}
+
+.groupquizbox .questionlist li div {
+    display: inline-block;
+}
+
+.groupquizbox .questionlist .dragquestion {
+    width: 10%;
+    cursor: move;
+}
+
+.groupquizbox .questionlist .icon {
+    vertical-align: middle;
+}
+
+.groupquizbox .questionlist .name {
+    width: 50%;
+    vertical-align: middle;
+}
+
+.groupquizbox .questionlist .name p {
+    margin: 0;
+}
+
+.groupquizbox .questionlist .controls {
+    width: 30%;
+    vertical-align: middle;
+}
+
+.groupquizbox .questionlist .controls img {
+    margin-right: 5px;
+}
+
+.groupquizbox .questionlist .controls .space {
+    width: 12px;
+}
+
+.rtqstatusbox {
+    border-radius: 20px;
+    margin: 10px 5px 10px 35px;
+    padding: 10px;
+}
+
+.rtqhiddenstatus {
+    display: none;
+}
+
+.rtqsuccessstatus {
+    display: block;
+}
+
+.rtqerrorstatus {
+    display: block;
+    background: #ff8e89;
+}
+
+.groupquizbox .inline-block {
+    display: inline-block;
+}
+
+.groupquizbox .span6 {
+    vertical-align: top;
+    width: 49.5%;
+}
+
+.groupquizbox .row .span6{
+    padding: 5px;
+}
+
+/** end edit questions **/
+
+.question_save {
+    height: 30px;
+}
+
+@media (min-width: 480px) {
+    .question_save {
+        margin-left: 8em;
+    }
+}
+
+.groupquizloading {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    width: 30%
+}
+
+.groupquiz_editicons {
+    display: inline-block;
+    width: 20%;
+}
+
+.groupquiz_highlight_correct {
+    background: #81dca3;
+}
+
+#quizinfobox {
+    background-color: #d9edf7;
+}
+
+.groupquizbox .submit {
+    display: none;
+}
+
+.groupquizbox .rtq_inquiz {
+    display: inline-block;
+}
+
+.groupquizbox .btn-hide {
+    display: none;
+}
+
+/** Mod form styles **/
+#id_reviewoptionsettings .fitem {
+    float: left;
+    width: 30%;
+    clear: none;
+}
+
+#id_reviewoptionsettings .fitemtitle {
+    width: 100%;
+    font-weight: bold;
+    text-align: left;
+    height: 2.5em;
+    margin-left: 0;
+}
+
+#id_reviewoptionsettings fieldset.fgroup {
+    clear: left;
+    margin: 0 0 1em;
+}
+
+#id_reviewoptionsettings fieldset.fgroup > span {
+    float: left;
+    clear: left;
+    line-height: 1.7;
+}
+
+#id_reviewoptionsettings fieldset.fgroup span label {
+    margin-left: 0.4em;
+}
+
+#id_reviewoptionsettings .fitem {
+    float: left;
+}
+
+#id_reviewoptionsettings .fitemtitle {
+    text-align: left;
+}
+
+#quizview .hidden {
+    display: none;
+    visibility: hidden;
+}
+
+.userinfo {
+    margin-left: 8.5em;
+    margin-bottom: 1rem;
+    border: 1px solid;
+    padding: 10px;
+    height: 80px;
+}
+
+.usertime {
+    float: right;
+}
+

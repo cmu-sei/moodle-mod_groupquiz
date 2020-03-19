@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/groupquiz/db" VERSION="20200115" COMMENT="XMLDB file for groupquiz module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="groupquiz" COMMENT="each record is one groupquiz resource">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="intro text format."/>
+        <FIELD NAME="timeopen" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time when this quiz opens. (0 = no restriction.)"/>
+        <FIELD NAME="timeclose" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time when this quiz closes. (0 = no restriction.)"/>
+        <FIELD NAME="timelimit" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The time limit for quiz attempts, in seconds."/>
+
+        <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="The total that the quiz is scaled out of."/>
+        <FIELD NAME="grademethod" TYPE="int" LENGTH="2" NOTNULL="true" SEQUENCE="false" COMMENT="The grading method for grading.  This only applies to grading with multiple sessions, not multiple attempts"/>
+
+        <FIELD NAME="reviewattempt" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. This is a bit field, decoded by the mod_groupquiz_display_options class. It is formed by ORing together the constants defined there."/>
+        <FIELD NAME="reviewcorrectness" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+        <FIELD NAME="reviewmarks" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+        <FIELD NAME="reviewspecificfeedback" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+        <FIELD NAME="reviewgeneralfeedback" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+        <FIELD NAME="reviewrightanswer" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+        <FIELD NAME="reviewoverallfeedback" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
+
+        <FIELD NAME="grouping" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The grouping id that this activity is set up to use for groups"/>
+        <FIELD NAME="questionorder" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The question order for the activequiz"/>
+        <FIELD NAME="shuffleanswers" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the parts of the question should be shuffled, in those question types that support it."/>
+        <FIELD NAME="showuserpicture" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Option to show the user's picture during the attempt and on the review page."/>
+        <FIELD NAME="requireallmemberssubmit" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="If enabled, an attempt will not be accepted until all group members have submitted it."/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for groupquiz"/>
+        <KEY NAME="groupquizid" TYPE="foreign" FIELDS="id" REFTABLE="groupquiz" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course" COMMENT="The course this assignment instance belongs to."/>
+      </INDEXES>
+    </TABLE>
+
+
+    <TABLE NAME="groupquiz_grades" COMMENT="groupquiz grades table to hold grades for individual users">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="groupquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="the groupquiz id"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The userid that this grade is for"/>
+        <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0.00000" SEQUENCE="false" DECIMALS="5" COMMENT="The grade for this user, for this groupquiz lab"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time created/modified for this grade"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for grades"/>
+        <KEY NAME="groupquizid" TYPE="foreign" FIELDS="id" REFTABLE="groupquiz" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+
+    <TABLE NAME="groupquiz_attempts" COMMENT="The groupquiz attempts table to hold attempts for students">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="groupquizid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The id of the groupquiz lab for this attempt"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The userid for this attempt"/>
+        <FIELD NAME="userstart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The userid that started this attempt"/>
+        <FIELD NAME="userstop" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The userid that stopped this attempt"/>
+        <FIELD NAME="attemptnum" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The attempt number for this group"/>
+
+        <FIELD NAME="uniqueid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key reference to the question_usage that holds the details of the the question_attempts that make up this quiz attempt."/>
+        <FIELD NAME="forgroupid" TYPE="int" LENGTH="10" NOTNULL="false" DEFAULT="0" SEQUENCE="false" COMMENT="The groupid will go here to signify that this attempt is for that group"/>
+        <FIELD NAME="layout" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="the layout for this particular attempt"/>
+        <FIELD NAME="sumgrades" TYPE="number" LENGTH="10" NOTNULL="false" SEQUENCE="false" DECIMALS="5" COMMENT="Total marks for this attempt."/>
+        <FIELD NAME="state" TYPE="char" LENGTH="16" NOTNULL="true" DEFAULT="inprogress" SEQUENCE="false" COMMENT="The current state of the attempts. 'inprogress', 'overdue', 'finished' or 'abandoned'."/>
+
+        <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time this attempt began"/>
+        <FIELD NAME="timefinish" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The time this attempt ended"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The time this attempt was modified"/>
+
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="groupquizid" TYPE="foreign" FIELDS="id" REFTABLE="groupquiz" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="uniqueid" TYPE="foreign-unique" FIELDS="uniqueid" REFTABLE="question_usages" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+    <TABLE NAME="groupquiz_questions" COMMENT="table to hold question information for group quizzes">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="groupquizid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The groupquiz this question instance is associated with"/>
+        <FIELD NAME="questionid" TYPE="int" LENGTH="11" NOTNULL="true" SEQUENCE="false" COMMENT="The question id for the question in the question engine"/>
+        <FIELD NAME="points" TYPE="number" LENGTH="12" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="7" COMMENT="How many points this question contributes to quiz.sumgrades."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="groupquizid" TYPE="foreign" FIELDS="id" REFTABLE="quiz" REFFIELDS="id"/>
+        <KEY NAME="questionid" TYPE="foreign" FIELDS="questionid" REFTABLE="question" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
+
+  </TABLES>
+</XMLDB>
