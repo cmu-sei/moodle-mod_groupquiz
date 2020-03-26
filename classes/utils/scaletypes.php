@@ -75,7 +75,7 @@ class scaletypes {
             self::groupquiz_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
             self::groupquiz_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
             self::groupquiz_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
-            self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattemptgrade', 'groupquiz'),
+            self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
         );
     }
 

@@ -119,6 +119,7 @@ $string['grademethoddesc'] = 'The grading method defines how the grade for a sin
 $string['firstattempt'] = 'First attempt';
 $string['lastattempt'] = 'Last completed attempt';
 $string['highestattempt'] = 'Highest attempt';
+$string['attemptaverage'] = 'Average of all attempts';
 
 // edit page.
 $string['questionlist'] = 'Question List';
