@@ -198,7 +198,8 @@ DM20-0197
     margin-bottom: 1rem;
     border: 1px solid;
     padding: 10px;
-    height: 80px;
+    min-height: 80px;
+    display: grid;
 }
 
 .usertime {

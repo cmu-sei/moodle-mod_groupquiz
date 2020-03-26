@@ -90,7 +90,7 @@ $string['reviewresponse'] = 'Review response';
 $string['reviewresponsetoq'] = 'Review response (question {$a})';
 $string['reviewthisattempt'] = 'Review your responses to this attempt';
 
-
+// activity settings
 $string['configtimelimit'] = 'Default time limit for quizzes in minutes. 0 mean no time limit.';
 $string['configtimelimitsec'] = 'Default time limit for quizzes in seconds. 0 mean no time limit.';
 $string['shufflewithin'] = 'Shuffle within questions';
@@ -108,12 +108,17 @@ $string['edit'] = 'Edit quiz';
 $string['manualcomment'] = 'Manual Comment';
 $string['manualcomment_help'] = 'The comment that instructors can add when grading an attempt';
 $string['grouping'] = 'Grouping';
-
 $string['configshowuserpicture'] = 'Show the user\'s picture on screen during attempts.';
 $string['showuserpicture'] = 'Show the user\'s picture';
 $string['showuserpicture_help'] = 'If enabled, the student\'s name and picture will be shown on-screen during the attempt, and on the review screen, making it easier to identify the student that answered the question most recenttly.';
 $string['enabledquestiontypes'] = 'Enable question types';
 $string['enabledquestiontypes_info'] = 'Question types that are enabled for use within instances of the group quiz activity.';
+$string['grademethod'] = 'Grading method';
+$string['grademethod_help'] = 'The grading method defines how the grade for a single attempt of the activity is determined.';
+$string['grademethoddesc'] = 'The grading method defines how the grade for a single attempt of the activity is determined.';
+$string['firstattempt'] = 'First attempt';
+$string['lastattempt'] = 'Last completed attempt';
+$string['highestattempt'] = 'Highest attempt';
 
 // edit page.
 $string['questionlist'] = 'Question List';
