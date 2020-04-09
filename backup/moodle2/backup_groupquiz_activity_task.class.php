@@ -57,5 +57,25 @@ class backup_groupquiz_activity_task extends backup_activity_task {
         $this->add_step(new backup_groupquiz_activity_structure_step('groupquiz_structure', 'groupquiz.xml'));
     }
 
+    /**
+     * Code the transformations to perform in the activity in
+     * order to get transportable (encoded) links
+     */
+    static public function encode_content_links($content) {
+        global $CFG;
+
+        $base = preg_quote ( $CFG->wwwroot, "/" );
+
+        // Link to the list of GROUPQUIZ instances.
+        $search = "/(" . $base . "\/mod\/vpl\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace ( $search, '$@GROUPQUIZINDEX*$2@$', $content );
+
+        // Link to GROUPQUIZ view by moduleid.
+        $search = "/(" . $base . "\/mod\/vpl\/view.php\?id\=)([0-9]+)/";
+        $content = preg_replace ( $search, '$@GROUPQUIZVIEWBYID*$2@$', $content );
+
+        return $content;
+    }
+
 }
 
