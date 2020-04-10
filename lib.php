@@ -112,6 +112,9 @@ function groupquiz_add_instance($groupquiz, $mform) {
     $groupquiz->created = time();
     $groupquiz->id = $DB->insert_record('groupquiz', $groupquiz);
 
+    // Do the processing required after an add or an update.
+    groupquiz_after_add_or_update($groupquiz);
+
     return $groupquiz->id;
 }
 /**
@@ -154,6 +157,9 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     $DB->update_record('groupquiz', $groupquiz);
 
     // Do the processing required after an add or an update.
+    groupquiz_after_add_or_update($groupquiz);
+
+    // Do the processing required after an add or an update.
     return true;
 
 }
@@ -184,7 +190,7 @@ function groupquiz_process_options($groupquiz) {
 }
 
 /**
- * Helper function for {@link quiz_process_options()}.
+ * Helper function for {@link groupquiz_process_options()}.
  * @param object $fromform the sumbitted form date.
  * @param string $field one of the review option field names.
  */
@@ -224,10 +230,10 @@ function groupquiz_delete_instance($id) {
         $event->delete();
     }
 
-    // delete all attempts for this quiz
+    // delete all attempts for this groupquiz
     $DB->delete_records('groupquiz_attempts', array('groupquizid' => $groupquiz->id));
 
-    // delete all questions for this quiz
+    // delete all questions for this groupquiz
     $DB->delete_records('groupquiz_questions', array('groupquizid' => $groupquiz->id));
 
     // finally delete the groupquiz object
@@ -360,6 +366,25 @@ function groupquiz_update_grades($groupquiz, $userid = 0, $nullifnone = true) {
         return groupquiz_grade_item_update($groupquiz);
     }
 }
+
+/**
+ * This function is called at the end of groupquiz_add_instance
+ * and groupquiz_update_instance, to do the common processing.
+ *
+ * @param object $groupquiz the groupquiz object.
+ */
+function groupquiz_after_add_or_update($groupquiz) {
+    global $DB;
+    $cmid = $groupquiz->coursemodule;
+
+    // We need to use context now, so we need to make sure all needed info is already in db.
+    $DB->set_field('course_modules', 'instance', $groupquiz->id, array('id'=>$cmid));
+    $context = context_module::instance($cmid);
+
+    // Update related grade item.
+    groupquiz_grade_item_update($groupquiz);
+}
+
 
 /**
  * Create or update the grade item for given lab
