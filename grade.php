@@ -15,11 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Skatch backgrounds.
  *
- * @package    mod_groupquiz
- * @copyright  2020 Carnegie Mellon University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_groupquiz
+ * @copyright   2020 Carnegie Mellon Univeristy
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -30,30 +29,23 @@ Released under a GNU GPL 3.0-style license, please see license.txt or contact pe
 [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
 DM20-0197
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
  */
 
-// This line protects the file from being accessed by a URL directly.
-defined('MOODLE_INTERNAL') || die();
+require_once("../../config.php");
 
-// This is the version of the plugin.
-$plugin->version = 2020042802;
+$id = required_param('id', PARAM_INT);
 
-// This is the version of Moodle this plugin requires.
-$plugin->requires = 2016052304;  // Moodle 3.1 (or above)
+// Item number, may be != 0 for activities that allow more than one grade per user.
+$itemnumber = optional_param('itemnumber', 0, PARAM_INT);
 
-// This is the component name of the plugin - it always starts with 'component_'
-$plugin->component = 'mod_groupquiz';
+$userid = optional_param('userid', 0, PARAM_INT);
 
-// This is a list of plugins, this plugin depends on (and their versions).
-$plugin->dependencies = [
-];
+$gradeid = optional_param('gradeid', 0, PARAM_INT);
 
-// This is a stable release.
-//$plugin->maturity = MATURITY_STABLE;
-$plugin->maturity = MATURITY_BETA;
+//TODO show the attempts that were used to generate this grade for the user
 
-// This is the named version.
-$plugin->release = 0.1.0;
+// In the simplest case just redirect to the view page.
+redirect('reports.php?id='.$id);
 
