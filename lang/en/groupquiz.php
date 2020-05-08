@@ -172,5 +172,10 @@ $string['attemptview'] = 'Review Attempt';
 // allattempts table
 $string['response_attempt_controls'] = 'Edit/View Attempt';
 
+// roles
+$string['groupquiz:manage'] = 'Manage Group Quizzes';
+$string['groupquiz:view'] = 'View Group Quiz information';
+$string['groupquiz:addinstance'] = 'Add a new Group Quiz';
+
 
 
