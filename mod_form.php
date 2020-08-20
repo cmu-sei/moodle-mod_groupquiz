@@ -149,7 +149,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
 
         // Shuffle within questions.
         $mform->addElement('selectyesno', 'shuffleanswers', get_string('shufflewithin', 'groupquiz'));
-        $mform->addHelpButton('shuffleanswers', 'shufflewithin', 'quiz');
+        $mform->addHelpButton('shuffleanswers', 'shufflewithin', 'groupquiz');
         $mform->setAdvanced('shuffleanswers', $groupquizconfig->shuffleanswers_adv);
         $mform->setDefault('shuffleanswers', $groupquizconfig->shuffleanswers);
 

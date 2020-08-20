@@ -49,8 +49,6 @@ $string['pluginname'] = 'Group Quiz';
 $string['timing'] = 'Timing';
 $string['pluginadministration'] = 'Group Quiz administration';
 $string['shuffleanswers'] = 'Shuffle answers';
-$string['shufflewithin'] = 'Shuffle within questions';
-$string['shufflewithin_help'] = 'If enabled, the parts making up each question will be randomly shuffled each time a student attempts the quiz, provided the option is also enabled in the question settings. This setting only applies to questions that have multiple parts, such as multiple choice or matching questions.';
 $string['questionbehaviour'] = 'Question behaviour';
 
 // Time options
