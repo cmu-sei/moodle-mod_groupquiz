@@ -22,10 +22,10 @@ jobs:
         with:
           path: './groupquiz'
      
-    # get latest release
-      - id: releasenum
+      - id: groupquiz
         uses: pozetroninc/github-action-get-latest-release@master
         with:
+          owner: sei-mmcdonough
           repo: moodle-mod_groupquiz
           excludes: prerelease, draft
       
@@ -38,8 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ steps.releasenum.outputs.release }}
-          release_name: Release ${{ steps.releasenum.outputs.release }}
+          tag_name: ${{ steps.groupquiz.outputs.release }}
+          release_name: Release ${{ steps.groupquiz.outputs.release }}
           body: |
             Changes in this Release
             - First Change
