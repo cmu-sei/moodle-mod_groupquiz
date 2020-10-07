@@ -38,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: test1 #${{ steps.groupquiz.outputs.release }}
+          tag_name: test2 #${{ steps.groupquiz.outputs.release }}
           release_name: Release 2 #${{ steps.groupquiz.outputs.release }}
           body: |
             Changes in this Release
