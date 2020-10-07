@@ -22,7 +22,12 @@ jobs:
         with:
           path: './groupquiz'
      
-      
+      - name: Get Latest Release
+        uses: pozetroninc/github-action-get-latest-release@v0.5.0
+        with:
+          owner: sei-mmcdonough
+          repo: moodle-mod_groupquiz
+          excludes: prerelease, draft
       
     # build package
           
