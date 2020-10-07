@@ -29,16 +29,20 @@ jobs:
           repo: moodle-mod_groupquiz
           excludes: prerelease, draft
       
-    # build package
+      - name: package
+        run: |
+          ls
+          OLDVERSION=${{ steps.groupquiz.outputs.release }}
+          OLDDATE=`echo $OLDVERSION | cut -b 1-8`
+          NEWDATE=`date +%Y%m%d`
           
-    # create zip file
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: test4 #${{ steps.groupquiz.outputs.release }}
+          tag_name: test5 #${{ steps.groupquiz.outputs.release }}
           release_name: Release ${{ steps.groupquiz.outputs.release }}
           body: |
             Changes in this Release
