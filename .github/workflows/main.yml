@@ -48,6 +48,7 @@ jobs:
           zip -r mod_groupquiz_$NEWVERSION.zip groupquiz/ -x  "groupquiz/*.git*"
           echo ::set-env name=artifact_name::mod_groupquiz_$NEWVERSION
           echo ::set-env name=artifact_version::$NEWVERSION
+          echo env.artifact_name
           
       - name: Create Release
         id: create_release
