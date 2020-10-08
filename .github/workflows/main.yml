@@ -57,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ env.artifact_version }}
-          release_name: ${{ env.articat_name }}
+          release_name: ${{ env.artifact_name }}
           body: |
             Changes in this Release
             - First Change
