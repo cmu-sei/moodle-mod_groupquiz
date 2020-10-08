@@ -25,7 +25,7 @@ jobs:
       - id: groupquiz
         uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
-          owner: sei-mmcdonough
+          owner: cmu-sei
           repo: moodle-mod_groupquiz
           excludes: prerelease, draft
       
