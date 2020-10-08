@@ -46,8 +46,7 @@ jobs:
           sed -i "s#$PREVIOUSVERSION#$NEWVERSION#" groupquiz/version.php
           zip -r mod_groupquiz_$NEWVERSION.zip groupquiz/ -x  "groupquiz/*.git*"
           echo ::set-env name=artifact_version::$NEWVERSION
-          echo ::set-env name=artifact_name::$NEWVERSION
-          ls
+          echo ::set-env name=artifact_name::mod_groupquiz_$NEWVERSION
           
       - name: Create Release
         id: create_release
