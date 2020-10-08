@@ -47,6 +47,7 @@ jobs:
           zip -r mod_groupquiz_$NEWVERSION.zip groupquiz/ -x  "groupquiz/*.git*"
           echo ::set-env name=artifact_version::$NEWVERSION
           echo ::set-env name=artifact_name::$NEWVERSION
+          ls
           
       - name: Create Release
         id: create_release
@@ -62,7 +63,7 @@ jobs:
       - name: Upload a Release Asset
         uses: actions/upload-release-asset@v1.0.2
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  
           asset_path: ./${{env.artifact_name}}.zip
           asset_name: ${{env.artifact_name}}.zip
           asset_content_type: application/zip
