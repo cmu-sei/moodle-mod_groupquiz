@@ -22,7 +22,7 @@ jobs:
         with:
           path: './groupquiz'
      
-      - name: groupquiz
+      - id: groupquiz
         uses: pozetroninc/github-action-get-latest-release@v0.5.0
         with:
           owner: sei-mmcdonough
