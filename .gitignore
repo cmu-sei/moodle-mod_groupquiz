@@ -1,4 +1,5 @@
 *php_errors.log
 node_modules
 package-lock.json
+vendor
 
