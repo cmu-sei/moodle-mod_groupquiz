@@ -45,8 +45,8 @@ jobs:
           PREVIOUSVERSION=$(grep "plugin->version" groupquiz/version.php | sed -e "s/.*= \(.*\);.*/\1/")
           sed -i "s#$PREVIOUSVERSION#$NEWVERSION#" groupquiz/version.php
           zip -r mod_groupquiz_$NEWVERSION.zip groupquiz/ -x  "groupquiz/*.git*"
-          echo ::set-env name=artifact_version::$NEWVERSION
-          echo ::set-env name=artifact_name::mod_groupquiz_$NEWVERSION
+          echo "artifact_version=$NEWVERSION" >> $GITHUB_ENV
+          echo "artifact_name=mod_groupquiz_$NEWVERSION" >> $GITHUB_ENV
           
       - name: Create Release
         id: create_release
