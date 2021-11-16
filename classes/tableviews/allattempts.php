@@ -189,7 +189,7 @@ class allattempts extends \flexible_table implements \renderable {
             $user = $DB->get_record("user", array('id' => $attempt->userstop));
             if ($user) {
                 $ditem->userstop = fullname($user);
-            } else {
+            } else if (!$user && $attempt->timefinish) {
                 $ditem->userstop = "Time Expired";
             }
 

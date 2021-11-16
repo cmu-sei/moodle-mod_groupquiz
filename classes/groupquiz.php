@@ -554,10 +554,12 @@ class groupquiz {
      */
     public function get_user_attempt($attemptid) {
         global $DB;
-
-        $dbattempt = $DB->get_record('groupquiz_attempts', array('id' => $attemptid));
-
-        return new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager(), $dbattempt, $this->getContext());
+        if ($DB->record_exists('groupquiz_attempts', array('id' => $attemptid))) {
+            $dbattempt = $DB->get_record('groupquiz_attempts', array('id' => $attemptid));
+            return new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager(), $dbattempt, $this->getContext());
+        } else {
+            return null;
+        }
     }
 
     public function get_intro($attemptid) {

@@ -237,7 +237,8 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	$groupid = $this->rtq->get_groupmanager()->get_user_group();
 	$this->rtq->get_group_attempt($groupid);
 
-        if ($this->rtq->openAttempt) {
+	if ($this->rtq->openAttempt) {
+            $output .= html_writer::tag('p', get_string('continueinst', 'groupquiz'), array('id' => 'quizstartinst'));
 	    $attemptid = $this->rtq->openAttempt->id;
             $params = array(
                 'id' => $this->rtq->getCM()->id,
@@ -248,6 +249,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
             $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
             $output .= $this->output->single_button($starturl, 'Continue');
 	} else {
+            $output .= html_writer::tag('p', get_string('startinst', 'groupquiz'), array('id' => 'quizstartinst'));
             $params = array(
                 'id' => $this->rtq->getCM()->id,
                 'action' => 'startquiz',
@@ -345,7 +347,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	//}
 
         $savebtn = html_writer::tag('button', get_string('savequestion', 'groupquiz'), array(
-                'class'   => 'btn',
+                'class'   => 'btn btn-secondary',
                 'id'      => 'q' . $qnum . '_save',
                 'onclick' => 'groupquiz.save_question(\'q' . $qnum . '\'); return false;'
             )
@@ -583,15 +585,16 @@ EOD;
             $this->render_grade();
         }
 
-        if ($canreviewattempt || $this->rtq->is_instructor()) {
+        if ($attempt && ($canreviewattempt || $this->rtq->is_instructor())) {
             foreach ($attempt->getSlots() as $slot) {
-
                 if ($this->rtq->is_instructor()) {
                     echo $this->render_edit_review_question($slot, $attempt);
                 } else {
                     echo $this->render_review_question($slot, $attempt);
                 }
             }
+        } else if ($attempt && !$canreviewattempt) {
+            echo html_writer::tag('p', get_string('noreview', 'groupquiz'), array('id' => 'review_notavailable'));
 	}
 
 	$this->render_return_button();
@@ -691,7 +694,9 @@ EOD;
     /** End attempt view rendering **/
 
     public function quiz_intro() {
-        if (html_is_blank($this->rtq->getRTQ()->intro)) {
+    if (html_is_blank($this->rtq->getRTQ()->intro)) {
+            //TODO render generic message such as "Press Start to begin the quiz"
+            // or "Press Continue to joins your group's active quiz"
             return '';
         }
 	// return plain html stored by atto editor in the intro field
@@ -716,7 +721,10 @@ EOD;
     }
 
     public function render_return_button() {
-
+	// TODO display a message
+	// maybe one informing the user that
+	// the quiz was submitted or that review options
+	// are not available at this time (in previous function)
 	$output = '';
         $params = array(
             'id' => $this->rtq->getCM()->id,

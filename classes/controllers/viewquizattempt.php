@@ -134,10 +134,14 @@ class viewquizattempt {
                 // default is to show the attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
 		if (!$attempt) {
-		    echo "error - invalid attempt";
-		    exit;
+                    global $PAGE;
+                    $PAGE->set_pagelayout('base');
+                    $this->RTQ->get_renderer()->view_header(true);
+                    $this->RTQ->get_renderer()->setMessage('error', get_string('noattempt', 'groupquiz'));
+                    $this->RTQ->get_renderer()->render_attempt(null);
+                    $this->RTQ->get_renderer()->view_footer();
+                    break;
 		}
-		// TODO handle invalid
 
                 $hascapability = true;
 
@@ -186,7 +190,6 @@ class viewquizattempt {
                     $this->RTQ->get_renderer()->render_attempt($attempt);
                     $this->RTQ->get_renderer()->view_footer();
                 }
-
                 break;
         }
 
