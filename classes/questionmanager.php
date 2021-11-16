@@ -242,6 +242,7 @@ class questionmanager {
      */
     public function delete_question($questionid)
     {
+	// TODO disable this if attempts exist
         global $DB;
 
         try {

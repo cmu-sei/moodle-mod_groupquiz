@@ -42,6 +42,24 @@ DM20-0197
 
 class groupquiz_question_bank_view extends \core_question\bank\view {
 
+    /** @var bool whether the groupquiz this is used by has been attemptd. */
+    protected $groupquizhasattempts = false;
+
+    /**
+     * Let the question bank display know whether the groupquiz has been attempted,
+     * hence whether some bits of UI, like the add this question to the groupquiz icon,
+     * should be displayed.
+     * @param bool $groupquizhasattempts whether the groupquiz has attempts.
+     */
+    public function set_groupquiz_has_attempts($groupquizhasattempts) {
+        $this->groupquizhasattempts = $groupquizhasattempts;
+        if ($groupquizhasattempts && isset($this->visiblecolumns['addtogroupquizaction'])) {
+            unset($this->visiblecolumns['addtogroupquizaction']);
+        }
+        if ($this->groupquizhasattempts) {
+            unset($this->visiblecolumns['mod_groupquiz\\qbanktypes\\question_bank_add_to_rtq_action_column']);
+        }
+    }
 
     /**
      * Define the columns we want to be displayed on the question bank

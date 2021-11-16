@@ -61,14 +61,19 @@ class edit_renderer extends \plugin_renderer_base {
      * @param array  $questions Array of questions
      * @param string $questionbankview HTML for the question bank view
      */
-    public function listquestions($questions, $questionbankview) {
+    public function listquestions($groupquizhasattempts, $questions, $questionbankview) {
         global $CFG;
 
-        echo \html_writer::start_div('row', array('id' => 'questionrow'));
+	$this->has_attempts = $groupquizhasattempts;
+
+	echo \html_writer::start_div('row', array('id' => 'questionrow'));
 
         echo \html_writer::start_div('inline-block span6');
         echo \html_writer::tag('h2', get_string('questionlist', 'groupquiz'));
         echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', array('id' => 'editstatus'));
+        if ($this->has_attempts) {
+            echo \html_writer::tag('p', get_string('cannoteditafterattempts', 'groupquiz'));
+        }
 
         echo $this->show_questionlist($questions);
 
@@ -139,6 +144,7 @@ class edit_renderer extends \plugin_renderer_base {
 
         $return = '';
 
+	// TODO disable reordering if attepts exist
         $dragicon = new \pix_icon('i/dragdrop', 'dragdrop');
         $return .= \html_writer::div($this->output->render($dragicon), 'dragquestion');
 
@@ -186,22 +192,22 @@ class edit_renderer extends \plugin_renderer_base {
 
         $controlHTML .= \html_writer::end_tag('noscript');
 
-        // always add edit and delete icons
-        $editurl = clone($this->pageurl);
-        $editurl->param('action', 'editquestion');
-        $editurl->param('rtqquestionid', $question->getId());
-        $alt = get_string('questionedit', 'groupquiz', $qnum);
-        $deleteicon = new \pix_icon('t/edit', $alt);
-        $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
-
-
-        $deleteurl = clone($this->pageurl);
-        $deleteurl->param('action', 'deletequestion');
-        $deleteurl->param('questionid', $question->getId());
-        $alt = get_string('questiondelete', 'mod_groupquiz', $qnum);
-        $deleteicon = new \pix_icon('t/delete', $alt);
-        $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
-
+	// do not allow edit or delete if attempts exist
+	if (!$this->has_attempts) {
+            // add edit and delete icons
+            $editurl = clone($this->pageurl);
+            $editurl->param('action', 'editquestion');
+            $editurl->param('rtqquestionid', $question->getId());
+            $alt = get_string('questionedit', 'groupquiz', $qnum);
+            $deleteicon = new \pix_icon('t/edit', $alt);
+            $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
+            $deleteurl = clone($this->pageurl);
+            $deleteurl->param('action', 'deletequestion');
+            $deleteurl->param('questionid', $question->getId());
+            $alt = get_string('questiondelete', 'mod_groupquiz', $qnum);
+            $deleteicon = new \pix_icon('t/delete', $alt);
+            $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
+	}
 
         $return .= \html_writer::div($controlHTML, 'controls');
 

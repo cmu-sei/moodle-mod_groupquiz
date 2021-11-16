@@ -122,7 +122,7 @@ $string['attemptaverage'] = 'Average of all attempts';
 
 // edit page.
 $string['questionlist'] = 'Question List';
-$string['addtoquiz'] = 'Add';
+$string['addtoquiz'] = 'Add Question to Group Quiz';
 $string['question'] = 'Question ';
 $string['addquestion'] = 'Add question';
 $string['questiondelete'] = 'Delete question {$a}';
@@ -137,6 +137,7 @@ $string['qdeleteerror'] = 'Couldn\'t delete question';
 $string['questionedit'] = 'Edit question';
 $string['savequestion'] = 'Save question';
 $string['cantaddquestiontwice'] = 'You can not add the same question more than once to a quiz';
+$string['cannoteditafterattempts'] = 'You cannot add or remove questions because this quiz has been attempted.';
 
 // view page
 $string['invalidquiz'] = 'Invalid groupquiz ID.';
