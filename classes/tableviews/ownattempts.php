@@ -52,10 +52,11 @@ class ownattempts extends \flexible_table {
      * @param \mod_groupquiz\groupquiz $rtq
      * @param \moodle_url                $pageurl
      */
-    public function __construct($uniqueid, $rtq, $pageurl) {
+    public function __construct($uniqueid, $rtq, $pageurl, $attempts) {
 
         $this->rtq = $rtq;
         $this->baseurl = $pageurl;
+	$this->attempts = $attempts;
 
         parent::__construct($uniqueid);
     }
@@ -71,17 +72,26 @@ class ownattempts extends \flexible_table {
 
         $this->set_attribute('cellspacing', '0');
 
+        $state = $this->rtq->get_openclose_state();
+        $reviewoptions = $this->rtq->get_review_options();
+        $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
+        $canreviewattempt = $this->rtq->canreviewattempt($reviewoptions, $state);
+
         $columns = array(
-	    // TODO user user submitted name
+	    // user submitted name
 	    'user'	 => 'Submitted By',
             'group'      => get_string('group'),
             'timestart'  => get_string('timestarted', 'groupquiz'),
-            'timefinish' => get_string('timecompleted', 'groupquiz'),
-	    // TODO only if allowed
-            'grade'      => get_string('grade'),
+            'timefinish' => get_string('timecompleted', 'groupquiz')
         );
 
-        if (!$isdownloading) {
+	// only if canreviewmarks
+        if ($canreviewmarks) {
+            $columns['grade'] = get_string('grade');
+        }
+
+	// only if canreviewattempt
+        if ($canreviewattempt) {
             $columns['attemptview'] = get_string('attemptview', 'groupquiz');
         }
 
@@ -114,8 +124,8 @@ class ownattempts extends \flexible_table {
 
 	$state = $this->rtq->get_openclose_state();
 	$reviewoptions = $this->rtq->get_review_options();
-
 	$canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
+        $canreviewattempt = $this->rtq->canreviewattempt($reviewoptions, $state);
 
         foreach ($tabledata as $item) {
 
@@ -125,27 +135,27 @@ class ownattempts extends \flexible_table {
             $row[] = $item->group;
             $row[] = userdate($item->timestart);
             $row[] = userdate($item->timefinish);
-	    // TODO only if allowed
+	    // only if allowed
 	    if ($canreviewmarks) {
-                $row[] = $item->grade;// . ' / ' . $item->totalgrade;
-	    } else {
-		$row[] = '-';
+		debugging("canreviewmarks is set while processing ownattempts", DEBUG_DEVELOPER);    
+	        $row[] = $item->grade;
 	    }
-            // Add in controls column
 
-            // view attempt
-            $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
-            $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
-            $viewattempturl->param('attemptid', $item->attemptid);
+	    // view attempt only if allowed
+	    if ($canreviewattempt) {
+                $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
+                $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
+                $viewattempturl->param('attemptid', $item->attemptid);
 
-            $viewattemptpix = new \pix_icon('t/preview', 'preview');
-	    //$params = array('fullscreen'=>1);
-	    $params = array('width'=>1000,'height'=>600);
-	    $popup = new \popup_action('click', $viewattempturl, 'viewquizattempt', $params);
+                $viewattemptpix = new \pix_icon('t/preview', 'preview');
+	        //$params = array('fullscreen'=>1);
+	        $params = array('width'=>1000,'height'=>600);
+	        $popup = new \popup_action('click', $viewattempturl, 'viewquizattempt', $params);
 
-            $actionlink = new \action_link($viewattempturl, '', $popup, array('target' => '_blank'), $viewattemptpix);
+                $actionlink = new \action_link($viewattempturl, '', $popup, array('target' => '_blank'), $viewattemptpix);
 
-            $row[] = $OUTPUT->render($actionlink);
+            	$row[] = $OUTPUT->render($actionlink);
+	    }
 
             $this->add_data($row);
         }
@@ -163,11 +173,7 @@ class ownattempts extends \flexible_table {
 
         $data = array();
 
-	$groupid = $this->rtq->get_groupmanager()->get_user_group();
-
-        $attempts = $this->rtq->getall_attempts('closed', $groupid);
-
-        foreach ($attempts as $attempt) {
+        foreach ($this->attempts as $attempt) {
             $ditem = new \stdClass();
 	    $user = $DB->get_record("user", array('id' => $attempt->userstop));
 	    if ($user) {

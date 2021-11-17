@@ -186,6 +186,7 @@ function groupquiz_process_options($groupquiz) {
     $groupquiz->reviewoverallfeedback = groupquiz_review_option_form_to_db($groupquiz, 'overallfeedback');
     $groupquiz->reviewattempt |= mod_groupquiz_display_options::DURING;
     $groupquiz->reviewoverallfeedback &= ~mod_groupquiz_display_options::DURING;
+    $groupquiz->reviewmanualcomment = groupquiz_review_option_form_to_db($groupquiz, 'manualcomment');
 
 }
 

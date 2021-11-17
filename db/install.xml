@@ -25,7 +25,7 @@
         <FIELD NAME="reviewgeneralfeedback" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
         <FIELD NAME="reviewrightanswer" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
         <FIELD NAME="reviewoverallfeedback" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether users are allowed to review their quiz attempts at various times. A bit field, like reviewattempt."/>
-
+	<FIELD NAME="reviewmanualcomment" TYPE="int" LENGTH="6" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The comment that instructors can add when grading an attempt"/>
         <FIELD NAME="grouping" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="The grouping id that this activity is set up to use for groups"/>
         <FIELD NAME="questionorder" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The question order for the activequiz"/>
         <FIELD NAME="shuffleanswers" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether the parts of the question should be shuffled, in those question types that support it."/>

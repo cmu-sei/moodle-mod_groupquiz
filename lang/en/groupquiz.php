@@ -160,6 +160,7 @@ $string['eventattemptended'] = 'Group Quiz attempt ended';
 $string['eventattemptviewed'] = 'Group Quiz attempt viewed';
 $string['continueinst'] = 'Press Continue to join your group\'s active quiz attempt.';
 $string['startinst'] = 'Press Start to begin your group\'s quiz attempt.';
+$string['noattempts'] = 'No group attempts exist for this quiz.';
 
 // review page
 $string['noreview'] = 'You are not able to review the quiz attempt at this time.';

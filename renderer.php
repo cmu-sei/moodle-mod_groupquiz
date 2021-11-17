@@ -213,16 +213,19 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         $canreviewattempt =  $this->rtq->canreviewattempt($reviewoptions, $state);
         $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
 
+        $groupid = $this->rtq->get_groupmanager()->get_user_group();
+        $attempts = $this->rtq->getall_attempts('closed', $groupid);
+
         // show overall grade
-	if ($canreviewmarks) {
+        if ($canreviewmarks && $attempts) {
             $this->render_grade();
 	}
 
-	if ($canreviewattempt == true) {
+	if ($attempts) {
             echo html_writer::start_div('groupquizbox');
             echo html_writer::tag('h3', get_string('attempts', 'groupquiz'));
 
-            $viewownattemptstable = new \mod_groupquiz\tableviews\ownattempts('viewownattempts', $this->rtq, $this->pageurl);
+            $viewownattemptstable = new \mod_groupquiz\tableviews\ownattempts('viewownattempts', $this->rtq, $this->pageurl, $attempts);
             $viewownattemptstable->setup();
             $viewownattemptstable->set_data();
             $viewownattemptstable->finish_output();
@@ -272,6 +275,10 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         $this->init_quiz_js($attempt);
 
         $output = '';
+
+	$output .= html_writer::start_div('groupquizbox');
+        $output .= $this->quiz_intro();
+        $output .= html_writer::end_div();
 
         $output .= html_writer::start_div('', array('id'=>'quizview'));
 
@@ -716,7 +723,11 @@ EOD;
             echo html_writer::start_tag('h3');
             echo get_string('overallgrade', 'groupquiz', number_format($usergrade, 2));
             echo html_writer::end_tag('h3');
-        }
+	} else {
+            echo html_writer::start_tag('h3');
+            echo get_string('overallgrade', 'groupquiz', '0');
+            echo html_writer::end_tag('h3');
+	}
         echo html_writer::end_div();
     }
 

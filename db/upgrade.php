@@ -60,12 +60,20 @@ function xmldb_groupquiz_upgrade($oldversion) {
     global $CFG, $DB;
     $dbman = $DB->get_manager();
 
-//    if ($oldversion < 2020011500) {
+    if ($oldversion < 2021111702) {
 
+        // Define field reviewmanualcomment to be added to groupquiz.
+        $table = new xmldb_table('groupquiz');
+        $field = new xmldb_field('reviewmanualcomment', XMLDB_TYPE_INTEGER, '6', null, XMLDB_NOTNULL, null, '0', 'reviewoverallfeedback');
 
-        // Crucible savepoint reached.
-//        upgrade_mod_savepoint(true, 2020011500, 'groupquiz');
-//    }
+        // Conditionally launch add field reviewmanualcomment.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Groupquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2021111702, 'groupquiz');
+    }
     return true;
 }
 

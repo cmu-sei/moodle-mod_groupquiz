@@ -314,7 +314,7 @@ class groupquiz {
         $reviewoptions->reviewgeneralfeedback = $this->groupquiz->reviewgeneralfeedback;
         $reviewoptions->reviewrightanswer = $this->groupquiz->reviewrightanswer;
         $reviewoptions->reviewoverallfeedback = $this->groupquiz->reviewoverallfeedback;
-        $reviewoptions->manualcomment = 0; //$this->groupquiz->manualcomment;
+        $reviewoptions->reviewmanualcomment = $this->groupquiz->reviewmanualcomment;
 
         return $reviewoptions;
     }
@@ -399,35 +399,6 @@ class groupquiz {
 
         return $return;
     }
-
-
-    /* returns an array of this user's groups that have no in progress attempts */
-/*
-    public function check_attempt_for_group() {
-        global $USER, $DB;
-
-        $groups = $this->get_groupmanager()->get_user_groups_name_array();
-        $groups = array_keys($groups);
-
-        $validgroups = array();
-
-        // we need to loop through the groups in case a user is in multiple,
-        // and then check if there is a possibility for them to create an attempt for that user
-        foreach ($groups as $group) {
-            list($sql, $params) = $DB->get_in_or_equal(array($group));
-            $query = 'SELECT * FROM {groupquiz_attempts} WHERE forgroupid ' . $sql .
-                ' AND state = ?';
-            $params[] = \mod_groupquiz\groupquiz_attempt::INPROGRESS;
-            $recs = $DB->get_records_sql($query, $params);
-            if (count($recs) == 0) {
-                $validgroups[] = $group;
-            }
-        }
-
-        return $validgroups;
-
-    }
-*/
 
     public function getall_attempts($open = 'all', $groupid = null) {
         global $DB;
