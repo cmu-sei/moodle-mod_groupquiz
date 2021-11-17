@@ -137,7 +137,6 @@ class ownattempts extends \flexible_table {
             $row[] = userdate($item->timefinish);
 	    // only if allowed
 	    if ($canreviewmarks) {
-		debugging("canreviewmarks is set while processing ownattempts", DEBUG_DEVELOPER);    
 	        $row[] = $item->grade;
 	    }
 

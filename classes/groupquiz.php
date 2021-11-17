@@ -429,7 +429,7 @@ class groupquiz {
 
         $wherestring = implode(' AND ', $where);
 
-        $sql = "SELECT * FROM {groupquiz_attempts} WHERE $wherestring";
+        $sql = "SELECT * FROM {groupquiz_attempts} WHERE $wherestring ORDER BY timefinish ASC";
         $dbattempts = $DB->get_records_sql($sql, $sqlparams);
 
         $attempts = array();

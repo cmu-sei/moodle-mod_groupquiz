@@ -59,7 +59,7 @@ class grade {
 	    array_push($grades, $rec->grade);
 	}
 	return $grades;
-
+/*
         $params = array($groupquiz->id);
         $usertest = '';
 
@@ -90,7 +90,7 @@ class grade {
             WHERE rtqg.groupquizid = ?
             $usertest
             GROUP BY u.id, rtqg.grade, rtqg.timemodified", $params);
-
+ */
     }
 
 
