@@ -230,7 +230,7 @@ exit;
                     // TODO get a better check performed here
                     $groupid = $this->RTQ->get_groupmanager()->get_user_group();
                     if ($groupid == -1) {
-                        $this->RTQ->get_renderer()->render_popup_error(get_string('usernotingroup', 'groupquiz'));
+                        $this->RTQ->get_renderer()->setMessage('error', get_string('usernotingroup', 'groupquiz'));
                     }
 		    // display the form that says start/continue
                      $this->RTQ->get_renderer()->view_header();
