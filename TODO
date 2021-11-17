@@ -16,6 +16,9 @@ use js to confirm user choice to submit via popup window showing unanswered ques
 remove userid from groupquiz_attempts table
 
 make tables sortable
+this will require no longer passing attempts to the table but just the groupid or userid
+we then need to use sql function to include get_sql_sort
+
 redirect instructor view of live attempts to view.php with instructor js file
 
 add instructor preview to instructor view tab
@@ -30,3 +33,6 @@ look into removing the edit screen that appears after clicking the add button
 look into adding the edit column inside the question bank view
 
 try to add preview button to the question list
+
+sort the attempts in the ownattempts table
+

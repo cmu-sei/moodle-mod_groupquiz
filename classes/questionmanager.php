@@ -226,7 +226,7 @@ class questionmanager {
 
         } else {
             // display the form
-            $mform->set_data(array('points' => $rtqquestion->points));
+            $mform->set_data(array('points' => number_format($rtqquestion->points, 2)));
             $this->renderer->print_header();
             $this->renderer->addquestionform($mform);
             $this->renderer->footer();
