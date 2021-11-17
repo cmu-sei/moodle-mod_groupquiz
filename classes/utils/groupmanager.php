@@ -139,9 +139,7 @@ class groupmanager {
 
         $groups = $this->get_user_groups();
         if (count($groups) != 1) {
-            echo "error - cannot find user group";
-            // TODO display no user groups error
-            exit;
+            return -1;
         }
         $groupid = array_values($groups)[0]->id;
 

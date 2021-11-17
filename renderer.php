@@ -213,7 +213,10 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         $canreviewattempt =  $this->rtq->canreviewattempt($reviewoptions, $state);
         $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
 
-        $groupid = $this->rtq->get_groupmanager()->get_user_group();
+	$groupid = $this->rtq->get_groupmanager()->get_user_group();
+	if ($groupid == -1) {
+            return;
+        }
         $attempts = $this->rtq->getall_attempts('closed', $groupid);
 
         // show overall grade
@@ -238,6 +241,9 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	$output = '';
 
 	$groupid = $this->rtq->get_groupmanager()->get_user_group();
+	if ($groupid == -1) {
+	    return;
+	}
 	$this->rtq->get_group_attempt($groupid);
 
 	if ($this->rtq->openAttempt) {
@@ -271,6 +277,8 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      */
 
     public function render_quiz(\mod_groupquiz\groupquiz_attempt $attempt) {
+        $this->setMessage('error', get_string('savereminder', 'groupquiz'));
+        $this->showMessage();
 
         $this->init_quiz_js($attempt);
 

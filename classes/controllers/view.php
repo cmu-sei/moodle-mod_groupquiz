@@ -129,8 +129,6 @@ class view {
             $this->pagevars['action'] = 'noquestions';
             $this->pageurl->param('action', ''); // remove the action
         }
-	//$groupid = optional_param('groupid', false, PARAM_INT);
-        //$attemptid = optional_param('attemptid', false, PARAM_INT);
 	$groupid = $this->pagevars['groupid'];
 	$attemptid = $this->pagevars['attemptid'];
 
@@ -231,10 +229,8 @@ exit;
                 } else { /* student default view */
                     // TODO get a better check performed here
                     $groupid = $this->RTQ->get_groupmanager()->get_user_group();
-                    if (!$groupid) {
-                        echo "error - cannot find user group. user must be only in one group";
-			$this->RTQ->get_renderer()->render_popup_error("error - cannot find user group");
-			exit;
+                    if ($groupid == -1) {
+                        $this->RTQ->get_renderer()->render_popup_error(get_string('usernotingroup', 'groupquiz'));
                     }
 		    // display the form that says start/continue
                      $this->RTQ->get_renderer()->view_header();

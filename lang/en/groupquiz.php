@@ -154,13 +154,15 @@ $string['attempts'] = 'Attempts';
 $string['responses'] = 'View responses';
 $string['notopen'] = 'Quiz Opens at: ';
 $string['closed'] = 'Quiz Closed at: ';
-$string['overallgrade'] = 'Overall grade: {$a}';
+$string['overallgrade'] = 'Overall Grade: {$a}';
 $string['eventattemptstarted'] = 'Group Quiz attempt started';
 $string['eventattemptended'] = 'Group Quiz attempt ended';
 $string['eventattemptviewed'] = 'Group Quiz attempt viewed';
 $string['continueinst'] = 'Press Continue to join your group\'s active quiz attempt.';
 $string['startinst'] = 'Press Start to begin your group\'s quiz attempt.';
 $string['noattempts'] = 'No group attempts exist for this quiz.';
+$string['savereminder'] = 'Ensure that each question has been saved before submitting the quiz.';
+$string['usernotingroup'] = 'You must be assigned to a group to access this quiz.';
 
 // review page
 $string['noreview'] = 'You are not able to review the quiz attempt at this time.';
