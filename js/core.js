@@ -229,7 +229,7 @@ groupquiz.updateTimer = function () {
         console.log('time has expired');
 	timeleft = 0;
     }
-    console.log('update ' + timeleft);
+    console.log('time remaining ' + timeleft);
     document.getElementById('timeleft').innerHTML = timeleft;
 };
 
@@ -256,8 +256,9 @@ groupquiz.getQuizInfo = function () {
             const questions = JSON.parse(response.status);
 
             timeleft = JSON.parse(response.timeleft);
-            console.log('new timeleft from server ' + timeleft);
-
+	    if (timeleft) {
+                console.log('received new time remaining from server ' + timeleft);
+	    }
             //update timer
             if (timeleft > 0) {
                 var timerbox = document.getElementById('timerbox');
@@ -280,7 +281,6 @@ groupquiz.getQuizInfo = function () {
 		    console.log('replacing html for q' + question.qnum);
                     responsebox.innerHTML = html;
 		}
-
 	    })
         }
 
