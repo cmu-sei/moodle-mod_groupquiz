@@ -74,6 +74,21 @@ function xmldb_groupquiz_upgrade($oldversion) {
         // Groupquiz savepoint reached.
         upgrade_mod_savepoint(true, 2021111702, 'groupquiz');
     }
+
+    if ($oldversion < 2021111805) {
+
+        // Changing the default of field grademethod on table groupquiz to 1.
+        $table = new xmldb_table('groupquiz');
+        $field = new xmldb_field('grademethod', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'grade');
+
+        // Launch change of default for field grademethod.
+        $dbman->change_field_default($table, $field);
+
+        // Groupquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2021111805, 'groupquiz');
+    }
+
+
     return true;
 }
 

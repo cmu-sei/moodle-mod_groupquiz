@@ -16,11 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Define all the backup steps that will be used by the backup_groupquiz_activity_task
- *
- * @package    mod_groupquiz
- * @copyright  2020 Carnegie Mellon University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_groupquiz
+ * @category  backup
+ * @copyright   2020 Carnegie Mellon University
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -34,38 +33,45 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
-defined('MOODLE_INTERNAL') || die;
-
- /**
- * Define the complete groupquiz structure for backup, with file and id annotations
+/**
+ * Define all the restore steps that will be used by the restore_groupquiz_activity_task
  */
-class backup_groupquiz_activity_structure_step extends backup_activity_structure_step {
+
+/**
+ * Structure step to restore one groupquiz activity
+ */
+class restore_groupquiz_activity_structure_step extends restore_activity_structure_step {
 
     protected function define_structure() {
 
-        // Define each element separated
-        $groupquiz = new backup_nested_element('groupquiz', array('id'), array(
-            'name', 'intro', 'introformat', 'timeopen', 'timeclose', 'timelimit',
-	    'grade', 'grademethod', 'reviewattempt', 'reviewcorrectness', 'reviewmarks',
-	    'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
-	    'reviewoverallfeedback', 'reviewmanualcomment', 'grouping', 'questionorder',
-	    'shuffleanswers', 'showuserpicture', 'requireallmemberssubmit',
-            'timecreated', 'timemodified'));
+        $paths = array();
+        $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
 
-        // Build the tree
-        //nothing here for groupquizs
+        // Return the paths wrapped into standard activity structure
+        return $this->prepare_activity_structure($paths);
+    }
 
-        // Define sources
-        $groupquiz->set_source_table('groupquiz', array('id' => backup::VAR_ACTIVITYID));
+    protected function process_groupquiz($data) {
+        global $DB;
 
-        // Define id annotations
-        //module has no id annotations
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->course = $this->get_courseid();
 
-        // Define file annotations
-        $groupquiz->annotate_files('mod_groupquiz', 'intro', null); // This file area hasn't itemid
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
 
-        // Return the root element (groupquiz), wrapped into standard activity structure
-        return $this->prepare_activity_structure($groupquiz);
+	//TODO time setting, behaviour settings, display settings
 
+
+        // insert the groupquiz record
+        $newitemid = $DB->insert_record('groupquiz', $data);
+        // immediately after inserting "activity" record, call this
+        $this->apply_activity_instance($newitemid);
+    }
+
+    protected function after_execute() {
+        // Add groupquiz related files, no need to match by itemname (just internally handled context)
+        $this->add_related_files('mod_groupquiz', 'intro', null);
     }
 }
