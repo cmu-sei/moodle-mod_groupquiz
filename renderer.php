@@ -388,22 +388,32 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     }
 
     public function render_user($qnum, $attempt) {
+        global $DB, $OUTPUT;
 
 	// gather data
 	$quba = $attempt->get_quba();
         $qa = $quba->get_question_attempt($qnum);
 	$data = $qa->get_last_qt_data();
 
-	if ((count($data) > 0) & (array_key_exists('answer', $data))) {
-            global $DB, $OUTPUT;
-            $last = $qa->get_last_step_with_qt_var('answer');
-            $userid = $last->get_user_id();
-	    $user = $DB->get_record("user", array('id' => $userid));
-	    $avataroptions = array('link' => false, 'visibletoscreenreaders' => false);
-	    $useravatar = $OUTPUT->user_picture($user, $avataroptions);
-	    $username = fullname($user);
-            $time = userdate($last->get_timecreated()) . " " . usertimezone();
-
+	if (count($data) > 0) {
+            // MC single answer
+	    if (array_key_exists('answer', $data)) {
+                $last = $qa->get_last_step_with_qt_var('answer');
+            //  cloze multiple answer
+            } else if ((count($data) > 0) && (array_key_exists('sub1_answer', $data))) {
+                $last = $qa->get_last_step_with_qt_var('sub1_answer');
+            //  MC multiple answers
+            } else if ((count($data) > 0) && (array_key_exists('choice1', $data))) {
+                $last = $qa->get_last_step_with_qt_var('choice1');
+	    }
+            if ($last) {
+                $userid = $last->get_user_id();
+                $user = $DB->get_record("user", array('id' => $userid));
+                $avataroptions = array('link' => false, 'visibletoscreenreaders' => false);
+                $useravatar = $OUTPUT->user_picture($user, $avataroptions);
+                $username = fullname($user);
+                $time = userdate($last->get_timecreated()) . " " . usertimezone();
+	    }
 	} else {
             $useravatar = '';
             $username = '';
