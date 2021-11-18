@@ -723,11 +723,10 @@ EOD;
 
         echo html_writer::start_div('groupquizbox');
         $a = new stdClass();
-        $usergrades = \mod_groupquiz\utils\grade::get_user_grade($this->rtq->getRTQ(), $USER->id);
+        $usergrade = \mod_groupquiz\utils\grade::get_user_grade($this->rtq->getRTQ(), $USER->id);
 
         // should only be 1 grade, but we'll always get end just in case
-        if (!empty($usergrades)) {
-            $usergrade = end($usergrades);
+        if ($usergrade) {
             echo html_writer::start_tag('h3');
             echo get_string('overallgrade', 'groupquiz', number_format($usergrade, 2));
             echo html_writer::end_tag('h3');

@@ -349,23 +349,17 @@ function groupquiz_update_grades($groupquiz, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
-    // TODO if i fix this if statement i get an error due to get_user_grade
-    if (!$groupquiz->graded) {
-        return groupquiz_grade_item_update($groupquiz);
-
-    } else if ($grades = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $userid)) {
-        return groupquiz_grade_item_update($groupquiz, $grades);
-
-    } else if ($userid and $nullifnone) {
+    $grades = array();
+    foreach ($userid as $user) {
+	debugging("user id:" . $user, DEBUG_DEVELOPER);
+	$rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
+	debugging("user grade: " . $rawgrade, DEBUG_DEVELOPER);
         $grade = new stdClass();
-        $grade->userid = $userid;
-        $grade->rawgrade = null;
-
-        return groupquiz_grade_item_update($groupquiz, $grade);
-
-    } else {
-        return groupquiz_grade_item_update($groupquiz);
+        $grade->userid   = $user;
+        $grade->rawgrade = $rawgrade;
+        $grades[$user] = $grade;
     }
+    return groupquiz_grade_item_update($groupquiz, $grades);
 }
 
 /**
