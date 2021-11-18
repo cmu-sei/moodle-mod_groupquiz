@@ -142,10 +142,10 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     $groupquizdateschanged = $oldgroupquiz->timelimit   != $gouppquiz->timelimit
                      || $oldgroupquiz->timeclose   != $groupquiz->timeclose
                      || $oldgroupquiz->graceperiod != $groupquiz->graceperiod;
+    // TODO determine if this needs to be done
     if ($groupquizdateschanged) {
         //groupquiz_update_open_attempts(array('groupquizid' => $groupquiz->id));
     }
-
 
     // We need two values from the existing DB record that are not in the form,
     // in some of the function calls below.
@@ -155,6 +155,13 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     // Update the database.
     $groupquiz->id = $groupquiz->instance;
     $DB->update_record('groupquiz', $groupquiz);
+
+    if ($groupquiz->grademethod !== $oldgroupquiz->grademethod) {
+        $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $groupquiz->course, false, MUST_EXIST);
+        $RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
+	$RTQ->get_grader()->save_all_grades(true);
+    }
 
     // Do the processing required after an add or an update.
     groupquiz_after_add_or_update($groupquiz);
@@ -351,9 +358,7 @@ function groupquiz_update_grades($groupquiz, $userid = 0, $nullifnone = true) {
 
     $grades = array();
     foreach ($userid as $user) {
-	debugging("user id:" . $user, DEBUG_DEVELOPER);
 	$rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
-	debugging("user grade: " . $rawgrade, DEBUG_DEVELOPER);
         $grade = new stdClass();
         $grade->userid   = $user;
         $grade->rawgrade = $rawgrade;
@@ -436,4 +441,19 @@ function groupquiz_grade_item_delete($groupquiz) {
             null, array('deleted' => 1));
 }
 
+
+function groupquiz_reset_gradebook($courseid, $type='') {
+    global $CFG, $DB;
+
+    $groupquizzes = $DB->get_records_sql("
+            SELECT q.*, cm.idnumber as cmidnumber, q.course as courseid
+            FROM {modules} m
+            JOIN {course_modules} cm ON m.id = cm.module
+            JOIN {groupquiz} q ON cm.instance = q.id
+            WHERE m.name = 'groupquiz' AND cm.course = ?", array($courseid));
+
+    foreach ($groupquizzes as $groupquiz) {
+        groupquiz_grade_item_update($groupquiz, 'reset');
+    }
+}
 

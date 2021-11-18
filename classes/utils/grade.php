@@ -78,10 +78,10 @@ class grade {
      * @param bool $regrade_attempts Regrade the question attempts themselves through the question engine
      * @return bool
      */
-    public function save_all_grades($regrade_attempts = false, $groupid = null) {
-
+    public function save_all_grades($regrade_attempts = false) {
+	//debugging("save_all_grades for " . $this->rtq->getRTQ()->id, DEBUG_DEVELOPER);
         if (empty($this->rtq->getRTQ()->grouping)) {
-            echo "error = cannot find groups";
+	    debugging("cannot find group", DEBUG_NORMAL);
             return;
 	}
 

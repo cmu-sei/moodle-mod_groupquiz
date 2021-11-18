@@ -243,8 +243,6 @@ class mod_groupquiz_mod_form extends moodleform_mod {
     }
 
     function data_preprocessing(&$toform) {
-debugging("data_preprocessing", DEBUG_DEVELOPER);
-
         if (isset($toform['grade'])) {
             // Convert to a real number, so we don't get 0.0000.
             $toform['grade'] = $toform['grade'] + 0;
@@ -306,7 +304,6 @@ debugging("data_preprocessing", DEBUG_DEVELOPER);
     }
 
     function data_postprocessing($data) {
-	debugging("data_postprocessing", DEBUG_DEVELOPER);
     }
 
 }
