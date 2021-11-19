@@ -143,7 +143,7 @@ class ownattempts extends \flexible_table {
 	    // view attempt only if allowed
 	    if ($canreviewattempt) {
                 $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
-                $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
+                $viewattempturl->param('groupquizid', $this->rtq->getRTQ()->id);
                 $viewattempturl->param('attemptid', $item->attemptid);
 
                 $viewattemptpix = new \pix_icon('t/preview', 'preview');

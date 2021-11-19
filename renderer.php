@@ -174,7 +174,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @param bool|\stdclass $sessionstarted is a standard class when there is a session
      */
     public function view_inst_home() {
-        echo html_writer::start_div('groupquizbox');
+        echo html_writer::start_div();
         echo $this->quiz_intro();
         echo html_writer::end_div();
     }
@@ -193,9 +193,8 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	$timelimit = $this->rtq->getRTQ()->timelimit;
         $state = $this->rtq->get_openclose_state();
 
-        echo html_writer::start_div('groupquizbox');
-
         echo $this->quiz_intro();
+        echo html_writer::start_div('groupquizbox');
 
 	if ($state == 'unopen') {
 	    echo html_writer::tag('p', get_string('notopen', 'groupquiz') . userdate($timeopen), array('id' => 'quiz_notavailable'));
@@ -245,27 +244,33 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	    return;
 	}
 	$this->rtq->get_group_attempt($groupid);
-
 	if ($this->rtq->openAttempt) {
             $output .= html_writer::tag('p', get_string('continueinst', 'groupquiz'), array('id' => 'quizstartinst'));
 	    $attemptid = $this->rtq->openAttempt->id;
-            $params = array(
-                'id' => $this->rtq->getCM()->id,
-                'action' => 'continuequiz',
-		'attemptid' => $attemptid,
-		'groupid' => $groupid
-            );
-            $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-            $output .= $this->output->single_button($starturl, 'Continue');
+            //$params = array(
+            //    'id' => $this->rtq->getCM()->id,
+            //    'action' => 'continuequiz',
+	//	'attemptid' => $attemptid,
+	//	'groupid' => $groupid
+          //  );
+	    $starturl = new moodle_url('/mod/groupquiz/view.php');
+	    $starturl->param('id', $this->rtq->getCM()->id);
+	     $starturl->param('action', 'continuequiz');
+            //$starturl = new moodle_url('/mod/groupquiz/view.php', $params);
+            $output .= $this->output->single_button($starturl, 'Continue', 'get');
 	} else {
             $output .= html_writer::tag('p', get_string('startinst', 'groupquiz'), array('id' => 'quizstartinst'));
-            $params = array(
-                'id' => $this->rtq->getCM()->id,
-                'action' => 'startquiz',
-		'groupid' => $groupid
-            );
-            $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-            $output .= $this->output->single_button($starturl, 'Start');
+            //$params = array(
+             //   'id' => $this->rtq->getCM()->id,
+             //   'action' => 'startquiz',
+//		'groupid' => $groupid
+  //          );
+            //$starturl = new moodle_url('/mod/groupquiz/view.php', $params);
+            $starturl = new moodle_url('/mod/groupquiz/view.php');
+            $starturl->param('id', $this->rtq->getCM()->id);
+            $starturl->param('action', 'startquiz');
+
+            $output .= $this->output->single_button($starturl, 'Start', 'get');
 	}
 	echo $output;
     }
@@ -284,14 +289,13 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 
         $output = '';
 
-	$output .= html_writer::start_div('groupquizbox');
+	$output .= html_writer::start_div();
         $output .= $this->quiz_intro();
         $output .= html_writer::end_div();
 
         $output .= html_writer::start_div('', array('id'=>'quizview'));
 
         if ($this->rtq->is_instructor()) {
-	    //TODO will instructor view it or not... support for preview?
             $instructions = get_string('instructorquizinst', 'groupquiz');
         } else {
             $instructions = get_string('studentquizinst', 'groupquiz');
@@ -315,11 +319,12 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 
         $params = array(
             'id' => $this->rtq->getCM()->id,
-	    'attemptid' => $this->rtq->openAttempt->id,
-	    'groupid' => $this->rtq->openAttempt->forgroupid,
+	    //'attemptid' => $this->rtq->openAttempt->id,
+	    //'groupid' => $this->rtq->openAttempt->forgroupid,
 	    'action' => 'submitquiz'
         );
         $endurl = new moodle_url('/mod/groupquiz/view.php', $params);
+        //$output .= $this->output->single_button($endurl, 'Submit Quiz', 'get');
         $output .= $this->output->single_button($endurl, 'Submit Quiz');
 
         $output .= html_writer::end_div();
@@ -412,7 +417,10 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
                 $avataroptions = array('link' => false, 'visibletoscreenreaders' => false);
                 $useravatar = $OUTPUT->user_picture($user, $avataroptions);
                 $username = fullname($user);
-                $time = userdate($last->get_timecreated()) . " " . usertimezone();
+                //$time = userdate($last->get_timecreated()) . " " . usertimezone();
+                //$time = userdate($last->get_timecreated(), '%A, %B %d, %Y, %I:%M:%S %p %Z');
+                //$time = userdate($last->get_timecreated(), '%A, %d %B %Y, %I:%M:%S %p %Z');
+                $time = userdate($last->get_timecreated(), '%A, %d %B %Y, %I:%M:%S %p');
 	    }
 	} else {
             $useravatar = '';
@@ -579,7 +587,6 @@ EOD;
      */
     public function render_attempt($attempt) {
 
-        //TODO what message?
         $this->showMessage();
 
         $timenow = time();
@@ -720,12 +727,14 @@ EOD;
 
     public function quiz_intro() {
     if (html_is_blank($this->rtq->getRTQ()->intro)) {
-            //TODO render generic message such as "Press Start to begin the quiz"
-            // or "Press Continue to joins your group's active quiz"
-            return '';
+            return;
         }
+        $output .= html_writer::start_div('groupquizbox');
 	// return plain html stored by atto editor in the intro field
-	return $this->rtq->getRTQ()->intro;
+	$output .= $this->rtq->getRTQ()->intro;
+        $output .= html_writer::end_div();
+
+	return $output;
     }
 
     public function render_grade() {
@@ -749,17 +758,13 @@ EOD;
     }
 
     public function render_return_button() {
-	// TODO display a message
-	// maybe one informing the user that
-	// the quiz was submitted or that review options
-	// are not available at this time (in previous function)
 	$output = '';
         $params = array(
-            'id' => $this->rtq->getCM()->id,
-            'action' => ''
+            'id' => $this->rtq->getCM()->id//,
+            //'action' => ''
         );
         $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-        $output.= $this->output->single_button($starturl, 'Return');
+        $output.= $this->output->single_button($starturl, 'Return', 'get');
         echo $output;
     }
 
