@@ -194,7 +194,6 @@ class edit_renderer extends \plugin_renderer_base {
 
 	// do not allow edit or delete if attempts exist
 	if (!$this->has_attempts) {
-            // add edit and delete icons
             $editurl = clone($this->pageurl);
             $editurl->param('action', 'editquestion');
             $editurl->param('rtqquestionid', $question->getId());
@@ -209,6 +208,12 @@ class edit_renderer extends \plugin_renderer_base {
             $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
 	}
 
+        $previewurl = question_preview_url($question->getQuestion()->id);
+        $previewicon = new \pix_icon('t/preview', get_string('preview'));
+        $options = ['height' => 800, 'width' => 900];
+        $popup = new \popup_action('click', $previewurl, 'preview', $options);
+        $actionlink = new \action_link($previewurl, '', $popup, array('target' => '_blank'), $previewicon);
+	$controlHTML .= $this->output->render($actionlink);
         $return .= \html_writer::div($controlHTML, 'controls');
 
         return $return;
