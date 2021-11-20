@@ -32,14 +32,12 @@ look into removing the edit screen that appears after clicking the add button
 
 look into adding the edit column inside the question bank view
 
-try to add preview button to the question list
-
 sort the attempts in the ownattempts table
 
 duplicate:
-review options mssing
+doesnt copy questions
 
-some questions missing userinfo:
-quizinfo calls render_question_form which calls render_user
-quizinfo returns array of questions returned by render_question_form
+enable preview mode:
+add preview column to the groupquiz_attempts table and mark preview attempts as such
+
 
