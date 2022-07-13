@@ -81,11 +81,11 @@ class view {
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else if ($groupquizid) {
-            $quiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         } else {
 	    print_error('invalidquizid', 'groupquiz');
 
@@ -95,11 +95,11 @@ class view {
         require_login($course->id, false, $cm);
 
         $this->pageurl->param('id', $cm->id);
-        $this->pageurl->param('groupquizid', $quiz->id);
+        $this->pageurl->param('groupquizid', $groupquiz->id);
         $this->pageurl->param('action', $this->pagevars['action']);
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
+        $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
         $this->RTQ->require_capability('mod/groupquiz:attempt');
         $this->pagevars['isinstructor'] = $this->RTQ->is_instructor(); // set this up in the page vars so it can be passed to things like the renderer
 
@@ -110,7 +110,7 @@ class view {
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_cm($this->RTQ->getCM());
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "groupquiz") . ': ' .
-            format_string($quiz->name, true)));
+            format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
 
@@ -129,14 +129,11 @@ class view {
             $this->pagevars['action'] = 'noquestions';
             $this->pageurl->param('action', ''); // remove the action
         }
-	//$groupid = optional_param('groupid', false, PARAM_INT);
-        //$attemptid = optional_param('attemptid', false, PARAM_INT);
-	$groupid = $this->pagevars['groupid'];
-	$attemptid = $this->pagevars['attemptid'];
+        $groupid = $this->RTQ->get_groupmanager()->get_user_group();
 
-	if ($groupid == 0) {
-	    // TODO is this fatal?
-	}
+        if ($groupid == -1) {
+            $this->RTQ->get_renderer()->setMessage('error', get_string('usernotingroup', 'groupquiz'));
+        }
 
         switch ($this->pagevars['action']) {
             case 'noquestions':
@@ -171,13 +168,12 @@ class view {
                     $this->RTQ->get_renderer()->view_footer();
 		} else {
 		    $this->RTQ->get_renderer()->render_popup_error("error - could not open attempt for $groupid");
-exit;
 		}
                 break;
 	    case 'submitquiz':
 		// TODO maybe there should be js on the button that makes a popup to id
 		// unanswered questions and confirm the users choice to submit
-		// TODO this will end the attempt
+		// this will end the attempt
                 $this->RTQ->get_group_attempt($groupid);
 		if ($this->RTQ->openAttempt) {
 		    $attemptid = $this->RTQ->openAttempt->id;
@@ -189,10 +185,9 @@ exit;
 		    // TODO determine if we like this best
 	            $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
 	            $viewattempturl->param('id', $this->RTQ->getCM()->id);
-	            $viewattempturl->param('quizid', $this->RTQ->getRTQ()->id);
+-                   $viewattempturl->param('groupquizid', $this->RTQ->getRTQ()->id);
 	            $viewattempturl->param('attemptid', $attemptid);
 		    redirect($viewattempturl, null, 0);
-
 		} else {
                     // redirect to the quiz view page
 		    // TODO isnt that just this page?
@@ -219,23 +214,7 @@ exit;
 			$this->RTQ->get_renderer()->view_inst_home();
                         $this->RTQ->get_renderer()->view_footer();
 
-/*
-			// TODO maybe display active attempts, maybe allow preview
-			// or better yet, just render all questions but dont start attempt?
-                        // redirect to the quiz start
-                        $quizstarturl = clone($this->pageurl);
-                        $quizstarturl->param('action', 'quizstart');
-                        redirect($quizstarturl, null, 0);
-*/
-
                 } else { /* student default view */
-                    // TODO get a better check performed here
-                    $groupid = $this->RTQ->get_groupmanager()->get_user_group();
-                    if (!$groupid) {
-                        echo "error - cannot find user group. user must be only in one group";
-			$this->RTQ->get_renderer()->render_popup_error("error - cannot find user group");
-			exit;
-                    }
 		    // display the form that says start/continue
                      $this->RTQ->get_renderer()->view_header();
                      $this->RTQ->get_renderer()->view_student_home();

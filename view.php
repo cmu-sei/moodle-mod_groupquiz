@@ -44,7 +44,7 @@ require_once($CFG->dirroot . '/question/editlib.php');
 
 $viewlib = new \mod_groupquiz\controllers\view();
 
-$viewlib->setup_page('/mod/groupquiz/view.php');
+$viewlib->setup_page(me());
 
 $viewlib->handle_request();
 

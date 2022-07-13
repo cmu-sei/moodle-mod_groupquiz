@@ -85,7 +85,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         // Open and close dates.
         $mform->addElement('date_time_selector', 'timeopen', get_string('quizopen', 'groupquiz'),
                 self::$datefieldoptions);
-        $mform->addHelpButton('timeopen', 'quizopenclose', 'groupquiz');
+        $mform->addHelpButton('timeopen', 'quizopenclose', 'quiz');
 
         $mform->addElement('date_time_selector', 'timeclose', get_string('quizclose', 'groupquiz'),
                 self::$datefieldoptions);
@@ -303,7 +303,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
 
     }
 
-    function data_postprocessing(&$data) {
+    function data_postprocessing($data) {
     }
 
 }

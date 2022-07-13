@@ -67,11 +67,11 @@ class backup_groupquiz_activity_task extends backup_activity_task {
         $base = preg_quote ( $CFG->wwwroot, "/" );
 
         // Link to the list of GROUPQUIZ instances.
-        $search = "/(" . $base . "\/mod\/vpl\/index.php\?id\=)([0-9]+)/";
+        $search = "/(" . $base . "\/mod\/groupquiz\/index.php\?id\=)([0-9]+)/";
         $content = preg_replace ( $search, '$@GROUPQUIZINDEX*$2@$', $content );
 
         // Link to GROUPQUIZ view by moduleid.
-        $search = "/(" . $base . "\/mod\/vpl\/view.php\?id\=)([0-9]+)/";
+        $search = "/(" . $base . "\/mod\/groupquiz\/view.php\?id\=)([0-9]+)/";
         $content = preg_replace ( $search, '$@GROUPQUIZVIEWBYID*$2@$', $content );
 
         return $content;

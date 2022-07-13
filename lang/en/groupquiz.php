@@ -107,6 +107,7 @@ $string['edit'] = 'Edit quiz';
 $string['manualcomment'] = 'Manual Comment';
 $string['manualcomment_help'] = 'The comment that instructors can add when grading an attempt';
 $string['grouping'] = 'Grouping';
+$string['grouping_help'] = 'The set of groups to be used for sharing attempts.';
 $string['configshowuserpicture'] = 'Show the user\'s picture on screen during attempts.';
 $string['showuserpicture'] = 'Show the user\'s picture';
 $string['showuserpicture_help'] = 'If enabled, the student\'s name and picture will be shown on-screen during the attempt, and on the review screen, making it easier to identify the student that answered the question most recenttly.';
@@ -122,7 +123,7 @@ $string['attemptaverage'] = 'Average of all attempts';
 
 // edit page.
 $string['questionlist'] = 'Question List';
-$string['addtoquiz'] = 'Add';
+$string['addtoquiz'] = 'Add Question to Group Quiz';
 $string['question'] = 'Question ';
 $string['addquestion'] = 'Add question';
 $string['questiondelete'] = 'Delete question {$a}';
@@ -137,6 +138,7 @@ $string['qdeleteerror'] = 'Couldn\'t delete question';
 $string['questionedit'] = 'Edit question';
 $string['savequestion'] = 'Save question';
 $string['cantaddquestiontwice'] = 'You can not add the same question more than once to a quiz';
+$string['cannoteditafterattempts'] = 'You cannot add or remove questions because this quiz has been attempted.';
 
 // view page
 $string['invalidquiz'] = 'Invalid groupquiz ID.';
@@ -146,19 +148,26 @@ $string['notingroup'] = 'User is not a member of this group.';
 $string['showstudentresponses'] = 'Show responses';
 $string['hidestudentresponses'] = 'Hide responses';
 $string['loading'] = 'Initializing Quiz';
-$string['studentquizinst'] = 'Click save on each question to update your group response.';
+$string['studentquizinst'] = 'Click Save Question on each question to record or update your group\'s response. Your group\'s responses will be visible to all members of the group. Discuss the questions with your group while answering them. Ensure that your group members are in agreement before submitting the quiz. Once all questions have a saved response, one group member may submit the quiz by clicking the Submit Quiz button.';
 $string['submitquiz'] = 'Submit Quiz';
 $string['startquiz'] = 'Start Quiz';
 $string['attempts'] = 'Attempts';
 $string['responses'] = 'View responses';
 $string['notopen'] = 'Quiz Opens at: ';
 $string['closed'] = 'Quiz Closed at: ';
-$string['overallgrade'] = 'Overall grade: {$a}';
+$string['overallgrade'] = 'Overall Grade: {$a}';
 $string['eventattemptstarted'] = 'Group Quiz attempt started';
 $string['eventattemptended'] = 'Group Quiz attempt ended';
 $string['eventattemptviewed'] = 'Group Quiz attempt viewed';
+$string['continueinst'] = 'Press Continue to join your group\'s active quiz attempt.';
+$string['startinst'] = 'Press Start to begin your group\'s quiz attempt.';
+$string['noattempts'] = 'No group attempts exist for this quiz.';
+$string['savereminder'] = 'Ensure that each question has been saved before submitting the quiz.';
+$string['usernotingroup'] = 'You must be assigned to a group to access this quiz.';
 
-
+// review page
+$string['noreview'] = 'You are not able to review the quiz attempt at this time.';
+$string['noattempt'] = 'attempid is invalid';
 
 // attempts table.
 $string['timestarted'] = 'Time Started';

@@ -142,7 +142,7 @@ class allattempts extends \flexible_table implements \renderable {
 
             // view attempt
             $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
-            $viewattempturl->param('quizid', $this->rtq->getRTQ()->id);
+            $viewattempturl->param('groupquizid', $this->rtq->getRTQ()->id);
             $viewattempturl->param('attemptid', $item->attemptid);
 
             $viewattemptpix = new \pix_icon('t/preview', 'preview');
@@ -189,7 +189,7 @@ class allattempts extends \flexible_table implements \renderable {
             $user = $DB->get_record("user", array('id' => $attempt->userstop));
             if ($user) {
                 $ditem->userstop = fullname($user);
-            } else {
+            } else if (!$user && $attempt->timefinish) {
                 $ditem->userstop = "Time Expired";
             }
 

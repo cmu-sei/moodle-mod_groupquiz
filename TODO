@@ -1,6 +1,5 @@
 update event message text
 
-
 toggle for open report is not loading at all times
 
 add quizid and attemptid params to the url in view.php so that we can copy/paste it
@@ -17,10 +16,28 @@ use js to confirm user choice to submit via popup window showing unanswered ques
 remove userid from groupquiz_attempts table
 
 make tables sortable
-redirect instructor view of live attempts to view.php with instructor js file
+this will require no longer passing attempts to the table but just the groupid or userid
+we then need to use sql function to include get_sql_sort
 
-fix spacing on left side of start/continue button
+redirect instructor view of live attempts to view.php with instructor js file
 
 add instructor preview to instructor view tab
 add button to add multiple questions from bank onto quiz - not implemented because custom point values are assigned on addition. maybe we just need an instrcutions box so the instructor knows its one at a time
+
+prevent drag and drop once attempts have been created
+
+try to default the question bank to be the course question bank 
+
+look into removing the edit screen that appears after clicking the add button
+
+look into adding the edit column inside the question bank view
+
+sort the attempts in the ownattempts table
+
+duplicate:
+doesnt copy questions
+
+enable preview mode:
+add preview column to the groupquiz_attempts table and mark preview attempts as such
+
 

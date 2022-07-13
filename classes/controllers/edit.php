@@ -63,6 +63,8 @@ class edit {
     /** @var  \mod_groupquiz\output\edit_renderer $renderer. */
     protected $renderer;
 
+    protected $groupquizhasattempts;
+
     /**
      * Sets up the edit page
      *
@@ -126,18 +128,8 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-        // check if a session is open.  If so display error.
-/*
-        if($sessions = $DB->get_records('groupquiz_sessions', array('groupquizid' => $this->groupquiz->getRTQ()->id, 'sessionopen'=> '1'))){
-            $this->renderer->print_header();
-            $this->renderer->opensession();
-            $this->renderer->footer();
-            return; // return early to stop continuation.
-        }*/
 
-	//TODO prevent editing when attempts exist
-
-
+	//TODO determine id we need to prevent reorder
         switch ($this->action) {
 
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
@@ -247,11 +239,11 @@ class edit {
      *
      */
     protected function list_questions() {
+        $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
 
         $questionbankview = $this->get_questionbank_view();
         $questions = $this->groupquiz->get_questionmanager()->get_questions();
-        $this->renderer->listquestions($questions, $questionbankview);
-
+        $this->renderer->listquestions($this->groupquizhasattempts, $questions, $questionbankview);
     }
 
     /**
@@ -267,7 +259,10 @@ class edit {
 
         ob_start(); // capture question bank display in buffer to have the renderer render output.
 
+        $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
+
         $questionbank = new \mod_groupquiz\groupquiz_question_bank_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM());
+        $questionbank->set_groupquiz_has_attempts($this->groupquizhasattempts);
         $questionbank->display('editq', $qpage, $qperpage, $this->pagevars['cat'], true, true, true, $tagids);
 
         return ob_get_clean();

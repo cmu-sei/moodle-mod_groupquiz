@@ -268,10 +268,6 @@ class groupquiz_attempt {
                 $options->rightanswer = \question_display_options::VISIBLE;
                 $options->history = \question_display_options::VISIBLE;
             } else if ($reviewoptions instanceof \stdClass) {
-		//var_dump($reviewoptions);
-
-
-		/* // this works	
 		foreach ($reviewoptions as $field => $data) {
 		    if ($when == 'closed') {
 			if (($field == 'reviewmarks') && 
@@ -286,34 +282,26 @@ class groupquiz_attempt {
                         }
 		    }
 		}
-		*/
 	
 		$state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;	
 		if ($when == 'closed') {
 		    $state = \mod_groupquiz_display_options::AFTER_CLOSE;
 		}
 
-		//TODO get individual fields and test it out
                 foreach (\mod_groupquiz\groupquiz::$reviewfields as $field => $data) {
 
 		    $name = 'review' . $field;
-		    if ($name == 'reviewmanualcomment') {
-			continue;
-		    }
 		    if ($reviewoptions->{$name} & $state) {
 		        if ($field == 'marks') {
 			    $options->$field = \question_display_options::MARK_AND_MAX;
-			    $options->manualcomment = \question_display_options::VISIBLE;
 		        } else {
                             $options->$field = \question_display_options::VISIBLE;
 		        }
 		    }
                 }
-
-	        //var_dump($options);
             }
-        } else { // otherwise default options for during quiz
-
+        } else {
+	    // default options for during quiz
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;

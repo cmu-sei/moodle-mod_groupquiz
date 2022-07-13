@@ -100,9 +100,9 @@ class mod_groupquiz_display_options extends question_display_options {
         $options->generalfeedback = self::extract($groupquiz->reviewgeneralfeedback, $when);
         $options->rightanswer = self::extract($groupquiz->reviewrightanswer, $when);
         $options->overallfeedback = self::extract($groupquiz->reviewoverallfeedback, $when);
-
         $options->numpartscorrect = $options->feedback;
-        $options->manualcomment = $options->feedback;
+	$options->manualcomment = $options->feedback;
+	//$options->manualcomment = self::extract($groupquiz->reviewmanualcomment, $when);
 
         if ($groupquiz->questiondecimalpoints != -1) {
             $options->markdp = $groupquiz->questiondecimalpoints;

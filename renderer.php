@@ -174,7 +174,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @param bool|\stdclass $sessionstarted is a standard class when there is a session
      */
     public function view_inst_home() {
-        echo html_writer::start_div('groupquizbox');
+        echo html_writer::start_div();
         echo $this->quiz_intro();
         echo html_writer::end_div();
     }
@@ -193,9 +193,8 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	$timelimit = $this->rtq->getRTQ()->timelimit;
         $state = $this->rtq->get_openclose_state();
 
-        echo html_writer::start_div('groupquizbox');
-
         echo $this->quiz_intro();
+        echo html_writer::start_div('groupquizbox');
 
 	if ($state == 'unopen') {
 	    echo html_writer::tag('p', get_string('notopen', 'groupquiz') . userdate($timeopen), array('id' => 'quiz_notavailable'));
@@ -213,16 +212,22 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         $canreviewattempt =  $this->rtq->canreviewattempt($reviewoptions, $state);
         $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
 
+	$groupid = $this->rtq->get_groupmanager()->get_user_group();
+	if ($groupid == -1) {
+            return;
+        }
+        $attempts = $this->rtq->getall_attempts('closed', $groupid);
+
         // show overall grade
-	if ($canreviewmarks) {
+        if ($canreviewmarks && $attempts) {
             $this->render_grade();
 	}
 
-	if ($canreviewattempt == true) {
+	if ($attempts) {
             echo html_writer::start_div('groupquizbox');
             echo html_writer::tag('h3', get_string('attempts', 'groupquiz'));
 
-            $viewownattemptstable = new \mod_groupquiz\tableviews\ownattempts('viewownattempts', $this->rtq, $this->pageurl);
+            $viewownattemptstable = new \mod_groupquiz\tableviews\ownattempts('viewownattempts', $this->rtq, $this->pageurl, $attempts);
             $viewownattemptstable->setup();
             $viewownattemptstable->set_data();
             $viewownattemptstable->finish_output();
@@ -235,26 +240,37 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	$output = '';
 
 	$groupid = $this->rtq->get_groupmanager()->get_user_group();
+	if ($groupid == -1) {
+	    return;
+	}
 	$this->rtq->get_group_attempt($groupid);
-
-        if ($this->rtq->openAttempt) {
+	if ($this->rtq->openAttempt) {
+            $output .= html_writer::tag('p', get_string('continueinst', 'groupquiz'), array('id' => 'quizstartinst'));
 	    $attemptid = $this->rtq->openAttempt->id;
-            $params = array(
-                'id' => $this->rtq->getCM()->id,
-                'action' => 'continuequiz',
-		'attemptid' => $attemptid,
-		'groupid' => $groupid
-            );
-            $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-            $output .= $this->output->single_button($starturl, 'Continue');
+            //$params = array(
+            //    'id' => $this->rtq->getCM()->id,
+            //    'action' => 'continuequiz',
+	//	'attemptid' => $attemptid,
+	//	'groupid' => $groupid
+          //  );
+	    $starturl = new moodle_url('/mod/groupquiz/view.php');
+	    $starturl->param('id', $this->rtq->getCM()->id);
+	     $starturl->param('action', 'continuequiz');
+            //$starturl = new moodle_url('/mod/groupquiz/view.php', $params);
+            $output .= $this->output->single_button($starturl, 'Continue', 'get');
 	} else {
-            $params = array(
-                'id' => $this->rtq->getCM()->id,
-                'action' => 'startquiz',
-		'groupid' => $groupid
-            );
-            $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-            $output .= $this->output->single_button($starturl, 'Start');
+            $output .= html_writer::tag('p', get_string('startinst', 'groupquiz'), array('id' => 'quizstartinst'));
+            //$params = array(
+             //   'id' => $this->rtq->getCM()->id,
+             //   'action' => 'startquiz',
+//		'groupid' => $groupid
+  //          );
+            //$starturl = new moodle_url('/mod/groupquiz/view.php', $params);
+            $starturl = new moodle_url('/mod/groupquiz/view.php');
+            $starturl->param('id', $this->rtq->getCM()->id);
+            $starturl->param('action', 'startquiz');
+
+            $output .= $this->output->single_button($starturl, 'Start', 'get');
 	}
 	echo $output;
     }
@@ -266,15 +282,20 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      */
 
     public function render_quiz(\mod_groupquiz\groupquiz_attempt $attempt) {
+        $this->setMessage('error', get_string('savereminder', 'groupquiz'));
+        $this->showMessage();
 
         $this->init_quiz_js($attempt);
 
         $output = '';
 
+	$output .= html_writer::start_div();
+        $output .= $this->quiz_intro();
+        $output .= html_writer::end_div();
+
         $output .= html_writer::start_div('', array('id'=>'quizview'));
 
         if ($this->rtq->is_instructor()) {
-	    //TODO will instructor view it or not... support for preview?
             $instructions = get_string('instructorquizinst', 'groupquiz');
         } else {
             $instructions = get_string('studentquizinst', 'groupquiz');
@@ -298,11 +319,12 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 
         $params = array(
             'id' => $this->rtq->getCM()->id,
-	    'attemptid' => $this->rtq->openAttempt->id,
-	    'groupid' => $this->rtq->openAttempt->forgroupid,
+	    //'attemptid' => $this->rtq->openAttempt->id,
+	    //'groupid' => $this->rtq->openAttempt->forgroupid,
 	    'action' => 'submitquiz'
         );
         $endurl = new moodle_url('/mod/groupquiz/view.php', $params);
+        //$output .= $this->output->single_button($endurl, 'Submit Quiz', 'get');
         $output .= $this->output->single_button($endurl, 'Submit Quiz');
 
         $output .= html_writer::end_div();
@@ -345,7 +367,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	//}
 
         $savebtn = html_writer::tag('button', get_string('savequestion', 'groupquiz'), array(
-                'class'   => 'btn',
+                'class'   => 'btn btn-secondary',
                 'id'      => 'q' . $qnum . '_save',
                 'onclick' => 'groupquiz.save_question(\'q' . $qnum . '\'); return false;'
             )
@@ -371,22 +393,35 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     }
 
     public function render_user($qnum, $attempt) {
+        global $DB, $OUTPUT;
 
 	// gather data
 	$quba = $attempt->get_quba();
         $qa = $quba->get_question_attempt($qnum);
 	$data = $qa->get_last_qt_data();
 
-	if ((count($data) > 0) & (array_key_exists('answer', $data))) {
-            global $DB, $OUTPUT;
-            $last = $qa->get_last_step_with_qt_var('answer');
-            $userid = $last->get_user_id();
-	    $user = $DB->get_record("user", array('id' => $userid));
-	    $avataroptions = array('link' => false, 'visibletoscreenreaders' => false);
-	    $useravatar = $OUTPUT->user_picture($user, $avataroptions);
-	    $username = fullname($user);
-            $time = userdate($last->get_timecreated()) . " " . usertimezone();
-
+	if (count($data) > 0) {
+            // MC single answer
+	    if (array_key_exists('answer', $data)) {
+                $last = $qa->get_last_step_with_qt_var('answer');
+            //  cloze multiple answer
+            } else if ((count($data) > 0) && (array_key_exists('sub1_answer', $data))) {
+                $last = $qa->get_last_step_with_qt_var('sub1_answer');
+            //  MC multiple answers
+            } else if ((count($data) > 0) && (array_key_exists('choice1', $data))) {
+                $last = $qa->get_last_step_with_qt_var('choice1');
+	    }
+            if ($last) {
+                $userid = $last->get_user_id();
+                $user = $DB->get_record("user", array('id' => $userid));
+                $avataroptions = array('link' => false, 'visibletoscreenreaders' => false);
+                $useravatar = $OUTPUT->user_picture($user, $avataroptions);
+                $username = fullname($user);
+                //$time = userdate($last->get_timecreated()) . " " . usertimezone();
+                //$time = userdate($last->get_timecreated(), '%A, %B %d, %Y, %I:%M:%S %p %Z');
+                //$time = userdate($last->get_timecreated(), '%A, %d %B %Y, %I:%M:%S %p %Z');
+                $time = userdate($last->get_timecreated(), '%A, %d %B %Y, %I:%M:%S %p');
+	    }
 	} else {
             $useravatar = '';
             $username = '';
@@ -552,7 +587,6 @@ EOD;
      */
     public function render_attempt($attempt) {
 
-        //TODO what message?
         $this->showMessage();
 
         $timenow = time();
@@ -583,15 +617,16 @@ EOD;
             $this->render_grade();
         }
 
-        if ($canreviewattempt || $this->rtq->is_instructor()) {
+        if ($attempt && ($canreviewattempt || $this->rtq->is_instructor())) {
             foreach ($attempt->getSlots() as $slot) {
-
                 if ($this->rtq->is_instructor()) {
                     echo $this->render_edit_review_question($slot, $attempt);
                 } else {
                     echo $this->render_review_question($slot, $attempt);
                 }
             }
+        } else if ($attempt && !$canreviewattempt) {
+            echo html_writer::tag('p', get_string('noreview', 'groupquiz'), array('id' => 'review_notavailable'));
 	}
 
 	$this->render_return_button();
@@ -691,11 +726,15 @@ EOD;
     /** End attempt view rendering **/
 
     public function quiz_intro() {
-        if (html_is_blank($this->rtq->getRTQ()->intro)) {
-            return '';
+    if (html_is_blank($this->rtq->getRTQ()->intro)) {
+            return;
         }
+        $output .= html_writer::start_div('groupquizbox');
 	// return plain html stored by atto editor in the intro field
-	return $this->rtq->getRTQ()->intro;
+	$output .= $this->rtq->getRTQ()->intro;
+        $output .= html_writer::end_div();
+
+	return $output;
     }
 
     public function render_grade() {
@@ -703,27 +742,29 @@ EOD;
 
         echo html_writer::start_div('groupquizbox');
         $a = new stdClass();
-        $usergrades = \mod_groupquiz\utils\grade::get_user_grade($this->rtq->getRTQ(), $USER->id);
+        $usergrade = \mod_groupquiz\utils\grade::get_user_grade($this->rtq->getRTQ(), $USER->id);
 
         // should only be 1 grade, but we'll always get end just in case
-        if (!empty($usergrades)) {
-            $usergrade = end($usergrades);
+        if ($usergrade) {
             echo html_writer::start_tag('h3');
             echo get_string('overallgrade', 'groupquiz', number_format($usergrade, 2));
             echo html_writer::end_tag('h3');
-        }
+	} else {
+            echo html_writer::start_tag('h3');
+            echo get_string('overallgrade', 'groupquiz', '0');
+            echo html_writer::end_tag('h3');
+	}
         echo html_writer::end_div();
     }
 
     public function render_return_button() {
-
 	$output = '';
         $params = array(
-            'id' => $this->rtq->getCM()->id,
-            'action' => ''
+            'id' => $this->rtq->getCM()->id//,
+            //'action' => ''
         );
         $starturl = new moodle_url('/mod/groupquiz/view.php', $params);
-        $output.= $this->output->single_button($starturl, 'Return');
+        $output.= $this->output->single_button($starturl, 'Return', 'get');
         echo $output;
     }
 

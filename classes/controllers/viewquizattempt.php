@@ -63,38 +63,36 @@ class viewquizattempt {
         $this->pageurl->remove_all_params();
 
         $id = optional_param('id', false, PARAM_INT);
-        $quizid = optional_param('quizid', false, PARAM_INT);
+        $groupquizid = optional_param('groupquizid', false, PARAM_INT);
 
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('groupquiz', array('id' => $quizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
-            $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         }
 
         $this->get_parameters(); // get the rest of the parameters and set them in the class
 
-
         require_login($course->id, false, $cm);
 
-
         $this->pageurl->param('id', $cm->id);
-        $this->pageurl->param('quizid', $quiz->id);
+        $this->pageurl->param('groupquizid', $groupquiz->id);
         $this->pageurl->params($this->pagevars); // add the page vars variable to the url
         $this->pagevars['pageurl'] = $this->pageurl;
 
-        $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars);
+        $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
 
         //$this->RTQ->require_capability('mod/groupquiz:viewownattempts');
 
         $PAGE->set_pagelayout('popup');
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "groupquiz") . ': ' .
-            format_string($quiz->name, true)));
+            format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
     }
@@ -134,48 +132,26 @@ class viewquizattempt {
                 // default is to show the attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
 		if (!$attempt) {
-		    echo "error - invalid attempt";
-		    exit;
+                    global $PAGE;
+                    $PAGE->set_pagelayout('base');
+                    $this->RTQ->get_renderer()->view_header(true);
+                    $this->RTQ->get_renderer()->setMessage('error', get_string('noattempt', 'groupquiz'));
+                    $this->RTQ->get_renderer()->render_attempt(null);
+                    $this->RTQ->get_renderer()->view_footer();
+                    break;
 		}
-		// TODO handle invalid
 
                 $hascapability = true;
 
-/*
-                if (!$this->RTQ->has_capability('mod/groupquiz:seeresponses')) {
-
-                    // if the current user doesn't have the ability to see responses (or all responses)
-                    // check that the current one is theirs
-
-                    if ($attempt->userid != $USER->id) { // first check if attempts userid and current userid match
-
-                        // if not, next check group settings if we're in group mode
-                        if ($this->RTQ->group_mode()) {
-
-                            // get user groups and check if the forgroupid is in one of them
-                            $usergroups = $this->RTQ->get_groupmanager()->get_user_groups();
-                            $usergroupids = array_keys($usergroups);
-                            if (!in_array($attempt->forgroupid, $usergroupids)) {
-                                $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'groupquiz'));
-                                $hascapability = false;
-                            }
-                        } else {
-                            $this->RTQ->get_renderer()->render_popup_error(get_string('invalidattemptaccess', 'groupquiz'));
-                            $hascapability = false;
-                        }
-                    }
-                }
-*/
                 if ($hascapability) {
                     $params = array(
                         'relateduserid' => $USER->id,
 			'objectid'      => $this->pagevars['id'],
                         'context'       => $this->RTQ->getContext(),
                         'other'         => array(
-                            'groupquizid'   => $this->RTQ->getRTQ()->id,
+                            'groupquizid'   => $this->RTQ->getRTQ()
                         )
                     );
-
                     $event = \mod_groupquiz\event\attempt_viewed::create($params);
                     $event->add_record_snapshot('groupquiz_attempts', $attempt->get_attempt());
                     $event->trigger();
@@ -186,7 +162,6 @@ class viewquizattempt {
                     $this->RTQ->get_renderer()->render_attempt($attempt);
                     $this->RTQ->get_renderer()->view_footer();
                 }
-
                 break;
         }
 

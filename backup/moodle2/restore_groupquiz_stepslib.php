@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,11 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Skatch backgrounds.
- *
- * @package    mod_groupquiz
- * @copyright  2020 Carnegie Mellon University
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_groupquiz
+ * @category  backup
+ * @copyright   2020 Carnegie Mellon University
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -30,30 +30,48 @@ Released under a GNU GPL 3.0-style license, please see license.txt or contact pe
 [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
 DM20-0197
  */
 
-// This line protects the file from being accessed by a URL directly.
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Define all the restore steps that will be used by the restore_groupquiz_activity_task
+ */
 
-// This is the version of the plugin.
-$plugin->version = 2021111810;
+/**
+ * Structure step to restore one groupquiz activity
+ */
+class restore_groupquiz_activity_structure_step extends restore_activity_structure_step {
 
-// This is the version of Moodle this plugin requires.
-$plugin->requires = 2016052304;  // Moodle 3.1 (or above)
+    protected function define_structure() {
 
-// This is the component name of the plugin - it always starts with 'component_'
-$plugin->component = 'mod_groupquiz';
+        $paths = array();
+        $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
 
-// This is a list of plugins, this plugin depends on (and their versions).
-$plugin->dependencies = [
-];
+        // Return the paths wrapped into standard activity structure
+        return $this->prepare_activity_structure($paths);
+    }
 
-// This is a stable release.
-//$plugin->maturity = MATURITY_STABLE;
-$plugin->maturity = MATURITY_BETA;
+    protected function process_groupquiz($data) {
+        global $DB;
 
-// This is the named version.
-$plugin->release = '0.1.0';
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->course = $this->get_courseid();
 
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
+
+	//TODO time setting, behaviour settings, display settings
+
+
+        // insert the groupquiz record
+        $newitemid = $DB->insert_record('groupquiz', $data);
+        // immediately after inserting "activity" record, call this
+        $this->apply_activity_instance($newitemid);
+    }
+
+    protected function after_execute() {
+        // Add groupquiz related files, no need to match by itemname (just internally handled context)
+        $this->add_related_files('mod_groupquiz', 'intro', null);
+    }
+}
