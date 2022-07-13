@@ -548,7 +548,7 @@ class groupquiz_attempt {
      *
      * @return bool
      */
-    public function process_comment($slot = null, $rtq) {
+    public function process_comment($rtq, $slot = null) {
         global $DB;
 
         // if there is no slot return false

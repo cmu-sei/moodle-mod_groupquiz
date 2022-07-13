@@ -112,7 +112,7 @@ class viewquizattempt {
                 // save a comment for a particular attempt
 
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
-                $success = $attempt->process_comment($this->pagevars['slot'], $this->RTQ);
+                $success = $attempt->process_comment($this->RTQ, $this->pagevars['slot']);
                 if ($success) {
                     // if successful recalculate the grade for the attempt's userid as the grader can update grades on the questions
                     $PAGE->set_pagelayout('base');
@@ -146,10 +146,10 @@ class viewquizattempt {
                 if ($hascapability) {
                     $params = array(
                         'relateduserid' => $USER->id,
-			'objectid'      => $this->pagevars['id'],
+			            'objectid'      => $this->pagevars['id'],
                         'context'       => $this->RTQ->getContext(),
                         'other'         => array(
-                            'groupquizid'   => $this->RTQ->getRTQ()
+                        'groupquizid'   => $this->RTQ->getRTQ()->id
                         )
                     );
                     $event = \mod_groupquiz\event\attempt_viewed::create($params);

@@ -43,6 +43,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
     /** @var array options to be used with date_time_selector fields in the quiz. */
     public static $datefieldoptions = array('optional' => true);
     protected static $reviewfields = array(); // Initialised in the constructor.
+    protected $_feedbacks;
 
     public function __construct($current, $section, $cm, $course) {
         self::$reviewfields = array(
@@ -59,8 +60,9 @@ class mod_groupquiz_mod_form extends moodleform_mod {
     }
 
     protected function definition() {
-        global $COURSE, $CFG, $DB, $PAGE;
+        global $COURSE, $CFG;
         $groupquizconfig = get_config('groupquiz');
+
         $mform = $this->_form;
 
         // -------------------------------------------------------------------------------
@@ -94,8 +96,8 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('duration', 'timelimit', get_string('timelimit', 'groupquiz'),
                 array('optional' => true));
         $mform->addHelpButton('timelimit', 'timelimit', 'groupquiz');
-        $mform->setAdvanced('timelimit', $groupquizconfig->timelimit_adv);
-        $mform->setDefault('timelimit', $groupquizconfig->timelimit);
+        $mform->setAdvanced('timelimit', '');
+        $mform->setDefault('timelimit', '60');
 
         // -------------------------------------------------------------------------------
         // Grade settings.
@@ -104,7 +106,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         if (property_exists($this->current, 'grade')) {
             $currentgrade = $this->current->grade;
         } else {
-            $currentgrade = $groupquizconfig->maximumgrade;
+            $currentgrade = "100";
         }
         $mform->addElement('hidden', 'grade', $currentgrade);
         $mform->setType('grade', PARAM_FLOAT);
@@ -120,15 +122,6 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         // Group settings
         $mform->addElement('header', 'groupsubmissionsettings', get_string('groupsubmissionsettings', 'assign'));
 
-	// TODO not implemented, we might need a new table to store this
-/*
-        $name = get_string('requireallteammemberssubmit', 'assign');
-        $mform->addElement('selectyesno', 'requireallteammemberssubmit', $name);
-        $mform->addHelpButton('requireallteammemberssubmit', 'requireallteammemberssubmit', 'assign');
-        //`$mform->hideIf('requireallteammemberssubmit', 'teamsubmission', 'eq', 0);
-        $mform->disabledIf('requireallteammemberssubmit', 'submissiondrafts', 'eq', 0);
-*/
-
         $groupings = groups_get_all_groupings($COURSE->id);
         $options = array();
         foreach ($groupings as $grouping) {
@@ -138,10 +131,10 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $name = get_string('grouping', 'groupquiz');
         $mform->addElement('select', 'grouping', $name, $options);
         $mform->addHelpButton('grouping', 'grouping', 'groupquiz');
-        if (groupquiz_has_attempts($groupquiz->id)) {
+        if (groupquiz_has_attempts($this->current->id)) {
             $mform->freeze('grouping');
         }
-	// is there a default set of groups?
+	    // is there a default set of groups?
         $mform->addRule('grouping', null, 'required', null, 'client');
 
         // -------------------------------------------------------------------------------
@@ -150,8 +143,8 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         // Shuffle within questions.
         $mform->addElement('selectyesno', 'shuffleanswers', get_string('shufflewithin', 'groupquiz'));
         $mform->addHelpButton('shuffleanswers', 'shufflewithin', 'groupquiz');
-        $mform->setAdvanced('shuffleanswers', $groupquizconfig->shuffleanswers_adv);
-        $mform->setDefault('shuffleanswers', $groupquizconfig->shuffleanswers);
+        $mform->setAdvanced('shuffleanswers', '');
+        $mform->setDefault('shuffleanswers', '');
 
         // -------------------------------------------------------------------------------
         $mform->addElement('header', 'reviewoptionshdr',
@@ -179,7 +172,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('select', 'showuserpicture', get_string('showuserpicture', 'groupquiz'),
                 groupquiz_get_user_image_options());
         $mform->addHelpButton('showuserpicture', 'showuserpicture', 'groupquiz');
-        $mform->setAdvanced('showuserpicture', $groupquizconfig->showuserpicture_adv);
+        //$mform->setAdvanced('showuserpicture', $groupquizconfig->showuserpicture_adv);
         $mform->setDefault('showuserpicture', $groupquizconfig->showuserpicture);
 
         // -------------------------------------------------------------------------------
@@ -248,7 +241,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
             $toform['grade'] = $toform['grade'] + 0;
         }
 
-        if (count($this->_feedbacks)) {
+        if (is_array($this->_feedbacks) && count($this->_feedbacks)) {
             $key = 0;
             foreach ($this->_feedbacks as $feedback) {
                 $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
