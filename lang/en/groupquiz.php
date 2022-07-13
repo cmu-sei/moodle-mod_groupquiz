@@ -87,6 +87,7 @@ $string['reviewoverallfeedback_help'] = 'The feedback given at the end of the at
 $string['reviewresponse'] = 'Review response';
 $string['reviewresponsetoq'] = 'Review response (question {$a})';
 $string['reviewthisattempt'] = 'Review your responses to this attempt';
+$string['everythingon'] = 'Everything on';
 
 // activity settings
 $string['configtimelimit'] = 'Default time limit for quizzes in minutes. 0 mean no time limit.';
@@ -120,6 +121,8 @@ $string['firstattempt'] = 'First attempt';
 $string['lastattempt'] = 'Last completed attempt';
 $string['highestattempt'] = 'Highest attempt';
 $string['attemptaverage'] = 'Average of all attempts';
+$string['overallfeedback'] = 'Overall feedback';
+$string['overallfeedback_help'] = 'Overall feedback is text that is shown after a quiz has been attempted. By specifying additional grade boundaries (as a percentage or as a number), the text shown can depend on the grade obtained.';
 
 // edit page.
 $string['questionlist'] = 'Question List';
@@ -139,6 +142,8 @@ $string['questionedit'] = 'Edit question';
 $string['savequestion'] = 'Save question';
 $string['cantaddquestiontwice'] = 'You can not add the same question more than once to a quiz';
 $string['cannoteditafterattempts'] = 'You cannot add or remove questions because this quiz has been attempted.';
+$string['invalid_points'] = 'Invalid point value';
+
 
 // view page
 $string['invalidquiz'] = 'Invalid groupquiz ID.';
@@ -164,6 +169,7 @@ $string['startinst'] = 'Press Start to begin your group\'s quiz attempt.';
 $string['noattempts'] = 'No group attempts exist for this quiz.';
 $string['savereminder'] = 'Ensure that each question has been saved before submitting the quiz.';
 $string['usernotingroup'] = 'You must be assigned to a group to access this quiz.';
+$string['previewmode'] = 'You are viewing this quiz in preview mode.';
 
 // review page
 $string['noreview'] = 'You are not able to review the quiz attempt at this time.';
@@ -176,6 +182,8 @@ $string['timemodified'] = 'Time Modified';
 $string['attempt_grade'] = 'Attempt Grade';
 // ownattempts table
 $string['attemptview'] = 'Review Attempt';
+$string['grade'] = 'Grade';
+
 // allattempts table
 $string['response_attempt_controls'] = 'Edit/View Attempt';
 

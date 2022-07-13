@@ -40,7 +40,7 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
-class groupquiz_question_bank_view extends \core_question\bank\view {
+class groupquiz_question_bank_view extends \core_question\local\bank\view {
 
     /** @var bool whether the groupquiz this is used by has been attemptd. */
     protected $groupquizhasattempts = false;
@@ -66,31 +66,31 @@ class groupquiz_question_bank_view extends \core_question\bank\view {
      *
      * @return array
      */
-    protected function wanted_columns() {
+    protected function wanted_columns(): array {
 
         $defaultqbankcolums = array(
             'question_bank_add_to_rtq_action_column',
             'checkbox_column',
             'question_type_column',
-            'question_name_column',
-            'preview_action_column',
+            'qbank_viewquestionname\viewquestionname_column_helper',
+            'qbank_previewquestion\preview_action_column',
         );
 
-        foreach ($defaultqbankcolums as $fullname) {
+	foreach ($defaultqbankcolums as $fullname) {
             if (!class_exists($fullname)) {
                 if (class_exists('mod_groupquiz\\qbanktypes\\' . $fullname)) {
                     $fullname = 'mod_groupquiz\\qbanktypes\\' . $fullname;
-                } else if (class_exists('core_question\\bank\\' . $fullname)) {
+                } else if (class_exists('qbank_viewquestiontype\\' . $fullname)) {
+                    $fullname = 'qbank_viewquestiontype\\' . $fullname;
+		} else if (class_exists('core_question\\local\\bank\\' . $fullname)) {
+                    $fullname = 'core_question\\local\\bank\\' . $fullname;
+		} else if (class_exists('core_question\\bank\\' . $fullname)) {
                     $fullname = 'core_question\\bank\\' . $fullname;
-                } else if (class_exists('question_bank_' . $fullname)) {
-                    // debugging('Legacy question bank column class question_bank_' .
-                    //    $fullname . ' should be renamed to mod_groupquiz\\qbanktypes\\' .
-                    //    $fullname, DEBUG_DEVELOPER);
-                    $fullname = 'question_bank_' . $fullname;
-                } else {
+		} else {
+
                     throw new coding_exception("No such class exists: $fullname");
                 }
-            }
+	    }
             $this->requiredcolumns[ $fullname ] = new $fullname($this);
         }
 
@@ -110,13 +110,24 @@ class groupquiz_question_bank_view extends \core_question\bank\view {
      * category      Chooses the category
      * displayoptions Sets display options
      */
-    public function display($tabname, $page, $perpage, $cat,
-                            $recurse, $showhidden, $showquestiontext, $tagids = array()) {
-        global $PAGE, $OUTPUT;
-
-        if ($this->process_actions_needing_ui()) {
-            return;
+//    public function display($tabname, $page, $perpage, $cat,
+//                            $recurse, $showhidden, $showquestiontext, $tagids = array()) {
+    public function display($pagevars, $tabname): void {
+//        global $PAGE, $OUTPUT;
+        global $OUTPUT;
+        $page = $pagevars['qpage'];
+        $perpage = $pagevars['qperpage'];
+        $cat = $pagevars['cat'];
+        $recurse = $pagevars['recurse'];
+        $showhidden = $pagevars['showhidden'];
+        $showquestiontext = $pagevars['qbshowtext'];
+        $tagids = [];
+        if (!empty($pagevars['qtagids'])) {
+            $tagids = $pagevars['qtagids'];
         }
+
+
+
         $editcontexts = $this->contexts->having_one_edit_tab_cap($tabname);
         // Category selection form.
         echo $OUTPUT->heading(get_string('questionbank', 'question'), 2);
@@ -127,10 +138,20 @@ class groupquiz_question_bank_view extends \core_question\bank\view {
         $this->display_options_form($showquestiontext, '/mod/groupquiz/edit.php');
 
         // Continues with list of questions.
+        /*
         $this->display_question_list($this->contexts->having_one_edit_tab_cap($tabname),
             $this->baseurl, $cat, $this->cm,
             null, $page, $perpage, $showhidden, $showquestiontext,
             $this->contexts->having_cap('moodle/question:add'));
+        */
+
+        $params['category'] = $cat;
+        $pageurl = new \moodle_url('/mod/groupquiz/edit.php', $params);
+
+
+
+        $this->display_question_list($pageurl, $cat, $recurse, $page,
+                $perpage, $this->contexts->having_cap('moodle/question:add'));
     }
 
 
@@ -161,7 +182,7 @@ class groupquiz_question_bank_view extends \core_question\bank\view {
      * @param $canadd
      * @throws \coding_exception
      */
-    protected function create_new_question_form($category, $canadd) {
+    protected function create_new_question_form($category, $canadd): void {
         global $CFG;
         echo '<div class="createnewquestion">';
         if ($canadd) {

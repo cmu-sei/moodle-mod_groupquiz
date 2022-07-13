@@ -50,7 +50,6 @@ class edit_renderer extends \plugin_renderer_base {
      *
      */
     public function print_header() {
-
         $this->base_header('edit');
         echo $this->output->box_start('generalbox boxaligncenter groupquizbox');
     }
@@ -63,7 +62,6 @@ class edit_renderer extends \plugin_renderer_base {
      */
     public function listquestions($groupquizhasattempts, $questions, $questionbankview) {
         global $CFG;
-
 	$this->has_attempts = $groupquizhasattempts;
 
 	echo \html_writer::start_div('row', array('id' => 'questionrow'));
@@ -207,8 +205,8 @@ class edit_renderer extends \plugin_renderer_base {
             $deleteicon = new \pix_icon('t/delete', $alt);
             $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
 	}
-
-        $previewurl = question_preview_url($question->getQuestion()->id);
+	$previewurl = \qbank_previewquestion\helper::question_preview_url($question->getQuestion()->id);
+        //$previewurl = question_preview_url($question->getQuestion()->id);
         $previewicon = new \pix_icon('t/preview', get_string('preview'));
         $options = ['height' => 800, 'width' => 900];
         $popup = new \popup_action('click', $previewurl, 'preview', $options);

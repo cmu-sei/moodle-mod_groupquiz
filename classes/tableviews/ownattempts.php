@@ -87,7 +87,7 @@ class ownattempts extends \flexible_table {
 
 	// only if canreviewmarks
         if ($canreviewmarks) {
-            $columns['grade'] = get_string('grade');
+            $columns['grade'] = get_string('grade', 'groupquiz');
         }
 
 	// only if canreviewattempt

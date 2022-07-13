@@ -38,11 +38,11 @@ namespace mod_groupquiz\qbanktypes;
 
 defined('MOODLE_INTERNAL') || die();
 
-class question_bank_add_to_rtq_action_column extends \core_question\bank\action_column_base {
+class question_bank_add_to_rtq_action_column extends \core_question\local\bank\action_column_base {
 
     protected $stradd;
 
-    public function init() {
+    public function init(): void {
         parent::init();
         $this->stradd = get_string('addtoquiz', 'groupquiz');
     }
@@ -58,7 +58,7 @@ class question_bank_add_to_rtq_action_column extends \core_question\bank\action_
         $this->print_icon('t/add', $this->stradd, $this->qbank->add_to_rtq_url($question->id));
     }
 
-    public function get_required_fields() {
+    public function get_required_fields(): array {
         return array('q.id');
     }
 

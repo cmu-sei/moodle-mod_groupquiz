@@ -139,17 +139,13 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     // Get the current value, so we can see what changed.
     $oldgroupquiz = $DB->get_record('groupquiz', array('id' => $groupquiz->instance));
 
-    $groupquizdateschanged = $oldgroupquiz->timelimit   != $gouppquiz->timelimit
-                     || $oldgroupquiz->timeclose   != $groupquiz->timeclose
-                     || $oldgroupquiz->graceperiod != $groupquiz->graceperiod;
+    $groupquizdateschanged = $oldgroupquiz->timelimit   != $groupquiz->timelimit
+                     || $oldgroupquiz->timeclose   != $groupquiz->timeclose;
     // TODO determine if this needs to be done
     if ($groupquizdateschanged) {
         //groupquiz_update_open_attempts(array('groupquizid' => $groupquiz->id));
     }
 
-    // We need two values from the existing DB record that are not in the form,
-    // in some of the function calls below.
-    $groupquiz->sumgrades = $oldgroupquiz->sumgrades;
     $groupquiz->grade     = $oldgroupquiz->grade;
 
     // Update the database.
@@ -400,7 +396,7 @@ function groupquiz_grade_item_update($groupquiz, $grades = null) {
         require_once($CFG->libdir . '/gradelib.php');
     }
 
-    if (array_key_exists('cmidnumber', $groupquiz)) { // May not be always present.
+    if (property_exists($groupquiz, 'cmidnumber')) { // May not be always present.
         $params = array('itemname' => $groupquiz->name, 'idnumber' => $groupquiz->cmidnumber);
     } else {
         $params = array('itemname' => $groupquiz->name);

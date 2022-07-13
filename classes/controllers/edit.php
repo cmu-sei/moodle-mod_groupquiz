@@ -128,7 +128,6 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-
 	//TODO determine id we need to prevent reorder
         switch ($this->action) {
 
@@ -240,9 +239,9 @@ class edit {
      */
     protected function list_questions() {
         $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
-
         $questionbankview = $this->get_questionbank_view();
         $questions = $this->groupquiz->get_questionmanager()->get_questions();
+
         $this->renderer->listquestions($this->groupquizhasattempts, $questions, $questionbankview);
     }
 
@@ -263,7 +262,10 @@ class edit {
 
         $questionbank = new \mod_groupquiz\groupquiz_question_bank_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM());
         $questionbank->set_groupquiz_has_attempts($this->groupquizhasattempts);
-        $questionbank->display('editq', $qpage, $qperpage, $this->pagevars['cat'], true, true, true, $tagids);
+        
+        //$questionbank->display('editq', $qpage, $qperpage, $this->pagevars['cat'], true, true, true, $tagids);
+        
+        $questionbank->display($this->pagevars, 'editq');
 
         return ob_get_clean();
     }
