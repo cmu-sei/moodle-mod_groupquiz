@@ -44,6 +44,12 @@ class edit_renderer extends \plugin_renderer_base {
 
     use renderer_base;
 
+    /**
+     * Indicates if there are any attempts for the current quiz.
+     *
+     * @var bool
+     */
+    public $hasattempts;
 
     /**
      * Prints edit page header
@@ -60,49 +66,56 @@ class edit_renderer extends \plugin_renderer_base {
      * @param array  $questions Array of questions
      * @param string $questionbankview HTML for the question bank view
      */
-    public function listquestions($groupquizhasattempts, $questions, $questionbankview) {
+    public function listquestions($groupquizhasattempts, $questions, $questionbankview, $cm, $pagevars) {
         global $CFG;
-	$this->has_attempts = $groupquizhasattempts;
+        $this->hasattempts = $groupquizhasattempts;
 
-	echo \html_writer::start_div('row', array('id' => 'questionrow'));
-
-        echo \html_writer::start_div('inline-block span6');
+        // Question List
+        echo \html_writer::start_div('row', array('id' => 'questionrow'));
+        echo \html_writer::start_div('inline-block col-sm-4');
         echo \html_writer::tag('h2', get_string('questionlist', 'groupquiz'));
         echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', array('id' => 'editstatus'));
-        if ($this->has_attempts) {
-            echo \html_writer::tag('p', get_string('cannoteditafterattempts', 'groupquiz'));
+
+        if (count($questions) == 0) {
+            echo \html_writer::tag('p', get_string('noquestions', 'groupquiz'));
         }
 
         echo $this->show_questionlist($questions);
+        echo \html_writer::end_div(); //inline-block-span6 questionlist
+ 
+        // Question Bank
+        if ($this->hasattempts) {
+            \core\notification::warning(get_string('cannoteditafterattempts', 'groupquiz'));
+            echo \html_writer::start_div('inline-block span6');
+            echo \html_writer::tag('h2', get_string('questionbank', 'question'));
+            echo \html_writer::tag('p', get_string('cannoteditafterattempts', 'groupquiz'));
+            echo \html_writer::end_div();
+        } else {
+            echo \html_writer::start_div('inline-block span6');
+            echo $questionbankview->display($pagevars, 'editq');
+            echo \html_writer::end_div();
+            echo \html_writer::end_div();
 
-        echo \html_writer::end_div();
+            $this->page->requires->js('/mod/groupquiz/js/core.js');
+            $this->page->requires->js('/mod/groupquiz/js/sortable/sortable.min.js');
+            $this->page->requires->js('/mod/groupquiz/js/edit_quiz.js');
 
-        echo \html_writer::start_div('inline-block span6');
-        echo $questionbankview;
-        echo \html_writer::end_div();
+            // next set up a class to pass to js for js info
+            $jsinfo = new \stdClass();
+            $jsinfo->sesskey = sesskey();
+            $jsinfo->siteroot = $CFG->wwwroot;
+            $jsinfo->cmid = $this->groupquiz->getCM()->id;
 
-        echo \html_writer::end_div();
+            // print jsinfo to javascript
+            echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
+            echo "rtqinitinfo = " . json_encode($jsinfo);
+            echo \html_writer::end_tag('script');
 
-        $this->page->requires->js('/mod/groupquiz/js/core.js');
-        $this->page->requires->js('/mod/groupquiz/js/sortable/sortable.min.js');
-        $this->page->requires->js('/mod/groupquiz/js/edit_quiz.js');
-
-        // next set up a class to pass to js for js info
-        $jsinfo = new \stdClass();
-        $jsinfo->sesskey = sesskey();
-        $jsinfo->siteroot = $CFG->wwwroot;
-        $jsinfo->cmid = $this->groupquiz->getCM()->id;
-
-        // print jsinfo to javascript
-        echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
-        echo "rtqinitinfo = " . json_encode($jsinfo);
-        echo \html_writer::end_tag('script');
-
-        $this->page->requires->strings_for_js(array(
-            'success',
-            'error'
-        ), 'core');
-
+            $this->page->requires->strings_for_js(array(
+                'success',
+                'error'
+            ), 'core');
+        }
     }
 
 
@@ -142,7 +155,7 @@ class edit_renderer extends \plugin_renderer_base {
 
         $return = '';
 
-	// TODO disable reordering if attepts exist
+        // TODO disable reordering if attepts exist
         $dragicon = new \pix_icon('i/dragdrop', 'dragdrop');
         $return .= \html_writer::div($this->output->render($dragicon), 'dragquestion');
 
@@ -190,8 +203,8 @@ class edit_renderer extends \plugin_renderer_base {
 
         $controlHTML .= \html_writer::end_tag('noscript');
 
-	// do not allow edit or delete if attempts exist
-	if (!$this->has_attempts) {
+        // do not allow edit or delete if attempts exist
+        if (!$this->hasattempts) {
             $editurl = clone($this->pageurl);
             $editurl->param('action', 'editquestion');
             $editurl->param('rtqquestionid', $question->getId());
@@ -204,14 +217,14 @@ class edit_renderer extends \plugin_renderer_base {
             $alt = get_string('questiondelete', 'mod_groupquiz', $qnum);
             $deleteicon = new \pix_icon('t/delete', $alt);
             $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
-	}
-	$previewurl = \qbank_previewquestion\helper::question_preview_url($question->getQuestion()->id);
+        }
+        $previewurl = \qbank_previewquestion\helper::question_preview_url($question->getQuestion()->id);
         //$previewurl = question_preview_url($question->getQuestion()->id);
         $previewicon = new \pix_icon('t/preview', get_string('preview'));
         $options = ['height' => 800, 'width' => 900];
         $popup = new \popup_action('click', $previewurl, 'preview', $options);
         $actionlink = new \action_link($previewurl, '', $popup, array('target' => '_blank'), $previewicon);
-	$controlHTML .= $this->output->render($actionlink);
+        $controlHTML .= $this->output->render($actionlink);
         $return .= \html_writer::div($controlHTML, 'controls');
 
         return $return;

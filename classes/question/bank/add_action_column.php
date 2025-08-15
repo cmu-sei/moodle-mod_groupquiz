@@ -15,11 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A column type for the add this question to the groupquiz action.
+ * Custom action column for adding a question to the realtime quiz from the question bank view
  *
- * @package   mod_groupquiz
- * @copyright 2020 Carnegie Mellon University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_groupquiz
+ * @copyright   2020 Carnegie Mellon University
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -35,26 +35,20 @@ DM20-0197
  */
 
 namespace mod_groupquiz\question\bank;
+
 defined('MOODLE_INTERNAL') || die();
 
+class add_action_column extends \core_question\local\bank\question_action_base {
 
-/**
- * A column type for the add this question to the groupquiz action.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class add_action_column extends \core_question\local\bank\action_column_base {
-    /** @var string caches a lang string used repeatedly. */
     protected $stradd;
 
-    public function init() {
+    public function init(): void {
         parent::init();
-        $this->stradd = get_string('addtogroupquiz', 'groupquiz');
+        $this->stradd = get_string('addtoquiz', 'groupquiz');
     }
 
     public function get_name() {
-        return 'addtogroupquizaction';
+        return 'addtortqaction';
     }
 
     protected function display_content($question, $rowclasses) {
@@ -64,7 +58,10 @@ class add_action_column extends \core_question\local\bank\action_column_base {
         $this->print_icon('t/add', $this->stradd, $this->qbank->add_to_groupquiz_url($question->id));
     }
 
-    public function get_required_fields() {
+    public function get_required_fields(): array {
         return array('q.id');
     }
+
+
 }
+
