@@ -126,7 +126,7 @@ $string['overallfeedback_help'] = 'Overall feedback is text that is shown after 
 
 // edit page.
 $string['questionlist'] = 'Question List';
-$string['addtoquiz'] = 'Add Question to Group Quiz';
+$string['addselectedquestionstogroupquiz'] = 'Add Questions to Group Quiz';
 $string['question'] = 'Question ';
 $string['addquestion'] = 'Add question';
 $string['questiondelete'] = 'Delete question {$a}';
