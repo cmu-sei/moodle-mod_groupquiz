@@ -67,6 +67,8 @@ class questionmanager {
     /** @var \moodle_url */
     protected $baseurl;
 
+    /** @var array|null Stores ordered questions */
+    public ?array $orderedquestions = null;
 
     /**
      * Construct an instance of question manager

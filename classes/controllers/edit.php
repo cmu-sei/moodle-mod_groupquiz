@@ -102,9 +102,8 @@ class edit {
         }
 
         // set up question lib.
-
         list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $this->pagevars) =
-            question_edit_setup('editq', '/mod/groupquiz/edit.php', true);
+            question_edit_setup('editq', '/mod/groupquiz/edit.php');
 
 
         $PAGE->set_url($this->pageurl);
