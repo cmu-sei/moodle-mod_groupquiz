@@ -45,6 +45,8 @@ class ownattempts extends \flexible_table {
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;
 
+    protected $attempts;
+
     /**
      * Contstruct this table class
      *
