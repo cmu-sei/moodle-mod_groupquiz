@@ -646,7 +646,6 @@ class groupquiz_attempt {
 
         $rtqQuestion = $this->get_question_by_slot($slot);
 
-//var_dump($rtqQuestion);exit;
         // use the renderer to display just the question text area, but in read only mode
         // basically how the quiz module does it, but we're being much more specific in the output
         // we want.  This also is more in line with the question engine's rendering of specific questions

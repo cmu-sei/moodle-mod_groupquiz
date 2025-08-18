@@ -126,7 +126,7 @@ $string['overallfeedback_help'] = 'Overall feedback is text that is shown after 
 
 // edit page.
 $string['questionlist'] = 'Question List';
-$string['addtoquiz'] = 'Add Question to Group Quiz';
+$string['addselectedquestionstogroupquiz'] = 'Add Questions to Group Quiz';
 $string['question'] = 'Question ';
 $string['addquestion'] = 'Add question';
 $string['questiondelete'] = 'Delete question {$a}';
@@ -191,6 +191,9 @@ $string['response_attempt_controls'] = 'Edit/View Attempt';
 $string['groupquiz:manage'] = 'Manage Group Quizzes';
 $string['groupquiz:view'] = 'View Group Quiz information';
 $string['groupquiz:addinstance'] = 'Add a new Group Quiz';
+$string['groupquiz:attempt'] = 'Attempt Group Quizzes';
+$string['groupquiz:editquestions'] = 'Edit Questions on Group Quizzes';
+$string['groupquiz:grade'] = 'Grade Group Quizzes';
 
 
 

@@ -54,7 +54,6 @@ class edit {
     /** @var \question_edit_contexts $contexts and array of contexts that has all parent contexts from the RTQ context. */
     protected $contexts;
 
-    /** @var \moodle_url $pageurl The page url to base other calls on. */
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load. */
@@ -64,6 +63,8 @@ class edit {
     protected $renderer;
 
     protected $groupquizhasattempts;
+
+    protected $cm;
 
     /**
      * Sets up the edit page
@@ -80,6 +81,9 @@ class edit {
         $pageurl = new \moodle_url($baseurl);
         $pageurl->remove_all_params();
 
+        $pagevars = [];
+        $pagevars['pageurl'] = $pageurl;
+
         $id = optional_param('cmid', false, PARAM_INT);
         $groupquizid = optional_param('groupquizid', false, PARAM_INT);
 
@@ -93,6 +97,8 @@ class edit {
             $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
+        $this->cm = $cm;
+
         $this->get_parameters(); // get the rest of the parameters and set them in the class.
 
         if ($CFG->version < 2011120100) {
@@ -100,24 +106,22 @@ class edit {
         } else {
             $this->context = \context_module::instance($cm->id);
         }
-
+        
         // set up question lib.
-        list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $this->pagevars) =
+        list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $pagevars) =
             question_edit_setup('editq', '/mod/groupquiz/edit.php');
 
-
         $PAGE->set_url($this->pageurl);
+        $this->pagevars = $pagevars;
         $this->pagevars['pageurl'] = $this->pageurl;
 
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "groupquiz")
             . ': ' . format_string($quiz->name, true)));
         $PAGE->set_heading($course->fullname);
 
-
         // setup classes needed for the edit page
         $this->groupquiz = new \mod_groupquiz\groupquiz($cm, $course, $quiz, $this->pageurl, $this->pagevars, 'edit');
         $this->renderer = $this->groupquiz->get_renderer(); // set the renderer for this controller.  Done really for code completion.
-
     }
 
     /**
@@ -127,7 +131,7 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-	//TODO determine id we need to prevent reorder
+        //TODO determine id we need to prevent reorder
         switch ($this->action) {
 
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
@@ -187,11 +191,39 @@ class edit {
 
                 break;
             case 'addquestion':
+
                 $questionid = required_param('questionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->add_question($questionid);
 
                 break;
-            case 'editquestion':
+
+            case 'addquestionlist':
+
+                $questionmanager = $this->groupquiz->get_questionmanager();
+
+                // actually it is params like q696 adn q692
+                $rawdata = (array) data_submitted();
+                foreach ($rawdata as $key => $value) { // Parse input for question ids.
+                    if (preg_match('!^q([0-9]+)$!', $key, $matches)) {
+                        $key = $matches[1];
+                        $questionid = $key;
+                        if (!$questionmanager->add_question($questionid)) {
+                            $type = 'error';
+                            $message = get_string('qadderror', 'topomojo');
+                            $renderer->setMessage($type, $message);
+                            break;
+                        } else {
+                            $type = 'success';
+                            $message = get_string('qaddsuccess', 'topomojo');
+                            $renderer->setMessage($type, $message);
+                        }
+                    }
+                }
+                $renderer->setMessage($type, $message);
+                $renderer->print_header();
+
+                break;
+            case 'editquestionlist':
 
                 $questionid = required_param('rtqquestionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->edit_question($questionid);
@@ -237,38 +269,14 @@ class edit {
      *
      */
     protected function list_questions() {
+
         $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
-        $questionbankview = $this->get_questionbank_view();
+        $questionbankview = new \mod_groupquiz\question\bank\custom_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM(), $this->pagevars);
+
         $questions = $this->groupquiz->get_questionmanager()->get_questions();
 
-        $this->renderer->listquestions($this->groupquizhasattempts, $questions, $questionbankview);
+        $this->renderer->listquestions($this->groupquizhasattempts, $questions, $questionbankview, $this->cm, $this->pagevars);
     }
-
-    /**
-     * Gets the question bank view based on the options passed in at the page setup.
-     *
-     * @return string
-     */
-    protected function get_questionbank_view() {
-
-        $qperpage = optional_param('qperpage', 10, PARAM_INT);
-        $qpage = optional_param('qpage', 0, PARAM_INT);
-        $tagids = array();
-
-        ob_start(); // capture question bank display in buffer to have the renderer render output.
-
-        $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
-
-        $questionbank = new \mod_groupquiz\groupquiz_question_bank_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM());
-        $questionbank->set_groupquiz_has_attempts($this->groupquizhasattempts);
-        
-        //$questionbank->display('editq', $qpage, $qperpage, $this->pagevars['cat'], true, true, true, $tagids);
-        
-        $questionbank->display($this->pagevars, 'editq');
-
-        return ob_get_clean();
-    }
-
 
     /**
      * Private function to get parameters
@@ -277,6 +285,10 @@ class edit {
     private function get_parameters() {
 
         $this->action = optional_param('action', 'listquestions', PARAM_ALPHA);
+        $addquestionlist = optional_param('addquestionlist', '', PARAM_ALPHA);
+        if ($addquestionlist) {
+            $this->action = 'addquestionlist';
+        }
 
     }
 
