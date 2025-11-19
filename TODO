@@ -26,7 +26,7 @@ add button to add multiple questions from bank onto quiz - not implemented becau
 
 prevent drag and drop once attempts have been created
 
-try to default the question bank to be the course question bank 
+try to default the question bank to be the course question bank
 
 look into removing the edit screen that appears after clicking the add button
 

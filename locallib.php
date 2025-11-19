@@ -40,16 +40,15 @@ defined('MOODLE_INTERNAL') || die;
 require_once("$CFG->dirroot/mod/groupquiz/lib.php");
 require_once($CFG->libdir . '/questionlib.php');
 
+/**
+ * We show no image when user selects No image from dropdown menu in quiz settings.
+ */
+const SHOWIMAGE_NONE = 0;
 
 /**
- * @var int We show no image when user selects No image from dropdown menu in quiz settings.
+ * We show small image when user selects small image from dropdown menu in quiz settings.
  */
-define('QUIZ_SHOWIMAGE_NONE', 0);
-
-/**
- * @var int We show small image when user selects small image from dropdown menu in quiz settings.
- */
-define('QUIZ_SHOWIMAGE_SMALL', 1);
+const SHOWIMAGE_SMALL = 1;
 
 /**
  * An extension of question_display_options that includes the extra options used
@@ -129,6 +128,9 @@ class mod_groupquiz_display_options extends question_display_options {
  */
 function groupquiz_has_attempts($groupquizid) {
     global $DB;
+    if (empty($groupquizid)) {
+        return false;
+    }
     return $DB->record_exists('groupquiz_attempts', array('groupquizid' => $groupquizid));
 
 }
@@ -238,8 +240,8 @@ function groupquiz_view_tabs($RTQ, $currenttab) {
  */
 function groupquiz_get_user_image_options() {
     return array(
-        QUIZ_SHOWIMAGE_NONE  => get_string('shownoimage', 'quiz'),
-        QUIZ_SHOWIMAGE_SMALL => get_string('showsmallimage', 'quiz'),
+        SHOWIMAGE_NONE  => get_string('shownoimage', 'quiz'),
+        SHOWIMAGE_SMALL => get_string('showsmallimage', 'quiz'),
     );
 }
 
