@@ -97,7 +97,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
                 array('optional' => true));
         $mform->addHelpButton('timelimit', 'timelimit', 'groupquiz');
         $mform->setAdvanced('timelimit', '');
-        $mform->setDefault('timelimit', '60');
+        $mform->setDefault('timelimit', '3600');
 
         // -------------------------------------------------------------------------------
         // Grade settings.
