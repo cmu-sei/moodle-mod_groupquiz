@@ -87,9 +87,9 @@ class view {
             $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         } else {
-	    print_error('invalidquizid', 'groupquiz');
+            throw new moodle_exception('invalidquizid', 'mod_groupquiz');
+        }
 
-	}
         $this->get_parameters(); // get the rest of the parameters and set them in the class
 
         require_login($course->id, false, $cm);
