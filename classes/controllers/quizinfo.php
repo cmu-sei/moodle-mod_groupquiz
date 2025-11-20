@@ -28,7 +28,7 @@ require_once($CFG->dirroot . '/user/lib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
 NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
@@ -109,25 +109,39 @@ class quizinfo {
 
         $this->pagevars['pageurl'] = $this->pageurl;
         $this->pagevars['action'] = $this->action;
-	//$this->pagevars['attemptid'] = $this->
-
         $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
-
-	// TODO clean this up
         $groups = $this->RTQ->get_groupmanager()->get_user_groups();
-        if (count($groups) != 1) {
-            echo "error";
-	    $this->jsonlib->send_error('get_user_groups');
-            exit;
-        }
-        $groupid = array_values($groups)[0]->id;
-        $this->RTQ->get_group_attempt($groupid);
 
-	if (!$this->RTQ->openAttempt) {
-	    //TODO this isnt 100% accurate
-	    $this->jsonlib->send_error('attemptclosed');
+        if (count($groups) == 1) {
+            // Student view
+            $groupid = array_values($groups)[0]->id;
+            $this->RTQ->get_group_attempt($groupid);
+
+        } else {
+            // Instructor view
+            $attempt = $DB->get_record('groupquiz_attempts', [
+                'id'         => $jscurrentattempt,
+                'groupquizid'=> $groupquiz->id,
+            ], '*', IGNORE_MISSING);
+
+            if (!$attempt) {
+                $this->jsonlib->send_error('attemptclosed');
+                exit;
+            }
+
+            $this->RTQ->openAttempt = new \mod_groupquiz\groupquiz_attempt(
+                $this->RTQ->get_questionmanager(),
+                $attempt,
+                $this->RTQ->getContext()
+            );
+        }
+
+        if (!$this->RTQ->openAttempt) {
+            $this->jsonlib->send_error('attemptclosed');
+            exit;
         } else if ($this->RTQ->openAttempt->getState() != 'inprogress') {
             $this->jsonlib->send_error('invalidattempt');
+            exit;
         }
 
     }
