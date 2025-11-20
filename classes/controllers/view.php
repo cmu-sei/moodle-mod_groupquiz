@@ -133,6 +133,8 @@ class view {
 
         if ($groupid == -1 && !$this->RTQ->is_instructor()) {
             $this->RTQ->get_renderer()->setMessage('error', get_string('usernotingroup', 'groupquiz'));
+        } else if ($this->RTQ->is_instructor()) {
+            $groupid = 0;
         }
 
         switch ($this->pagevars['action']) {
@@ -157,10 +159,9 @@ class view {
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
                 $preview = 1;
-                $previewgroup = null;
 
-                if ($this->RTQ->init_attempt($preview, $previewgroup)) {
-                    $this->RTQ->get_renderer()->view_header(true);
+                if ($this->RTQ->init_attempt($preview, $groupid)) {
+                    $this->RTQ->get_renderer()->view_header(renderingquiz: true);
                     $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
                     $this->RTQ->get_renderer()->view_footer();
                 } else {
@@ -221,9 +222,18 @@ class view {
 
                 // determine home display based on role
                 if ($this->RTQ->is_instructor()) {
-                    $this->RTQ->get_renderer()->view_header();
                     // if preview attempt is active, dont show home
-                    $this->RTQ->get_renderer()->view_inst_home();
+                    $this->RTQ->get_group_attempt(group: $groupid);
+                    if ($this->RTQ->openAttempt) {
+                        $this->RTQ->get_renderer()->view_header(true);
+                        $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                        $this->RTQ->get_renderer()->view_footer();
+                    } else{
+                        // load active attempt
+                        $this->RTQ->get_renderer()->view_header();
+                        $this->RTQ->get_renderer()->view_inst_home();
+                        $this->RTQ->get_renderer()->view_footer();
+                    }
                     $this->RTQ->get_renderer()->view_footer();
 
                 } else {

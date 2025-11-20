@@ -103,8 +103,6 @@ groupquiz.submit_quiz = function (attempt, groupquizid) {
             window.alert('there was an error with your request ... ');
             return;
         }
-	
     });
 
 };
-    

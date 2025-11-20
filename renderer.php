@@ -207,10 +207,10 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         echo $this->quiz_intro();
         echo html_writer::start_div('groupquizbox');
 
-	if ($state == 'unopen') {
-	    echo html_writer::tag('p', get_string('notopen', 'groupquiz') . userdate($timeopen), array('id' => 'quiz_notavailable'));
+        if ($state == 'unopen') {
+            echo html_writer::tag('p', get_string('notopen', 'groupquiz') . userdate($timeopen), array('id' => 'quiz_notavailable'));
         } else if ($state == 'closed') {
-	    echo html_writer::tag('p', get_string('closed', 'groupquiz'). userdate($timeclose), array('id' => 'quiz_notavailable'));
+            echo html_writer::tag('p', get_string('closed', 'groupquiz'). userdate($timeclose), array('id' => 'quiz_notavailable'));
         } else {
             $this->render_start_button();
         }
@@ -232,9 +232,9 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         // show overall grade
         if ($canreviewmarks && $attempts) {
             $this->render_grade();
-	}
+        }
 
-	if ($attempts) {
+        if ($attempts) {
             echo html_writer::start_div('groupquizbox');
             echo html_writer::tag('h3', get_string('attempts', 'groupquiz'));
 
@@ -404,6 +404,10 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         $quba = $attempt->get_quba();
         $qa = $quba->get_question_attempt($qnum);
         $data = $qa->get_last_qt_data();
+        $last = null;
+        $useravatar = null;
+        $username = null;
+        $time = null;
 
         if (count($data) > 0) {
             // MC single answer
@@ -480,12 +484,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 EOD;
         echo html_writer::end_tag('script');
 
-        if ($this->rtq->is_instructor()) {
-	    // TODO will we ever need this
-            $this->page->requires->js('/mod/groupquiz/js/instructor.js');
-        } else {
-            $this->page->requires->js('/mod/groupquiz/js/student.js');
-        }
+        $this->page->requires->js('/mod/groupquiz/js/student.js');
 
         // next set up a class to pass to js for js info
         $jsinfo = new stdClass();

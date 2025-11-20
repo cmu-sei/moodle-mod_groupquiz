@@ -209,15 +209,15 @@ class groupquiz_attempt {
         $questionnum = $this->get_question_number();
         $this->add_question_number();
 
-	$qa = $this->quba->get_question_attempt($slotid);
+        $qa = $this->quba->get_question_attempt($slotid);
 
-	global $PAGE;
-	$page = $PAGE;
-	$question = $qa->get_question();
-	$qoutput = $page->get_renderer('mod_groupquiz', 'question');
-	$qtoutput = $question->get_renderer($page);
-	$behaviour = $qa->get_behaviour();
-	return $behaviour->render($displayoptions, $questionnum, $qoutput, $qtoutput);
+        global $PAGE;
+        $page = $PAGE;
+        $question = $qa->get_question();
+        $qoutput = $page->get_renderer('mod_groupquiz', 'question');
+        $qtoutput = $question->get_renderer($page);
+        $behaviour = $qa->get_behaviour();
+        return $behaviour->render($displayoptions, $questionnum, $qoutput, $qtoutput);
 
     }
 
@@ -268,40 +268,39 @@ class groupquiz_attempt {
                 $options->rightanswer = \question_display_options::VISIBLE;
                 $options->history = \question_display_options::VISIBLE;
             } else if ($reviewoptions instanceof \stdClass) {
-		foreach ($reviewoptions as $field => $data) {
-		    if ($when == 'closed') {
-			if (($field == 'reviewmarks') &&
-			        ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
-			    $options->marks = \question_display_options::MARK_AND_MAX;
-			} else {
+                foreach ($reviewoptions as $field => $data) {
+                    if ($when == 'closed') {
+                        if (($field == 'reviewmarks') &&
+                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
+                            $options->marks = \question_display_options::MARK_AND_MAX;
+                        } else {
                             $options->$field = \question_display_options::VISIBLE;
-			}
-			if (($field == 'reviewrightanswer') &&
-                                ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
+                        }
+                        if (($field == 'reviewrightanswer') &&
+                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
                             $options->rightanswer = \question_display_options::VISIBLE;
                         }
-		    }
-		}
+		            }
+		        }
 
-		$state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;
-		if ($when == 'closed') {
-		    $state = \mod_groupquiz_display_options::AFTER_CLOSE;
-		}
+                $state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;
+                if ($when == 'closed') {
+                    $state = \mod_groupquiz_display_options::AFTER_CLOSE;
+                }
 
                 foreach (\mod_groupquiz\groupquiz::$reviewfields as $field => $data) {
-
-		    $name = 'review' . $field;
-		    if ($reviewoptions->{$name} & $state) {
-		        if ($field == 'marks') {
-			    $options->$field = \question_display_options::MARK_AND_MAX;
-		        } else {
+                    $name = 'review' . $field;
+                    if ($reviewoptions->{$name} & $state) {
+                        if ($field == 'marks') {
+                            $options->$field = \question_display_options::MARK_AND_MAX;
+                        } else {
                             $options->$field = \question_display_options::VISIBLE;
-		        }
-		    }
+                        }
+                    }
                 }
             }
         } else {
-	    // default options for during quiz
+	        // default options for during quiz
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;
@@ -703,14 +702,14 @@ class groupquiz_attempt {
      * @return bool Weather or not it was successful
      */
     public function close_attempt($rtq, $loguser = true) {
-	global $USER;
+        global $USER;
         $this->quba->finish_all_questions(time());
         $this->attempt->state = self::FINISHED;
-	if ($loguser) {
-	    $this->attempt->userstop = $USER->id;
-	} else {
-	    $this->attempt->userstop = '-1';
-	}
+        if ($loguser) {
+            $this->attempt->userstop = $USER->id;
+        } else {
+            $this->attempt->userstop = '-1';
+        }
         $this->attempt->timefinish = time();
         $this->save();
 
@@ -819,42 +818,41 @@ class groupquiz_attempt {
         if ($this->state != self::INPROGRESS) {
             return false;
         }
-	if ($rtq->timelimit) {
-	    $endtime = $this->timestart + $rtq->timelimit;
-	    $timerdiff = $endtime - $timenow;
-	} else {
-	    $endtime = 0;
-	    $timerdiff = 0;
-	}
+        if ($rtq->timelimit) {
+            $endtime = $this->timestart + $rtq->timelimit;
+            $timerdiff = $endtime - $timenow;
+        } else {
+            $endtime = 0;
+            $timerdiff = 0;
+        }
 
-	if ($rtq->timeclose) {
-	    $closetime = $rtq->timeclose;
-	    $closediff = $closetime - $timenow;
-	} else {
-	    $closetime = 0;
-	    $closediff = 0;
-	}
+        if ($rtq->timeclose) {
+            $closetime = $rtq->timeclose;
+            $closediff = $closetime - $timenow;
+        } else {
+            $closetime = 0;
+            $closediff = 0;
+        }
 
-	if ((!$endtime) && (!$closetime)) {
-	    return true;
-	}
+        if ((!$endtime) && (!$closetime)) {
+            return true;
+        }
 
-	if ($timerdiff == 0) {
-	    $timeleft = $closediff;
-	} else if ($closediff == 0) {
-	    $timeleft = $timerdiff;
-	} else if ($timerdiff < $closediff) {
-            $timeleft = $timerdiff;
-	} else if ($timerdiff > $closediff) {
+        if ($timerdiff == 0) {
             $timeleft = $closediff;
-	} else {
-	    $timeleft = false;
-	}
-	if ($timeleft <= 0) {
-	    $timeleft = false;
-	}
-	return $timeleft;
+        } else if ($closediff == 0) {
+            $timeleft = $timerdiff;
+        } else if ($timerdiff < $closediff) {
+            $timeleft = $timerdiff;
+        } else if ($timerdiff > $closediff) {
+            $timeleft = $closediff;
+        } else {
+            $timeleft = false;
+        }
+        if ($timeleft <= 0) {
+            $timeleft = false;
+        }
+        return $timeleft;
     }
-
 
 }
