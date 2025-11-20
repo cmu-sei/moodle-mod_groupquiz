@@ -82,7 +82,6 @@ class viewquizattempt {
 
         $this->pageurl->param('id', $cm->id);
         $this->pageurl->param('groupquizid', $groupquiz->id);
-        $this->pageurl->params($this->pagevars); // add the page vars variable to the url
         $this->pagevars['pageurl'] = $this->pageurl;
 
         $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
