@@ -26,7 +26,7 @@ require_once($CFG->libdir . '/questionlib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
 NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
@@ -176,6 +176,17 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     public function view_inst_home() {
         echo html_writer::start_div();
         echo $this->quiz_intro();
+        echo html_writer::end_div();
+
+        $cm = $this->rtq->getCM();
+
+        $url = new \moodle_url('/mod/groupquiz/view.php', array(
+            'id'     => $cm->id,
+            'action' => 'previewquiz'
+        ));
+
+        echo html_writer::start_div('groupquizbox');
+        echo $this->output->single_button($url, get_string('previewquiz', 'groupquiz'));
         echo html_writer::end_div();
     }
 

@@ -471,21 +471,24 @@ class groupquiz {
 
     public function init_attempt($preview, $group) {
         global $DB, $USER;
-	// TODO handle preview mode
-        if (is_null($group) || ($group == 0)) {
-	    return false;
-	}
-        $openAttempt = $this->get_open_attempt_for_group($group);
-        if ($openAttempt !== false) {
-            $this->openAttempt = $openAttempt;
-	    return true;
+
+        if (!$preview && (is_null($group) || $group == 0)) {
+            return false;
+        }
+
+        if (!$preview && !is_null($group) && $group != 0) {
+            $openAttempt = $this->get_open_attempt_for_group($group);
+            if ($openAttempt !== false) {
+                $this->openAttempt = $openAttempt;
+                return true;
+            }
         }
 
         // create a new attempt
         $attempt = new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager());
         $attempt->userid = $USER->id;
-	$attempt->userstart = $USER->id;
-        $attempt->forgroupid =  $group;
+	    $attempt->userstart = $USER->id;
+        $attempt->forgroupid  = $preview ? 0 : $group;
         $attempt->state = \mod_groupquiz\groupquiz_attempt::NOTSTARTED;
         $attempt->timemodified = time();
         $attempt->timestart = time();
@@ -493,15 +496,15 @@ class groupquiz {
         $attempt->groupquizid = $this->getRTQ()->id;
         $attempt->get_html_head_contributions();
         $attempt->setState('inprogress');
-	$attempt->attemptnum = null;
-	$attempt->userstop = null;
-	$attempt->sumgrades = 0;
+        $attempt->attemptnum = null;
+        $attempt->userstop = null;
+        $attempt->sumgrades = 0;
 
         if ($attempt->save()) {
             $this->openAttempt = $attempt;
-	} else {
-	    return false;
-	}
+        } else {
+            return false;
+        }
 
         $params = array(
             'objectid'      => $this->groupquiz->id,
@@ -509,11 +512,11 @@ class groupquiz {
             'relateduserid' => $USER->id
         );
         $event = \mod_groupquiz\event\attempt_started::create($params);
-	// TODO figure out what its sedning a null object
+	    // TODO figure out what its sedning a null object
         $event->add_record_snapshot('groupquiz_attempts', $this->openAttempt->get_attempt());
         $event->trigger();
 
-        return true; // return true if we get to here
+        return true;
     }
 
     /**

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
 NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
@@ -131,7 +131,7 @@ class view {
         }
         $groupid = $this->RTQ->get_groupmanager()->get_user_group();
 
-        if ($groupid == -1) {
+        if ($groupid == -1 && !$this->RTQ->is_instructor()) {
             $this->RTQ->get_renderer()->setMessage('error', get_string('usernotingroup', 'groupquiz'));
         }
 
@@ -142,18 +142,33 @@ class view {
                 $this->RTQ->get_renderer()->view_footer();
                 break;
             case 'continuequiz':
-	        $this->RTQ->get_group_attempt($groupid);
-                // load active attempt
-                if ($this->RTQ->openAttempt) {
+                $this->RTQ->get_group_attempt($groupid);
+                    // load active attempt
+                    if ($this->RTQ->openAttempt) {
+                        $this->RTQ->get_renderer()->view_header(true);
+                        $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                        $this->RTQ->get_renderer()->view_footer();
+            } else {
+                echo "error - no open attempt";
+                        $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
+                exit;
+            }
+            break;
+            case 'previewquiz':
+                $PAGE->set_pagelayout('base');
+
+                $preview = 1;
+                $previewgroup = null;
+
+                if ($this->RTQ->init_attempt($preview, $previewgroup)) {
                     $this->RTQ->get_renderer()->view_header(true);
                     $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
                     $this->RTQ->get_renderer()->view_footer();
-		} else {
-		    echo "error - no open attempt";
-                    $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
-		    exit;
-		}
-		break;
+                } else {
+                    $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
+                }
+            break;
+
             case 'startquiz':
 
                 // case for the quiz start landing page
@@ -209,16 +224,14 @@ class view {
 
                 // determine home display based on role
                 if ($this->RTQ->is_instructor()) {
-                        $this->RTQ->get_renderer()->setMessage('error','we should view a quiz preview here');
-                        $this->RTQ->get_renderer()->view_header();
-			$this->RTQ->get_renderer()->view_inst_home();
-                        $this->RTQ->get_renderer()->view_footer();
+                    $this->RTQ->get_renderer()->view_header();
+                    $this->RTQ->get_renderer()->view_inst_home();
+                    $this->RTQ->get_renderer()->view_footer();
 
-                } else { /* student default view */
-		    // display the form that says start/continue
-                     $this->RTQ->get_renderer()->view_header();
-                     $this->RTQ->get_renderer()->view_student_home();
-                     $this->RTQ->get_renderer()->view_footer();
+                } else {
+                    $this->RTQ->get_renderer()->view_header();
+                    $this->RTQ->get_renderer()->view_student_home();
+                    $this->RTQ->get_renderer()->view_footer();
                 }
                 break;
         }
