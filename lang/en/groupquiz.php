@@ -154,6 +154,7 @@ $string['showstudentresponses'] = 'Show responses';
 $string['hidestudentresponses'] = 'Hide responses';
 $string['loading'] = 'Initializing Quiz';
 $string['studentquizinst'] = 'Click Save Question on each question to record or update your group\'s response. Your group\'s responses will be visible to all members of the group. Discuss the questions with your group while answering them. Ensure that your group members are in agreement before submitting the quiz. Once all questions have a saved response, one group member may submit the quiz by clicking the Submit Quiz button.';
+$string['instructorquizinst'] = 'Click Save Question on each question to record or update your group\'s response. Your group\'s responses will be visible to all members of the group. Discuss the questions with your group while answering them. Ensure that your group members are in agreement before submitting the quiz. Once all questions have a saved response, one group member may submit the quiz by clicking the Submit Quiz button.';
 $string['submitquiz'] = 'Submit Quiz';
 $string['startquiz'] = 'Start Quiz';
 $string['attempts'] = 'Attempts';

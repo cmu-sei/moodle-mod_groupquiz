@@ -307,7 +307,7 @@ class groupquiz {
     public function get_review_options() {
 
         $reviewoptions = new \stdClass();
-	$reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
+	    $reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
         $reviewoptions->reviewcorrectness = $this->groupquiz->reviewcorrectness;
         $reviewoptions->reviewmarks = $this->groupquiz->reviewmarks;
         $reviewoptions->reviewspecificfeedback = $this->groupquiz->reviewspecificfeedback;
@@ -499,6 +499,7 @@ class groupquiz {
         $attempt->attemptnum = null;
         $attempt->userstop = null;
         $attempt->sumgrades = 0;
+        $attempt->preview = $preview;
 
         if ($attempt->save()) {
             $this->openAttempt = $attempt;
@@ -537,19 +538,19 @@ class groupquiz {
     }
 
     public function get_intro($attemptid) {
-	return $this->intro;
+	    return $this->intro;
     }
 
     public function get_openclose_state() {
-	$state = 'open';
-	$timenow = time();
-	if ($this->groupquiz->timeopen && ($timenow < $this->groupquiz->timeopen)) {
-	    $state = 'unopen';
+        $state = 'open';
+        $timenow = time();
+        if ($this->groupquiz->timeopen && ($timenow < $this->groupquiz->timeopen)) {
+            $state = 'unopen';
         } else if ($this->groupquiz->timeclose && ($timenow > $this->groupquiz->timeclose)) {
-	    $state = 'closed';
+            $state = 'closed';
         }
 
-	return $state;
+        return $state;
     }
 
     public function canreviewmarks($reviewoptions, $state) {

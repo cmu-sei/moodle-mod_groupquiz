@@ -108,7 +108,7 @@ class groupquiz_attempt {
 
             // create a new quba since we're creating a new attempt
             $this->quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz',
-                    $this->questionmanager->getRTQ()->getContext());
+            $this->questionmanager->getRTQ()->getContext());
             $this->quba->set_preferred_behaviour('immediatefeedback');
             $attemptlayout = $this->questionmanager->add_questions_to_quba($this->quba);
             // add the attempt layout to this instance
@@ -270,7 +270,7 @@ class groupquiz_attempt {
             } else if ($reviewoptions instanceof \stdClass) {
 		foreach ($reviewoptions as $field => $data) {
 		    if ($when == 'closed') {
-			if (($field == 'reviewmarks') && 
+			if (($field == 'reviewmarks') &&
 			        ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
 			    $options->marks = \question_display_options::MARK_AND_MAX;
 			} else {
@@ -282,8 +282,8 @@ class groupquiz_attempt {
                         }
 		    }
 		}
-	
-		$state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;	
+
+		$state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;
 		if ($when == 'closed') {
 		    $state = \mod_groupquiz_display_options::AFTER_CLOSE;
 		}

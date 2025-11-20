@@ -222,6 +222,7 @@ class view {
                 // determine home display based on role
                 if ($this->RTQ->is_instructor()) {
                     $this->RTQ->get_renderer()->view_header();
+                    // if preview attempt is active, dont show home
                     $this->RTQ->get_renderer()->view_inst_home();
                     $this->RTQ->get_renderer()->view_footer();
 
