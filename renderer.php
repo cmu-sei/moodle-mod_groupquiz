@@ -174,19 +174,53 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @param bool|\stdclass $sessionstarted is a standard class when there is a session
      */
     public function view_inst_home() {
+        global $DB, $USER;
+
         echo html_writer::start_div();
         echo $this->quiz_intro();
         echo html_writer::end_div();
 
-        $cm = $this->rtq->getCM();
-
-        $url = new \moodle_url('/mod/groupquiz/view.php', array(
-            'id'     => $cm->id,
-            'action' => 'previewquiz'
-        ));
+        $cm        = $this->rtq->getCM();
+        $groupquiz = $this->rtq->getRTQ();
+        $hasopenpreview = false;
+        if (!empty($groupquiz->id)) {
+            $hasopenpreview = $DB->record_exists('groupquiz_attempts', [
+                'groupquizid' => $groupquiz->id,
+                'userid'      => $USER->id,
+                'preview'     => 1,
+                'state'       => \mod_groupquiz\groupquiz_attempt::INPROGRESS,
+            ]);
+        }
 
         echo html_writer::start_div('groupquizbox');
-        echo $this->output->single_button($url, get_string('previewquiz', 'groupquiz'));
+
+        if ($hasopenpreview) {
+            // If there's an attempt, show continue preview button
+            $continueurl = new \moodle_url('/mod/groupquiz/view.php', [
+                'id'     => $cm->id,
+                'action' => 'continuepreview',
+            ]);
+
+            echo $this->output->single_button(
+                $continueurl,
+                get_string('continuepreview', 'groupquiz'),
+                'get'
+            );
+
+        } else {
+            // No existing attempt, then create a new one for preview
+            $previewurl = new \moodle_url('/mod/groupquiz/view.php', [
+                'id'     => $cm->id,
+                'action' => 'previewquiz',
+            ]);
+
+            echo $this->output->single_button(
+                $previewurl,
+                get_string('previewquiz', 'groupquiz'),
+                'get'
+            );
+        }
+
         echo html_writer::end_div();
     }
 

@@ -196,3 +196,5 @@ $string['groupquiz:attempt'] = 'Attempt Group Quizzes';
 $string['groupquiz:editquestions'] = 'Edit Questions on Group Quizzes';
 $string['groupquiz:grade'] = 'Grade Group Quizzes';
 $string['previewquiz'] = 'Preview quiz';
+$string['continuepreview'] = 'Continue last preview';
+

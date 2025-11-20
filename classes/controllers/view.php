@@ -143,31 +143,31 @@ class view {
                 $this->RTQ->get_renderer()->no_questions($this->RTQ->is_instructor());
                 $this->RTQ->get_renderer()->view_footer();
                 break;
-            case 'continuequiz':
-                $this->RTQ->get_group_attempt($groupid);
-                    // load active attempt
-                    if ($this->RTQ->openAttempt) {
-                        $this->RTQ->get_renderer()->view_header(true);
-                        $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                        $this->RTQ->get_renderer()->view_footer();
-                } else {
-                    echo "error - no open attempt";
-                            $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
-                    exit;
+            case 'continuepreview':
+                $PAGE->set_pagelayout('base');
+
+                $openpreview = $this->RTQ->get_open_preview_attempt_for_user($USER->id);
+
+                if ($openpreview) {
+                    $this->RTQ->openAttempt = $openpreview;
                 }
-                break;
+
+                $this->RTQ->get_renderer()->view_header(true);
+                $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                $this->RTQ->get_renderer()->view_footer();
+            break;
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
-                $preview = 1;
 
-                if ($this->RTQ->init_attempt($preview, $groupid)) {
-                    $this->RTQ->get_renderer()->view_header(renderingquiz: true);
-                    $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                    $this->RTQ->get_renderer()->view_footer();
-                } else {
+                if (!$this->RTQ->init_attempt(1, null)) {
                     $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
+                    break;
                 }
-                break;
+
+                $this->RTQ->get_renderer()->view_header(true);
+                $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                $this->RTQ->get_renderer()->view_footer();
+            break;
             case 'startquiz':
                 // case for the quiz start landing page
                 // set the quiz view page to the base layout for 1 column layout
@@ -188,6 +188,11 @@ class view {
                 // unanswered questions and confirm the users choice to submit
                 // this will end the attempt
                 $this->RTQ->get_group_attempt($groupid);
+                // If no group attempt, try preview attempt
+                if (!$this->RTQ->openAttempt) {
+                    $this->RTQ->openAttempt =
+                        $this->RTQ->get_open_preview_attempt_for_user($USER->id);
+                }
                 if ($this->RTQ->openAttempt) {
                     $attemptid = $this->RTQ->openAttempt->id;
                     $this->RTQ->openAttempt->close_attempt($this->RTQ);

@@ -441,6 +441,33 @@ class groupquiz {
 
     }
 
+    public function get_open_preview_attempt_for_user($userid) {
+        global $DB;
+
+        $params = [
+            'groupquizid' => $this->groupquiz->id,
+            'userid'      => $userid,
+            'preview'     => 1,
+        ];
+
+        $records = $DB->get_records('groupquiz_attempts', $params, 'timestart DESC');
+
+        foreach ($records as $record) {
+            if ($record->state == \mod_groupquiz\groupquiz_attempt::INPROGRESS ||
+                $record->state == \mod_groupquiz\groupquiz_attempt::NOTSTARTED) {
+
+                return new \mod_groupquiz\groupquiz_attempt(
+                    $this->get_questionmanager(),
+                    $record,
+                    $this->getContext()
+                );
+            }
+        }
+
+        return null;
+    }
+
+
     public function get_open_attempt_for_group($groupid) {
 
         // use the getall attempts with the specified options
@@ -480,6 +507,15 @@ class groupquiz {
             $openAttempt = $this->get_open_attempt_for_group($group);
             if ($openAttempt !== false) {
                 $this->openAttempt = $openAttempt;
+                return true;
+            }
+        }
+
+        if ($preview) {
+            // Reuse existing preview attempt
+            $openpreview = $this->get_open_preview_attempt_for_user($USER->id);
+            if ($openpreview) {
+                $this->openAttempt = $openpreview;
                 return true;
             }
         }
