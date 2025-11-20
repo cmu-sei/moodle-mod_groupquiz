@@ -110,7 +110,7 @@ class view {
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_cm($this->RTQ->getCM());
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "groupquiz") . ': ' .
-            format_string($groupquiz->name, true)));
+                format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
 
@@ -148,15 +148,14 @@ class view {
                         $this->RTQ->get_renderer()->view_header(true);
                         $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
                         $this->RTQ->get_renderer()->view_footer();
-            } else {
-                echo "error - no open attempt";
-                        $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
-                exit;
-            }
-            break;
+                } else {
+                    echo "error - no open attempt";
+                            $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
+                    exit;
+                }
+                break;
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
-
                 $preview = 1;
                 $previewgroup = null;
 
@@ -167,10 +166,8 @@ class view {
                 } else {
                     $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
                 }
-            break;
-
+                break;
             case 'startquiz':
-
                 // case for the quiz start landing page
                 // set the quiz view page to the base layout for 1 column layout
                 $PAGE->set_pagelayout('base');
@@ -181,36 +178,36 @@ class view {
                     $this->RTQ->get_renderer()->view_header(true);
                     $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
                     $this->RTQ->get_renderer()->view_footer();
-		} else {
-		    $this->RTQ->get_renderer()->render_popup_error("error - could not open attempt for $groupid");
-		}
+                } else {
+                    $this->RTQ->get_renderer()->render_popup_error("error - could not open attempt for $groupid");
+                }
                 break;
-	    case 'submitquiz':
-		// TODO maybe there should be js on the button that makes a popup to id
-		// unanswered questions and confirm the users choice to submit
-		// this will end the attempt
+            case 'submitquiz':
+                // TODO maybe there should be js on the button that makes a popup to id
+                // unanswered questions and confirm the users choice to submit
+                // this will end the attempt
                 $this->RTQ->get_group_attempt($groupid);
-		if ($this->RTQ->openAttempt) {
-		    $attemptid = $this->RTQ->openAttempt->id;
-		    $this->RTQ->openAttempt->close_attempt($this->RTQ);
-		    $attempt = $this->RTQ->openAttempt;
-		    $points = $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
-		    $this->RTQ->get_grader()->save_group_grade($attempt);
+                if ($this->RTQ->openAttempt) {
+                    $attemptid = $this->RTQ->openAttempt->id;
+                    $this->RTQ->openAttempt->close_attempt($this->RTQ);
+                    $attempt = $this->RTQ->openAttempt;
+                    $points = $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
+                    $this->RTQ->get_grader()->save_group_grade($attempt);
 
-		    // TODO determine if we like this best
-	            $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
-	            $viewattempturl->param('id', $this->RTQ->getCM()->id);
--                   $viewattempturl->param('groupquizid', $this->RTQ->getRTQ()->id);
-	            $viewattempturl->param('attemptid', $attemptid);
-		    redirect($viewattempturl, null, 0);
-		} else {
+                    // TODO determine if we like this best
+                    $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
+                    $viewattempturl->param('id', $this->RTQ->getCM()->id);
+                    $viewattempturl->param('groupquizid', $this->RTQ->getRTQ()->id);
+                    $viewattempturl->param('attemptid', $attemptid);
+                    redirect($viewattempturl, null, 0);
+                } else {
                     // redirect to the quiz view page
-		    // TODO isnt that just this page?
+                    // TODO isnt that just this page?
                     $quizstarturl = clone($this->pageurl);
                     $quizstarturl->param('action', '');
                     redirect($quizstarturl, null, 0);
-		}
-		break;
+                }
+                break;
             default:
                 // trigger event for course module viewed
                 $event = \mod_groupquiz\event\course_module_viewed::create(array(
@@ -243,7 +240,6 @@ class view {
      *
      */
     protected function get_parameters() {
-
         $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHANUM);
         $this->pagevars['groupid'] = optional_param('groupid', '0', PARAM_INT);
         $this->pagevars['attemptid'] = optional_param('attemptid', '0', PARAM_INT);
