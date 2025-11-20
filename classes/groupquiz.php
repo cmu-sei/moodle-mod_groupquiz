@@ -601,7 +601,7 @@ class groupquiz {
                 $canreviewmarks = true;
             }
         }
-	return  $canreviewmarks;
+	    return  $canreviewmarks;
     }
 
     public function canreviewattempt($reviewoptions, $state) {

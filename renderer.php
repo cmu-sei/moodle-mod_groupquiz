@@ -180,13 +180,14 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         echo $this->quiz_intro();
         echo html_writer::end_div();
 
+        $groupid   = 0;
         $cm        = $this->rtq->getCM();
         $groupquiz = $this->rtq->getRTQ();
         $hasopenpreview = false;
         if (!empty($groupquiz->id)) {
             $hasopenpreview = $DB->record_exists('groupquiz_attempts', [
                 'groupquizid' => $groupquiz->id,
-                'userid'      => $USER->id,
+                'forgroupid'  => $groupid,
                 'preview'     => 1,
                 'state'       => \mod_groupquiz\groupquiz_attempt::INPROGRESS,
             ]);
@@ -295,9 +296,9 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
             //$params = array(
             //    'id' => $this->rtq->getCM()->id,
             //    'action' => 'continuequiz',
-        //	'attemptid' => $attemptid,
-        //	'groupid' => $groupid
-        //  );
+            //	'attemptid' => $attemptid,
+            //	'groupid' => $groupid
+            //  );
 	        $starturl = new moodle_url('/mod/groupquiz/view.php');
 	        $starturl->param('id', $this->rtq->getCM()->id);
 	        $starturl->param('action', 'continuequiz');
@@ -306,8 +307,8 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 	    } else {
             $output .= html_writer::tag('p', get_string('startinst', 'groupquiz'), array('id' => 'quizstartinst'));
             //$params = array(
-             //   'id' => $this->rtq->getCM()->id,
-             //   'action' => 'startquiz',
+            //   'id' => $this->rtq->getCM()->id,
+            //   'action' => 'startquiz',
             //	  'groupid' => $groupid
             //    );
             //$starturl = new moodle_url('/mod/groupquiz/view.php', $params);
@@ -394,7 +395,6 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
                   'enctype' => 'multipart/form-data', 'accept-charset' => 'utf-8',
                   'id'      => 'q' . $qnum, 'class' => 'groupquiz_question',
                   'name'    => 'q' . $qnum));
-
 
         $output .= $attempt->render_question($slot);
 

@@ -122,6 +122,7 @@ class view {
      */
     public function handle_request() {
         global $DB, $USER, $PAGE;
+        $renderer = $this->RTQ->get_renderer();
 
         // first check if there are questions or not.  If there are no questions display that message instead,
         // regardless of action.
@@ -132,42 +133,39 @@ class view {
         $groupid = $this->RTQ->get_groupmanager()->get_user_group();
 
         if ($groupid == -1 && !$this->RTQ->is_instructor()) {
-            $this->RTQ->get_renderer()->setMessage('error', get_string('usernotingroup', 'groupquiz'));
+            $renderer->setMessage('error', get_string('usernotingroup', 'groupquiz'));
         } else if ($this->RTQ->is_instructor()) {
             $groupid = 0;
         }
 
         switch ($this->pagevars['action']) {
             case 'noquestions':
-                $this->RTQ->get_renderer()->view_header();
-                $this->RTQ->get_renderer()->no_questions($this->RTQ->is_instructor());
-                $this->RTQ->get_renderer()->view_footer();
+                $renderer->view_header();
+                $renderer->no_questions($this->RTQ->is_instructor());
+                $renderer->view_footer();
                 break;
             case 'continuepreview':
                 $PAGE->set_pagelayout('base');
-
                 $openpreview = $this->RTQ->get_open_preview_attempt_for_user($USER->id);
-
                 if ($openpreview) {
                     $this->RTQ->openAttempt = $openpreview;
                 }
-
-                $this->RTQ->get_renderer()->view_header(true);
-                $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                $this->RTQ->get_renderer()->view_footer();
-            break;
+                $renderer->view_header(true);
+                $renderer->render_quiz($this->RTQ->openAttempt);
+                $renderer->view_footer();
+                break;
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
 
-                if (!$this->RTQ->init_attempt(1, null)) {
-                    $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
+                if (!$this->RTQ->init_attempt(1, $groupid)) {
+                    $renderer->render_popup_error('error - could not open preview attempt');
                     break;
                 }
 
-                $this->RTQ->get_renderer()->view_header(true);
-                $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                $this->RTQ->get_renderer()->view_footer();
-            break;
+                $renderer->view_header(true);
+                $renderer->render_quiz($this->RTQ->openAttempt);
+                $renderer->view_footer();
+                break;
             case 'startquiz':
                 // case for the quiz start landing page
                 // set the quiz view page to the base layout for 1 column layout
@@ -176,11 +174,11 @@ class view {
                 $preview = 0;
                 if ($this->RTQ->init_attempt($preview, $groupid)) {
                     // now show the quiz start landing page
-                    $this->RTQ->get_renderer()->view_header(true);
-                    $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                    $this->RTQ->get_renderer()->view_footer();
+                    $renderer->view_header(true);
+                    $renderer->render_quiz($this->RTQ->openAttempt);
+                    $renderer->view_footer();
                 } else {
-                    $this->RTQ->get_renderer()->render_popup_error("error - could not open attempt for $groupid");
+                    $renderer->render_popup_error("error - could not open attempt for $groupid");
                 }
                 break;
             case 'submitquiz':
@@ -189,10 +187,6 @@ class view {
                 // this will end the attempt
                 $this->RTQ->get_group_attempt($groupid);
                 // If no group attempt, try preview attempt
-                if (!$this->RTQ->openAttempt) {
-                    $this->RTQ->openAttempt =
-                        $this->RTQ->get_open_preview_attempt_for_user($USER->id);
-                }
                 if ($this->RTQ->openAttempt) {
                     $attemptid = $this->RTQ->openAttempt->id;
                     $this->RTQ->openAttempt->close_attempt($this->RTQ);
@@ -230,21 +224,21 @@ class view {
                     // if preview attempt is active, dont show home
                     $this->RTQ->get_group_attempt(group: $groupid);
                     if ($this->RTQ->openAttempt) {
-                        $this->RTQ->get_renderer()->view_header(true);
-                        $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header(true);
+                        $renderer->render_quiz($this->RTQ->openAttempt);
+                        $renderer->view_footer();
                     } else{
                         // load active attempt
-                        $this->RTQ->get_renderer()->view_header();
-                        $this->RTQ->get_renderer()->view_inst_home();
-                        $this->RTQ->get_renderer()->view_footer();
+                        $renderer->view_header();
+                        $renderer->view_inst_home();
+                        $renderer->view_footer();
                     }
-                    $this->RTQ->get_renderer()->view_footer();
-
+                    // TODO redirect to view attempt after quiz is submitted
+                    $renderer->view_footer();
                 } else {
-                    $this->RTQ->get_renderer()->view_header();
-                    $this->RTQ->get_renderer()->view_student_home();
-                    $this->RTQ->get_renderer()->view_footer();
+                    $renderer->view_header();
+                    $renderer->view_student_home();
+                    $renderer->view_footer();
                 }
                 break;
         }

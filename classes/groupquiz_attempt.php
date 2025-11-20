@@ -230,7 +230,7 @@ class groupquiz_attempt {
     public function check_tries_left($slotnum, $tottries) {
 
 
-        if( empty($this->attempt->responded_count) ){
+        if (empty($this->attempt->responded_count) ){
             $this->attempt->responded_count = 0;
         }
 
@@ -393,7 +393,6 @@ class groupquiz_attempt {
         }
 
         foreach ($this->get_questions() as $question) {
-
             /** @var \mod_groupquiz\groupquiz_question $question */
             if ($question->getQuestion()->id == $qid) {
                 return $question;

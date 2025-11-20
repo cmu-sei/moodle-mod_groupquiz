@@ -103,6 +103,7 @@ class viewquizattempt {
      */
     public function handle_request() {
         global $OUTPUT, $USER, $PAGE;
+        $renderer = $this->RTQ->get_renderer();
 
         switch ($this->pagevars['action']) {
 
@@ -115,14 +116,14 @@ class viewquizattempt {
                 if ($success) {
                     // if successful recalculate the grade for the attempt's userid as the grader can update grades on the questions
                     $PAGE->set_pagelayout('base');
-                    $this->RTQ->get_renderer()->view_header(true);
+                    $renderer->view_header(true);
                     $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
-		    $this->RTQ->get_grader()->save_group_grade($attempt);
-                    $this->RTQ->get_renderer()->setMessage('success', 'Successfully saved comment/grade');
-                    $this->RTQ->get_renderer()->render_attempt($attempt);
+                    $this->RTQ->get_grader()->save_group_grade($attempt);
+                    $renderer->setMessage('success', 'Successfully saved comment/grade');
+                    $renderer->render_attempt($attempt);
                 } else {
-                    $this->RTQ->get_renderer()->setMessage('error', 'Couldn\'t save comment/grade');
-                    $this->RTQ->get_renderer()->render_attempt($attempt);
+                    $renderer->setMessage('error', 'Couldn\'t save comment/grade');
+                    $renderer->render_attempt($attempt);
                 }
 
                 break;
@@ -130,15 +131,15 @@ class viewquizattempt {
 
                 // default is to show the attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
-		if (!$attempt) {
+                if (!$attempt) {
                     global $PAGE;
                     $PAGE->set_pagelayout('base');
-                    $this->RTQ->get_renderer()->view_header(true);
-                    $this->RTQ->get_renderer()->setMessage('error', get_string('noattempt', 'groupquiz'));
-                    $this->RTQ->get_renderer()->render_attempt(null);
-                    $this->RTQ->get_renderer()->view_footer();
+                    $renderer->view_header(true);
+                    $renderer->setMessage('error', get_string('noattempt', 'groupquiz'));
+                    $renderer->render_attempt(null);
+                    $renderer->view_footer();
                     break;
-		}
+                }
 
                 $hascapability = true;
 
@@ -157,9 +158,9 @@ class viewquizattempt {
 
                     global $PAGE;
                     $PAGE->set_pagelayout('base');
-                    $this->RTQ->get_renderer()->view_header(true);
-                    $this->RTQ->get_renderer()->render_attempt($attempt);
-                    $this->RTQ->get_renderer()->view_footer();
+                    $renderer->view_header(true);
+                    $renderer->render_attempt($attempt);
+                    $renderer->view_footer();
                 }
                 break;
         }
@@ -175,10 +176,8 @@ class viewquizattempt {
         $this->pagevars['action'] = optional_param('action', '', PARAM_ALPHAEXT);
         $this->pagevars['attemptid'] = required_param('attemptid', PARAM_INT);
         $this->pagevars['slot'] = optional_param('slot', '', PARAM_INT);
-	$this->pagevars['id'] = optional_param('id', '', PARAM_INT);
-
+        $this->pagevars['id'] = optional_param('id', '', PARAM_INT);
     }
-
 
 }
 
