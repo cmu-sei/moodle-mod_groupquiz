@@ -91,7 +91,7 @@ class viewquizattempt {
         $PAGE->set_pagelayout('popup');
         $PAGE->set_context($this->RTQ->getContext());
         $PAGE->set_title(strip_tags($course->shortname . ': ' . get_string("modulename", "groupquiz") . ': ' .
-            format_string($groupquiz->name, true)));
+                format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
     }
@@ -125,7 +125,6 @@ class viewquizattempt {
                     $renderer->setMessage('error', 'Couldn\'t save comment/grade');
                     $renderer->render_attempt($attempt);
                 }
-
                 break;
             default:
 

@@ -501,7 +501,6 @@ class groupquiz_attempt {
         $transaction = $DB->start_delegated_transaction();
         $this->quba->process_all_actions($timenow);
         $this->attempt->timemodified = time();
-
         $this->save();
 
         $transaction->allow_commit();
@@ -557,8 +556,7 @@ class groupquiz_attempt {
         // Process any data that was submitted.
         if (data_submitted() && confirm_sesskey()) {
             if (optional_param('submit', false, PARAM_BOOL) &&
-                \question_engine::is_manual_grade_in_range($this->attempt->uniqueid, $slot)
-            ) {
+                        \question_engine::is_manual_grade_in_range($this->attempt->uniqueid, $slot)) {
                 $transaction = $DB->start_delegated_transaction();
                 $this->quba->process_all_actions(time());
                 $this->save();
@@ -580,10 +578,9 @@ class groupquiz_attempt {
 
                 return true;
             } else {
-		// TODO maybe add button to go back
-		echo "value entered is not in range";
-		exit;
-	    }
+                // TODO maybe add button to go back
+                throw new \Exception('value entered is not in range');
+            }
         }
 
         return false;
@@ -610,7 +607,6 @@ class groupquiz_attempt {
         }
 
         $questiondef = $this->quba->get_question($slot);
-
         $questionrenderer = $questiondef->get_renderer($PAGE);
 
         // get default display options
@@ -641,7 +637,6 @@ class groupquiz_attempt {
 
         $questionattempt = $this->quba->get_question_attempt($slot);
         $question = $this->quba->get_question($slot);
-
         $rtqQuestion = $this->get_question_by_slot($slot);
 
         // use the renderer to display just the question text area, but in read only mode
@@ -785,7 +780,6 @@ class groupquiz_attempt {
 
         // otherwise throw a new exception
         throw new \Exception('undefined property(' . $prop . ') on groupquiz attempt');
-
     }
 
 

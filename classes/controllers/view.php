@@ -155,7 +155,7 @@ class view {
                             $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
                     exit;
                 }
-            break;
+                break;
             case 'continuepreview':
                 $PAGE->set_pagelayout('base');
 
@@ -166,8 +166,7 @@ class view {
                     $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
                     $this->RTQ->get_renderer()->view_footer();
                 }
-
-            break;
+                break;
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
 
@@ -180,7 +179,6 @@ class view {
                 } else {
                     $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
                 }
-
                 break;
             case 'startquiz':
                 // case for the quiz start landing page
