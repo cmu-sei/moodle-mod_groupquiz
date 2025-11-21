@@ -307,7 +307,7 @@ class groupquiz {
     public function get_review_options() {
 
         $reviewoptions = new \stdClass();
-	$reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
+	    $reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
         $reviewoptions->reviewcorrectness = $this->groupquiz->reviewcorrectness;
         $reviewoptions->reviewmarks = $this->groupquiz->reviewmarks;
         $reviewoptions->reviewspecificfeedback = $this->groupquiz->reviewspecificfeedback;
@@ -464,28 +464,43 @@ class groupquiz {
         $openAttempt = $this->get_open_attempt_for_group($group);
         if (!is_null($openAttempt)) {
             $this->openAttempt = $openAttempt;
-	    return true;
+	        return true;
         }
         return false;
     }
 
     public function init_attempt($preview, $group) {
         global $DB, $USER;
-	// TODO handle preview mode
-        if (is_null($group) || ($group == 0)) {
-	    return false;
-	}
-        $openAttempt = $this->get_open_attempt_for_group($group);
-        if ($openAttempt !== false) {
-            $this->openAttempt = $openAttempt;
-	    return true;
+
+        if (!$preview && (is_null($group) || $group == 0)) {
+            return false;
         }
+
+        if (!$preview && !is_null($group) && $group != 0) {
+            $openAttempt = $this->get_open_attempt_for_group($group);
+            if ($openAttempt !== false) {
+                $this->openAttempt = $openAttempt;
+                return true;
+            }
+        }
+
+        if ($preview) {
+            if (is_null($group)) {
+                $group = 0;
+            }
+
+            $openAttempt = $this->get_open_attempt_for_group($group);
+            if ($openAttempt !== false) {
+                $this->openAttempt = $openAttempt;
+                return true;
+            }
+         }
 
         // create a new attempt
         $attempt = new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager());
         $attempt->userid = $USER->id;
-	$attempt->userstart = $USER->id;
-        $attempt->forgroupid =  $group;
+	    $attempt->userstart = $USER->id;
+        $attempt->forgroupid  = $group;
         $attempt->state = \mod_groupquiz\groupquiz_attempt::NOTSTARTED;
         $attempt->timemodified = time();
         $attempt->timestart = time();
@@ -493,15 +508,17 @@ class groupquiz {
         $attempt->groupquizid = $this->getRTQ()->id;
         $attempt->get_html_head_contributions();
         $attempt->setState('inprogress');
-	$attempt->attemptnum = null;
-	$attempt->userstop = null;
-	$attempt->sumgrades = 0;
+        // TODO get previous attempt count and update
+        $attempt->attemptnum = null;
+        $attempt->userstop = null;
+        $attempt->sumgrades = 0;
+        $attempt->preview = $preview;
 
         if ($attempt->save()) {
             $this->openAttempt = $attempt;
-	} else {
-	    return false;
-	}
+        } else {
+            return false;
+        }
 
         $params = array(
             'objectid'      => $this->groupquiz->id,
@@ -509,11 +526,11 @@ class groupquiz {
             'relateduserid' => $USER->id
         );
         $event = \mod_groupquiz\event\attempt_started::create($params);
-	// TODO figure out what its sedning a null object
+	    // TODO figure out what is sending a null object
         $event->add_record_snapshot('groupquiz_attempts', $this->openAttempt->get_attempt());
         $event->trigger();
 
-        return true; // return true if we get to here
+        return true;
     }
 
     /**
@@ -534,19 +551,19 @@ class groupquiz {
     }
 
     public function get_intro($attemptid) {
-	return $this->intro;
+	    return $this->intro;
     }
 
     public function get_openclose_state() {
-	$state = 'open';
-	$timenow = time();
-	if ($this->groupquiz->timeopen && ($timenow < $this->groupquiz->timeopen)) {
-	    $state = 'unopen';
+        $state = 'open';
+        $timenow = time();
+        if ($this->groupquiz->timeopen && ($timenow < $this->groupquiz->timeopen)) {
+            $state = 'unopen';
         } else if ($this->groupquiz->timeclose && ($timenow > $this->groupquiz->timeclose)) {
-	    $state = 'closed';
+            $state = 'closed';
         }
 
-	return $state;
+        return $state;
     }
 
     public function canreviewmarks($reviewoptions, $state) {
@@ -560,7 +577,7 @@ class groupquiz {
                 $canreviewmarks = true;
             }
         }
-	return  $canreviewmarks;
+	    return  $canreviewmarks;
     }
 
     public function canreviewattempt($reviewoptions, $state) {
