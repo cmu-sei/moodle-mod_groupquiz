@@ -415,8 +415,9 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
             )
         );
 
-        // instructors don't need to save questions
-        if (!$this->rtq->is_instructor()) {
+        $ispreview = !empty($attempt->get_attempt()->preview);
+
+        if (!$this->rtq->is_instructor() || $ispreview) {
             $savebtncont = html_writer::div($savebtn, 'question_save');
         } else {
             $savebtncont = '';

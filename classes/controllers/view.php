@@ -143,6 +143,19 @@ class view {
                 $renderer->no_questions($this->RTQ->is_instructor());
                 $renderer->view_footer();
                 break;
+            case 'continuequiz':
+                $this->RTQ->get_group_attempt($groupid);
+                // load active attempt
+                if ($this->RTQ->openAttempt) {
+                    $this->RTQ->get_renderer()->view_header(true);
+                    $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                    $this->RTQ->get_renderer()->view_footer();
+                } else {
+                    echo "error - no open attempt";
+                            $this->RTQ->get_renderer()->render_popup_error("error - no open attempt");
+                    exit;
+                }
+            break;
             case 'continuepreview':
                 $PAGE->set_pagelayout('base');
 
