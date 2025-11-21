@@ -155,14 +155,6 @@ class view {
                 }
 
             break;
-                $openpreview = $this->RTQ->get_open_preview_attempt_for_user($USER->id);
-                if ($openpreview) {
-                    $this->RTQ->openAttempt = $openpreview;
-                }
-                $renderer->view_header(true);
-                $renderer->render_quiz($this->RTQ->openAttempt);
-                $renderer->view_footer();
-                break;
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
 
@@ -176,9 +168,6 @@ class view {
                     $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
                 }
 
-                $renderer->view_header(true);
-                $renderer->render_quiz($this->RTQ->openAttempt);
-                $renderer->view_footer();
                 break;
             case 'startquiz':
                 // case for the quiz start landing page
