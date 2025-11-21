@@ -72,7 +72,6 @@ class view {
         $this->pagevars = array();
 
         $this->pageurl = new \moodle_url($baseurl);
-        //$this->pageurl->remove_all_params();
 
         $id = optional_param('id', false, PARAM_INT);
         $groupquizid = optional_param('groupquizid', false, PARAM_INT);
@@ -146,6 +145,16 @@ class view {
                 break;
             case 'continuepreview':
                 $PAGE->set_pagelayout('base');
+
+                $this->RTQ->get_group_attempt($groupid);
+
+                if ($this->RTQ->openAttempt) {
+                    $this->RTQ->get_renderer()->view_header(true);
+                    $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                    $this->RTQ->get_renderer()->view_footer();
+                }
+
+            break;
                 $openpreview = $this->RTQ->get_open_preview_attempt_for_user($USER->id);
                 if ($openpreview) {
                     $this->RTQ->openAttempt = $openpreview;
@@ -157,9 +166,14 @@ class view {
             case 'previewquiz':
                 $PAGE->set_pagelayout('base');
 
-                if (!$this->RTQ->init_attempt(1, $groupid)) {
-                    $renderer->render_popup_error('error - could not open preview attempt');
-                    break;
+                $preview = 1;
+
+                if ($this->RTQ->init_attempt($preview, $groupid)) {
+                    $this->RTQ->get_renderer()->view_header(true);
+                    $this->RTQ->get_renderer()->render_quiz($this->RTQ->openAttempt);
+                    $this->RTQ->get_renderer()->view_footer();
+                } else {
+                    $this->RTQ->get_renderer()->render_popup_error('error - could not open preview attempt');
                 }
 
                 $renderer->view_header(true);
@@ -221,20 +235,10 @@ class view {
 
                 // determine home display based on role
                 if ($this->RTQ->is_instructor()) {
-                    // if preview attempt is active, dont show home
-                    $this->RTQ->get_group_attempt(group: $groupid);
-                    if ($this->RTQ->openAttempt) {
-                        $renderer->view_header(true);
-                        $renderer->render_quiz($this->RTQ->openAttempt);
-                        $renderer->view_footer();
-                    } else{
-                        // load active attempt
-                        $renderer->view_header();
-                        $renderer->view_inst_home();
-                        $renderer->view_footer();
-                    }
-                    // TODO redirect to view attempt after quiz is submitted
-                    $renderer->view_footer();
+                    // load active attempt
+                    $this->RTQ->get_renderer()->view_header();
+                    $this->RTQ->get_renderer()->view_inst_home();
+                    $this->RTQ->get_renderer()->view_footer();
                 } else {
                     $renderer->view_header();
                     $renderer->view_student_home();

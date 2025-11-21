@@ -512,13 +512,16 @@ class groupquiz {
         }
 
         if ($preview) {
-            // Reuse existing preview attempt
-            $openpreview = $this->get_open_preview_attempt_for_user($USER->id);
-            if ($openpreview) {
-                $this->openAttempt = $openpreview;
+            if (is_null($group)) {
+                $group = 0;
+            }
+
+            $openAttempt = $this->get_open_attempt_for_group($group);
+            if ($openAttempt !== false) {
+                $this->openAttempt = $openAttempt;
                 return true;
             }
-        }
+         }
 
         // create a new attempt
         $attempt = new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager());
