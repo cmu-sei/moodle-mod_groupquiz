@@ -1,13 +1,18 @@
 # Group Quiz Plugin for Moodle
 
 ## Description
-This is an activity plugin that allows a group of students to share a quiz attempt in real-time. It is based on the mod_activequiz plugin's JaveScript functionality that polls quiz data from the server every few seconds. A group of students are able to share quiz attempts. While an attempt is active for their group the students will see the most recent response entered by a groupmate for each question. The students in the group will all receive the same grade for the quiz. The quiz can have a time limit as well as open and close times. Different review options similar to the standard quiz are available on the quiz.
+This is an activity plugin that allows a group of students to share a quiz attempt in real-time. It is based on the mod_activequiz plugin's JavaScript functionality that polls quiz data from the server every few seconds. A group of students are able to share quiz attempts. While an attempt is active for their group the students will see the most recent response entered by a groupmate for each question. The students in the group will all receive the same grade for the quiz. The quiz can have a time limit as well as open and close times. Different review options similar to the standard quiz are available on the quiz.
 
 ## Requirements
 * A grouping of groups must be specified on the activity.
 
 ## Installation
 * Download the plugin and extract into mod/groupquiz.
+
+## Current Issues
+* Grade method must be set prior to attempt in order for it to be accurate for that group
+* Question bank view should display edit column
+* Question list should provide a preview button
 
 ## License
 Group Quiz Plugin for Moodle

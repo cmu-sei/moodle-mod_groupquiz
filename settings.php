@@ -39,22 +39,22 @@ require_once($CFG->dirroot.'/mod/groupquiz/locallib.php');
 
 // Create the quiz settings page.
 $pagetitle = get_string('modulename', 'groupquiz');
-$groupquizsettings = new admin_settingpage('modsettinggroupquiz', $pagetitle, 'moodle/site:config');
+$groupsettings = new admin_settingpage('modsettinggroupquiz', $pagetitle, 'moodle/site:config');
 
 if ($ADMIN->fulltree) {
     //--- general settings -----------------------------------------------------------------------------------
 
     // Introductory explanation that all the settings are defaults for the add quiz form.
-    $groupquizsettings->add(new admin_setting_heading('quizintro', '', get_string('configintro', 'groupquiz')));
+    $groupsettings->add(new admin_setting_heading('groupquizintro', '', get_string('configintro', 'groupquiz')));
 
     // Time limit.
-    $groupquizsettings->add(new admin_setting_configduration_with_advanced('quiz/timelimit',
-            get_string('timelimit', 'quiz'), get_string('configtimelimitsec', 'groupquiz'),
+    $groupsettings->add(new admin_setting_configduration_with_advanced('groupquiz/timelimit',
+            get_string('timelimit', 'groupquiz'), get_string('configtimelimitsec', 'groupquiz'),
             array('value' => '0', 'adv' => false), 60));
 
     // Shuffle within questions.
-    $groupquizsettings->add(new admin_setting_configcheckbox_with_advanced('quiz/shuffleanswers',
-            get_string('shufflewithin', 'quiz'), get_string('configshufflewithin', 'groupquiz'),
+    $groupsettings->add(new admin_setting_configcheckbox_with_advanced('groupquiz/shuffleanswers',
+            get_string('shufflewithin', 'groupquiz'), get_string('configshufflewithin', 'groupquiz'),
             array('value' => 1, 'adv' => false)));
 
     $choices = array();
@@ -78,5 +78,21 @@ if ($ADMIN->fulltree) {
         get_string('showuserpicture', 'groupquiz'),
 	get_string('showuserpicture_help', 'groupquiz'),
 	1, $options));
+
+    // Review options.
+    $settings->add(new admin_setting_heading('reviewheading',
+            get_string('reviewoptionsheading', 'groupquiz'), ''));
+    foreach (mod_groupquiz_admin_review_setting::fields() as $field => $name) {
+        $default = mod_groupquiz_admin_review_setting::all_on();
+        $forceduring = null;
+        if ($field == 'attempt') {
+            $forceduring = true;
+        } else if ($field == 'overallfeedback') {
+            $default = $default ^ mod_groupquiz_admin_review_setting::DURING;
+            $forceduring = false;
+        }
+        $settings->add(new mod_groupquiz_admin_review_setting('groupquiz/review' . $field,
+                $name, '', $default, $forceduring));
+    }
 
 }

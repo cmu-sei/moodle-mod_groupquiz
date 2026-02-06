@@ -67,6 +67,8 @@ class questionmanager {
     /** @var \moodle_url */
     protected $baseurl;
 
+    /** @var array|null Stores ordered questions */
+    public ?array $orderedquestions = null;
 
     /**
      * Construct an instance of question manager
@@ -226,7 +228,7 @@ class questionmanager {
 
         } else {
             // display the form
-            $mform->set_data(array('points' => $rtqquestion->points));
+            $mform->set_data(array('points' => number_format($rtqquestion->points, 2)));
             $this->renderer->print_header();
             $this->renderer->addquestionform($mform);
             $this->renderer->footer();
@@ -242,6 +244,7 @@ class questionmanager {
      */
     public function delete_question($questionid)
     {
+	// TODO disable this if attempts exist
         global $DB;
 
         try {

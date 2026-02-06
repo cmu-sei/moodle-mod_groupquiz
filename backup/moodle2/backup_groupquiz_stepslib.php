@@ -43,13 +43,14 @@ class backup_groupquiz_activity_structure_step extends backup_activity_structure
 
     protected function define_structure() {
 
-        //the groupquiz module stores no user info
-
         // Define each element separated
         $groupquiz = new backup_nested_element('groupquiz', array('id'), array(
-            'name', 'intro', 'eventtemplate', 'vmapp',
+            'name', 'intro', 'introformat', 'timeopen', 'timeclose', 'timelimit',
+	    'grade', 'grademethod', 'reviewattempt', 'reviewcorrectness', 'reviewmarks',
+	    'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
+	    'reviewoverallfeedback', 'reviewmanualcomment', 'grouping', 'questionorder',
+	    'shuffleanswers', 'showuserpicture', 'requireallmemberssubmit',
             'timecreated', 'timemodified'));
-
 
         // Build the tree
         //nothing here for groupquizs

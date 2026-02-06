@@ -31,23 +31,33 @@ jobs:
       
       - name: package
         run: |
-          OLDVERSION=${{ steps.groupquiz.outputs.release }}
-          OLDDATE=`echo $OLDVERSION | cut -b 1-8`
-          NEWDATE=`date +%Y%m%d`
-          if [ $OLDDATE -ne $NEWDATE ]; then
-              NEWVERSION=$NEWDATE\01
-          else
-              OLDVERS=`echo $OLDVERSION | cut -b 9-10`
-              OLDVERS=${OLDVERS#0}
-              let NEWVERS=(OLDVERS + 1)
-              NEWVERSION=$OLDDATE`printf %02d $NEWVERS`
-          fi
+          OLDRELEASE=${{ steps.groupquiz.outputs.release }}
           PREVIOUSVERSION=$(grep "plugin->version" groupquiz/version.php | sed -e "s/.*= \(.*\);.*/\1/")
-          sed -i "s#$PREVIOUSVERSION#$NEWVERSION#" groupquiz/version.php
+          if [ $OLDRELEASE -ne $PREVIOUSVERSION ]; then
+              NEWVERSION=$PREVIOUSVERSION
+          else
+              OLDDATE=`echo $PREVIOUSVERSION | cut -b 1-8`
+              NEWDATE=`date +%Y%m%d`
+              if [ $OLDDATE -ne $NEWDATE ]; then
+                  NEWVERSION=$NEWDATE\00
+              else
+                  OLDVERS=`echo $PREVIOUSVERSION | cut -b 9-10`
+                  OLDVERS=${OLDVERS#0}
+                  let NEWVERS=(OLDVERS + 1)
+                  NEWVERSION=$OLDDATE`printf %02d $NEWVERS`
+              fi
+              sed -i "s#\(plugin->version.*\)$PREVIOUSVERSION#\1$NEWVERSION#" groupquiz/version.php
+              cd ./groupquiz
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add version.php
+              git commit -m "Updating version to $NEWVERSION"
+              git push
+              cd ..
+          fi
           zip -r mod_groupquiz_$NEWVERSION.zip groupquiz/ -x  "groupquiz/*.git*"
-          echo ::set-env name=artifact_version::$NEWVERSION
-          echo ::set-env name=artifact_name::mod_groupquiz_$NEWVERSION
-          
+          echo "artifact_version=$NEWVERSION" >> $GITHUB_ENV
+          echo "artifact_name=mod_groupquiz_$NEWVERSION" >> $GITHUB_ENV
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

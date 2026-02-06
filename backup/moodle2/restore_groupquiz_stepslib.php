@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,9 +16,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Custom action column for adding a question to the realtime quiz from the question bank view
- *
- * @package     mod_groupquiz
+ * @package   mod_groupquiz
+ * @category  backup
  * @copyright   2020 Carnegie Mellon University
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,38 +30,48 @@ Released under a GNU GPL 3.0-style license, please see license.txt or contact pe
 [DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
 DM20-0197
  */
 
-namespace mod_groupquiz\qbanktypes;
+/**
+ * Define all the restore steps that will be used by the restore_groupquiz_activity_task
+ */
 
-defined('MOODLE_INTERNAL') || die();
+/**
+ * Structure step to restore one groupquiz activity
+ */
+class restore_groupquiz_activity_structure_step extends restore_activity_structure_step {
 
-class question_bank_add_to_rtq_action_column extends \core_question\bank\action_column_base {
+    protected function define_structure() {
 
-    protected $stradd;
+        $paths = array();
+        $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
 
-    public function init() {
-        parent::init();
-        $this->stradd = get_string('addtoquiz', 'groupquiz');
+        // Return the paths wrapped into standard activity structure
+        return $this->prepare_activity_structure($paths);
     }
 
-    public function get_name() {
-        return 'addtortqaction';
+    protected function process_groupquiz($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->course = $this->get_courseid();
+
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
+
+	//TODO time setting, behaviour settings, display settings
+
+
+        // insert the groupquiz record
+        $newitemid = $DB->insert_record('groupquiz', $data);
+        // immediately after inserting "activity" record, call this
+        $this->apply_activity_instance($newitemid);
     }
 
-    protected function display_content($question, $rowclasses) {
-        if (!question_has_capability_on($question, 'use')) {
-            return;
-        }
-        $this->print_icon('t/add', $this->stradd, $this->qbank->add_to_rtq_url($question->id));
+    protected function after_execute() {
+        // Add groupquiz related files, no need to match by itemname (just internally handled context)
+        $this->add_related_files('mod_groupquiz', 'intro', null);
     }
-
-    public function get_required_fields() {
-        return array('q.id');
-    }
-
-
 }
-

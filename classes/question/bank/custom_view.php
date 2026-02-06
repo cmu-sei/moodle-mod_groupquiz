@@ -14,12 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_groupquiz\question\bank;
+
+defined('MOODLE_INTERNAL') || die();
+
+//use mod_groupquiz\question\bank\add_action_column;
+
 /**
- * Defines the custom question bank view used on the Edit groupquiz page.
+ * Subclass of the question bank view class to change the way it works/looks
  *
- * @package   mod_groupquiz
- * @copyright 2020 Carnegie Mellon University
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     mod_groupquiz
+ * @copyright   2020 Carnegie Mellon University
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -34,89 +40,10 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
-namespace mod_groupquiz\question\bank;
-defined('MOODLE_INTERNAL') || die();
+class custom_view extends \core_question\local\bank\view {
 
-require_once($CFG->dirroot . '/mod/groupquiz/classes/question/bank/add_action_column.php');
-
-
-/**
- * Subclass to customise the view of the question bank for the groupquiz editing screen.
- *
- * @copyright  2009 Tim Hunt
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class custom_view extends \core_question\bank\view {
     /** @var bool whether the groupquiz this is used by has been attemptd. */
     protected $groupquizhasattempts = false;
-    /** @var \stdClass the groupquiz settings. */
-    protected $groupquiz = false;
-    /** @var int The maximum displayed length of the category info. */
-    const MAX_TEXT_LENGTH = 200;
-
-    /**
-     * Constructor
-     * @param \question_edit_contexts $contexts
-     * @param \moodle_url $pageurl
-     * @param \stdClass $course course settings
-     * @param \stdClass $cm activity settings.
-     * @param \stdClass $groupquiz groupquiz settings.
-     */
-    public function __construct($contexts, $pageurl, $course, $cm, $groupquiz) {
-        parent::__construct($contexts, $pageurl, $course, $cm);
-        $this->groupquiz = $groupquiz;
-    }
-
-    protected function wanted_columns() {
-        global $CFG;
-
-        if (empty($CFG->groupquizquestionbankcolumns)) {
-            $groupquizquestionbankcolumns = array(
-                'add_action_column',
-                'checkbox_column',
-                'question_type_column',
-                'question_name_text_column',
-                'preview_action_column',
-            );
-        } else {
-            $groupquizquestionbankcolumns = explode(',', $CFG->groupquizquestionbankcolumns);
-        }
-
-        foreach ($groupquizquestionbankcolumns as $fullname) {
-            if (!class_exists($fullname)) {
-                if (class_exists('mod_groupquiz\\question\\bank\\' . $fullname)) {
-                    $fullname = 'mod_groupquiz\\question\\bank\\' . $fullname;
-                } else if (class_exists('core_question\\bank\\' . $fullname)) {
-                    $fullname = 'core_question\\bank\\' . $fullname;
-                } else if (class_exists('question_bank_' . $fullname)) {
-                    debugging('Legacy question bank column class question_bank_' .
-                            $fullname . ' should be renamed to mod_groupquiz\\question\\bank\\' .
-                            $fullname, DEBUG_DEVELOPER);
-                    $fullname = 'question_bank_' . $fullname;
-                } else {
-                    throw new coding_exception("No such class exists: $fullname");
-                }
-            }
-            $this->requiredcolumns[$fullname] = new $fullname($this);
-        }
-        return $this->requiredcolumns;
-    }
-
-    /**
-     * Specify the column heading
-     *
-     * @return string Column name for the heading
-     */
-    protected function heading_column() {
-        return 'mod_groupquiz\\question\\bank\\question_name_text_column';
-    }
-
-    protected function default_sort() {
-        return array(
-            'core_question\\bank\\question_type_column' => 1,
-            'mod_groupquiz\\question\\bank\\question_name_text_column' => 1,
-        );
-    }
 
     /**
      * Let the question bank display know whether the groupquiz has been attempted,
@@ -129,164 +56,228 @@ class custom_view extends \core_question\bank\view {
         if ($groupquizhasattempts && isset($this->visiblecolumns['addtogroupquizaction'])) {
             unset($this->visiblecolumns['addtogroupquizaction']);
         }
-    }
-
-    public function preview_question_url($question) {
-        return groupquiz_question_preview_url($this->groupquiz, $question);
-    }
-
-    public function add_to_groupquiz_url($questionid) {
-        global $CFG;
-        $params = $this->baseurl->params();
-        $params['addquestion'] = $questionid;
-        $params['sesskey'] = sesskey();
-        return new \moodle_url('/mod/groupquiz/edit.php', $params);
+        if ($this->groupquizhasattempts) {
+            unset($this->visiblecolumns['mod_groupquiz\\question\\bank\\add_action_column']);
+        }
     }
 
     /**
-     * Renders the html question bank (same as display, but returns the result).
+     * Retrieves and configures the available question bank plugins and columns.
      *
-     * Note that you can only output this rendered result once per page, as
-     * it contains IDs which must be unique.
+     * This function initializes the core question bank columns, checks for additional
+     * columns from the TopoMojo plugin and other question bank plugins, and includes them
+     * if they are enabled and meet the necessary criteria. It returns an array of configured
+     * question bank columns.
      *
-     * @return string HTML code for the form
+     * @return array An array of question bank column objects, indexed by their short names.
      */
-    public function render($tabname, $page, $perpage, $cat, $recurse, $showhidden,
-            $showquestiontext, $tagids = []) {
-        ob_start();
-        $this->display($tabname, $page, $perpage, $cat, $recurse, $showhidden, $showquestiontext, $tagids);
+    protected function get_question_bank_plugins(): array {
+        $questionbankclasscolumns = [];
+        $corequestionbankcolumns = [
+            'checkbox_column',
+            'question_type_column',
+            'question_name_text_column',
+            'edit_menu_column',
+            'question_status_column',
+            'version_number_column',
+            'creator_name_column',
+            'modifier_name_column'
+        ];
+
+        if (question_get_display_preference('qbshowtext', 0, PARAM_BOOL, new \moodle_url(''))) {
+            $corequestionbankcolumns[] = 'question_text_row';
+        }
+
+        foreach ($corequestionbankcolumns as $fullname) {
+            $shortname = $fullname;
+            if (class_exists('mod_groupquiz\\question\\bank\\' . $fullname)) {
+                $fullname = 'mod_groupquiz\\question\\bank\\' . $fullname;
+                $questionbankclasscolumns[$shortname] = new $fullname($this);
+            } else if (class_exists('core_question\\local\\bank\\' . $fullname)) {
+                $fullname = 'core_question\\local\\bank\\' . $fullname;
+                $questionbankclasscolumns[$shortname] = new $fullname($this);
+            } else {
+                $questionbankclasscolumns[$shortname] = '';
+            }
+        }
+        $plugins = \core_component::get_plugin_list_with_class('qbank', 'plugin_feature', 'plugin_feature.php');
+        foreach ($plugins as $componentname => $plugin) {
+            $pluginentrypointobject = new $plugin();
+            $plugincolumnobjects = $pluginentrypointobject->get_question_columns($this);
+            // Don't need the plugins without column objects.
+            if (empty($plugincolumnobjects)) {
+                unset($plugins[$componentname]);
+                continue;
+            }
+            foreach ($plugincolumnobjects as $columnobject) {
+                $columnname = $columnobject->get_column_name();
+                foreach ($corequestionbankcolumns as $key => $corequestionbankcolumn) {
+                    if (!\core\plugininfo\qbank::is_plugin_enabled($componentname)) {
+                        unset($questionbankclasscolumns[$columnname]);
+                        continue;
+                    }
+                    // Check if it has custom preference selector to view/hide.
+                    if ($columnobject->has_preference() && !$columnobject->get_preference()) {
+                        continue;
+                    }
+                    if ($corequestionbankcolumn === $columnname) {
+                        $questionbankclasscolumns[$columnname] = $columnobject;
+                    }
+                }
+            }
+        }
+
+        // Mitigate the error in case of any regression.
+        foreach ($questionbankclasscolumns as $shortname => $questionbankclasscolumn) {
+            if (empty($questionbankclasscolumn)) {
+                unset($questionbankclasscolumns[$shortname]);
+            }
+        }
+
+        return $questionbankclasscolumns;
+    }
+
+
+    /**
+     * Shows the question bank editing interface.
+     *
+     * The function also processes a number of actions:
+     *
+     * Actions affecting the question pool:
+     * move           Moves a question to a different category
+     * deleteselected Deletes the selected questions from the category
+     * Other actions:
+     * category      Chooses the category
+     * displayoptions Sets display options
+     */
+    public function render($pagevars, $tabname): string {
+	ob_start();
+        $this->display($pagevars); 
         $out = ob_get_contents();
         ob_end_clean();
         return $out;
     }
 
     /**
-     * Display the controls at the bottom of the list of questions.
-     * @param int       $totalnumber Total number of questions that might be shown (if it was not for paging).
-     * @param bool      $recurse     Whether to include subcategories.
-     * @param \stdClass $category    The question_category row from the database.
-     * @param \context  $catcontext  The context of the category being displayed.
-     * @param array     $addcontexts contexts where the user is allowed to add new questions.
+     * generate an add to realtime quiz url so that when clicked the question will be added to the quiz
+     *
+     * @param int $questionid
+     *
+     * @return \moodle_url Moodle url to add the question
      */
-    protected function display_bottom_controls($totalnumber, $recurse, $category, \context $catcontext, array $addcontexts) {
+    public function add_to_groupquiz_url($questionid) {
+
+        global $CFG;
+        $params = $this->baseurl->params();
+        $params['questionid'] = $questionid;
+        $params['action'] = 'addquestion';
+        $params['sesskey'] = sesskey();
+
+        return new \moodle_url('/mod/groupquiz/edit.php', $params);
+
+    }
+
+    /*
+     * This has been taken from the base class to allow us to call our own version of
+     * create_new_question_button.
+     *
+     * @param $category
+     * @param $canadd
+     * @throws \coding_exception
+     */
+    protected function create_new_question_form($category, $canadd): void {
+        global $CFG;
+        echo \html_writer::start_tag('div', ['class' => 'createnewquestion']);
+        if ($canadd) {
+            $this->create_new_question_button($category->id, $this->editquestionurl->params(),
+                get_string('createnewquestion', 'question'));
+        } else {
+            print_string('nopermissionadd', 'question');
+        }
+        \html_writer::end_tag('div');
+    }
+
+    /**
+     * Print a button for creating a new question. This will open question/addquestion.php,
+     * which in turn goes to question/question.php before getting back to $params['returnurl']
+     * (by default the question bank screen).
+     *
+     * This has been taken from question/editlib.php and adapted to allow us to use the $allowedqtypes
+     * param on print_choose_qtype_to_add_form
+     *
+     * @param int $categoryid The id of the category that the new question should be added to.
+     * @param array $params Other paramters to add to the URL. You need either $params['cmid'] or
+     *      $params['courseid'], and you should probably set $params['returnurl']
+     * @param string $caption the text to display on the button.
+     * @param string $tooltip a tooltip to add to the button (optional).
+     * @param bool $disabled if true, the button will be disabled.
+     */
+    private function create_new_question_button($categoryid, $params, $caption, $tooltip = '', $disabled = false) {
+        global $CFG, $PAGE, $OUTPUT;
+        static $choiceformprinted = false;
+
+        $config = get_config('groupquiz');
+        if (property_exists($config, 'enabledqtypes')) {
+            $enabledtypes = explode(',', $config->enabledqtypes);
+        } else {
+            $enabledtypes = null;
+        }
+        $params['category'] = $categoryid;
+        $url = new \moodle_url('/question/addquestion.php', $params);
+        echo $OUTPUT->single_button($url, $caption, 'get', ['disabled' => $disabled, 'title' => $tooltip]);
+
+        if (!$choiceformprinted) {
+            echo \html_writer::start_tag('div', ['id' => 'qtypechoicecontainer']);
+            echo print_choose_qtype_to_add_form([], $enabledtypes);
+            echo \html_writer::end_tag('div');
+            $choiceformprinted = true;
+        }
+    }
+
+    /**
+     * Displays the bottom controls for the question bank interface.
+     *
+     * This function renders a section at the bottom of the question bank interface with
+     * controls for interacting with selected questions. It includes a button to add selected
+     * questions to the lab, but this button is only displayed if the user has the necessary
+     * capability. The button is initially disabled.
+     *
+     * @param \context $catcontext The context of the category where the question bank is displayed.
+     *
+     * @return void
+     */
+    protected function display_bottom_controls(\context $catcontext): void {
         $cmoptions = new \stdClass();
         $cmoptions->hasattempts = !empty($this->groupquizhasattempts);
 
         $canuseall = has_capability('moodle/question:useall', $catcontext);
 
-        echo '<div class="modulespecificbuttonscontainer">';
+        echo \html_writer::start_tag('div', ['class' => 'pt-2']);
         if ($canuseall) {
-
-            // Add selected questions to the groupquiz.
-            $params = array(
-                    'type' => 'submit',
-                    'name' => 'add',
-                    'class' => 'btn btn-primary',
-                    'value' => get_string('addselectedquestionstogroupquiz', 'groupquiz'),
-            );
-            if ($cmoptions->hasattempts) {
-                $params['disabled'] = 'disabled';
-            }
+            // Add selected questions to the lab.
+            $params = [
+                'type' => 'submit',
+                'name' => 'addquestionlist',
+                'class' => 'btn btn-primary',
+                'value' => get_string('addselectedquestionstogroupquiz', 'groupquiz'),
+                'data-action' => 'toggle',
+                'data-togglegroup' => 'qbank',
+                'data-toggle' => 'action',
+                'disabled' => true,
+            ];
             echo \html_writer::empty_tag('input', $params);
         }
-        echo "</div>\n";
+        echo \html_writer::end_tag('div');
     }
 
     /**
-     * Prints a form to choose categories.
-     * @param string $categoryandcontext 'categoryID,contextID'.
-     * @deprecated since Moodle 2.6 MDL-40313.
-     * @see \core_question\bank\search\category_condition
-     * @todo MDL-41978 This will be deleted in Moodle 2.8
-     */
-    protected function print_choose_category_message($categoryandcontext) {
-        global $OUTPUT;
-        debugging('print_choose_category_message() is deprecated, ' .
-                'please use \core_question\bank\search\category_condition instead.', DEBUG_DEVELOPER);
-        echo $OUTPUT->box_start('generalbox questionbank');
-        $this->display_category_form($this->contexts->having_one_edit_tab_cap('edit'),
-                $this->baseurl, $categoryandcontext);
-        echo "<p style=\"text-align:center;\"><b>";
-        print_string('selectcategoryabove', 'question');
-        echo "</b></p>";
-        echo $OUTPUT->box_end();
-    }
-
-    protected function display_options_form($showquestiontext, $scriptpath = '/mod/groupquiz/edit.php',
-            $showtextoption = false) {
-        // Overridden just to change the default values of the arguments.
-        parent::display_options_form($showquestiontext, $scriptpath, $showtextoption);
-    }
-
-    protected function print_category_info($category) {
-        $formatoptions = new stdClass();
-        $formatoptions->noclean = true;
-        $strcategory = get_string('category', 'groupquiz');
-        echo '<div class="categoryinfo"><div class="categorynamefieldcontainer">' .
-                $strcategory;
-        echo ': <span class="categorynamefield">';
-        echo shorten_text(strip_tags(format_string($category->name)), 60);
-        echo '</span></div><div class="categoryinfofieldcontainer">' .
-                '<span class="categoryinfofield">';
-        echo shorten_text(strip_tags(format_text($category->info, $category->infoformat,
-                $formatoptions, $this->course->id)), 200);
-        echo '</span></div></div>';
-    }
-
-    protected function display_options($recurse, $showhidden, $showquestiontext) {
-        debugging('display_options() is deprecated, see display_options_form() instead.', DEBUG_DEVELOPER);
-        echo '<form method="get" action="edit.php" id="displayoptions">';
-        echo "<fieldset class='invisiblefieldset'>";
-        echo \html_writer::input_hidden_params($this->baseurl,
-                array('recurse', 'showhidden', 'qbshowtext'));
-        $this->display_category_form_checkbox('recurse', $recurse,
-                get_string('includesubcategories', 'question'));
-        $this->display_category_form_checkbox('showhidden', $showhidden,
-                get_string('showhidden', 'question'));
-        echo '<noscript><div class="centerpara"><input type="submit" value="' .
-                get_string('go') . '" />';
-        echo '</div></noscript></fieldset></form>';
-    }
-
-    protected function create_new_question_form($category, $canadd) {
-        // Don't display this.
-    }
-
-    /**
-     * Override the base implementation in \core_question\bank\view
-     * because we don't want to print the headers in the fragment
-     * for the modal.
-     */
-    protected function display_question_bank_header() {
-    }
-
-    /**
-     * Override the base implementation in \core_question\bank\view
-     * because we don't want it to read from the $_POST global variables
-     * for the sort parameters since they are not present in a fragment.
+     * Question preview url.
      *
-     * Unfortunately the best we can do is to look at the URL for
-     * those parameters (only marginally better really).
+     * @param \stdClass $question
+     * @return \moodle_url
      */
-    protected function init_sort_from_params() {
-        $this->sort = [];
-        for ($i = 1; $i <= self::MAX_SORTS; $i++) {
-            if (!$sort = $this->baseurl->param('qbs' . $i)) {
-                break;
-            }
-            // Work out the appropriate order.
-            $order = 1;
-            if ($sort[0] == '-') {
-                $order = -1;
-                $sort = substr($sort, 1);
-                if (!$sort) {
-                    break;
-                }
-            }
-            // Deal with subsorts.
-            list($colname, $subsort) = $this->parse_subsort($sort);
-            $this->requiredcolumns[$colname] = $this->get_column_type($colname);
-            $this->sort[$sort] = $order;
-        }
+    public function preview_question_url() {
+        return groupquiz_question_preview_url($this->groupquiz, $question);
     }
+
 }

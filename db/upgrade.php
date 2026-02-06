@@ -60,12 +60,49 @@ function xmldb_groupquiz_upgrade($oldversion) {
     global $CFG, $DB;
     $dbman = $DB->get_manager();
 
-//    if ($oldversion < 2020011500) {
+    if ($oldversion < 2021111702) {
 
+        // Define field reviewmanualcomment to be added to groupquiz.
+        $table = new xmldb_table('groupquiz');
+        $field = new xmldb_field('reviewmanualcomment', XMLDB_TYPE_INTEGER, '6', null, XMLDB_NOTNULL, null, '0', 'reviewoverallfeedback');
 
-        // Crucible savepoint reached.
-//        upgrade_mod_savepoint(true, 2020011500, 'groupquiz');
-//    }
+        // Conditionally launch add field reviewmanualcomment.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Groupquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2021111702, 'groupquiz');
+    }
+
+    if ($oldversion < 2021111805) {
+
+        // Changing the default of field grademethod on table groupquiz to 1.
+        $table = new xmldb_table('groupquiz');
+        $field = new xmldb_field('grademethod', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'grade');
+
+        // Launch change of default for field grademethod.
+        $dbman->change_field_default($table, $field);
+
+        // Groupquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2021111805, 'groupquiz');
+    }
+
+    if ($oldversion < 2025112001) {
+
+        // Define field preview to be added to groupquiz_attempts.
+        $table = new xmldb_table('groupquiz_attempts');
+        $field = new xmldb_field('preview', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timemodified');
+
+        // Conditionally launch add field preview.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Groupquiz savepoint reached.
+        upgrade_mod_savepoint(true, 2025112001, 'groupquiz');
+    }
+
     return true;
 }
 

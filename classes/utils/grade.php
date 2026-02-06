@@ -44,53 +44,22 @@ class grade {
     protected $rtq;
 
     /**
-     * Gets the user grade, userid can be 0, which will return all grades for the groupquiz
+     * Gets the user grade
      *
      * @param $groupquiz
      * @param $userid
      * @return array
      */
-    public static function get_user_grade($groupquiz, $userid = 0) {
+    public static function get_user_grade($groupquiz, $userid) {
         global $DB;
         $recs = $DB->get_records_select('groupquiz_grades', 'userid = ? AND groupquizid = ?',
 	        array($userid, $groupquiz->id), 'grade');
-	$grades = array();
-	foreach ($recs as $rec) {
-	    array_push($grades, $rec->grade);
+	if (count($recs) != 1) {
+	   debugging("get_user_grade found too many grades for " . $userid, DEBUG_NORMAL);
+	   exit;
 	}
-	return $grades;
-
-        $params = array($groupquiz->id);
-        $usertest = '';
-
-        if (is_array($userid)) {
-            // we have a group of userids
-            if (count($userid) > 0) {
-                list($usertest, $uparams) = $DB->get_in_or_equal($userid);
-                $params = array_merge($params, $uparams);
-                $usertest = 'AND u.id ' . $usertest;
-            }
-        } else if ($userid) {
-            $params[] = $userid;
-            $usertest = 'AND u.id = ?';
-        }
-
-        return $DB->get_records_sql("
-            SELECT
-                u.id,
-                u.id AS userid,
-                rtqg.grade AS rawgrade,
-                rtqg.timemodified AS dategraded,
-                MAX(rtqa.timefinish) AS datesubmitted
-
-            FROM {user} u
-            JOIN {groupquiz_grades} rtqg ON u.id = rtqg.userid
-            JOIN {groupquiz_attempts} rtqa ON rtqa.rtqg.groupquizid = rtqg.groupquizid
-
-            WHERE rtqg.groupquizid = ?
-            $usertest
-            GROUP BY u.id, rtqg.grade, rtqg.timemodified", $params);
-
+	$grade = end($recs)->grade;
+	return $grade;
     }
 
 
@@ -109,10 +78,10 @@ class grade {
      * @param bool $regrade_attempts Regrade the question attempts themselves through the question engine
      * @return bool
      */
-    public function save_all_grades($regrade_attempts = false, $groupid = null) {
-
+    public function save_all_grades($regrade_attempts = false) {
+	//debugging("save_all_grades for " . $this->rtq->getRTQ()->id, DEBUG_DEVELOPER);
         if (empty($this->rtq->getRTQ()->grouping)) {
-            echo "error = cannot find groups";
+	    debugging("cannot find group", DEBUG_NORMAL);
             return;
 	}
 
@@ -179,7 +148,7 @@ class grade {
     }
 
     /**
-     * Separated function to process grading for the provided attempts 
+     * Separated function to process grading for the provided attempts
      *
      * @param array $attempts
      * @param int   $userid If specified will only process grading with that particular user
@@ -201,7 +170,6 @@ class grade {
 
 	    array_push($attemptsgrades, $attempt->sumgrades);
         }
-	// TODO test
 	$grade = $this->apply_grading_method($attemptsgrades);
 
         foreach (groups_get_members($groupid) as $user) {
@@ -216,7 +184,7 @@ class grade {
         $this->persist_grades($grades, $transaction);
 
         // update grades to gradebookapi.
-        $updated = groupquiz_update_grades($this->rtq->getRTQ(), array_keys($grades));
+        $updated = groupquiz_update_grades($this->rtq->getRTQ(), array_keys($grades), array_values($grades));
 
         if ($updated === GRADE_UPDATE_FAILED) {
             $transaction->rollback(new \Exception('Unable to save grades to gradebook'));
@@ -452,7 +420,6 @@ class grade {
         foreach ($groupusers as $guser) {
             $this->add_group_grade($attemptsgrades, $guser->id, $attemptid, $grade);
 	    $this->persist_grades($grades);
-	    
         }
 	$this->persist_grades($grades);
 

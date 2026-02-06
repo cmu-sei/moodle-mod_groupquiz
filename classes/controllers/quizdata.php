@@ -111,11 +111,16 @@ class quizdata {
 
 	// TODO clean this up
         $groups = $this->RTQ->get_groupmanager()->get_user_groups();
-        if (count($groups) != 1) {
-            echo "error";
-            exit;
+
+        if ($this->RTQ->is_instructor()) {
+            $groupid = 0;
+        } else {
+            if (count($groups) != 1) {
+                echo "error";
+            }
+            $groupid = array_values($groups)[0]->id;
         }
-        $groupid = array_values($groups)[0]->id;
+
         $this->RTQ->get_group_attempt($groupid);
 
         if ($this->RTQ->openAttempt->getState() != 'inprogress') {
@@ -155,7 +160,7 @@ class quizdata {
 
                 break;
             case 'submitquiz':
-		// TODO this will complete the attempt 
+		// TODO this will complete the attempt
 		echo "this will end the attempt";
                 //$this->jsonlib->send_error('not implemented');//
 
