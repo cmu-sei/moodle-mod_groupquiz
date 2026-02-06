@@ -134,7 +134,7 @@ class viewquizattempt {
                     global $PAGE;
                     $PAGE->set_pagelayout('base');
                     $renderer->view_header(true);
-                    $renderer->setMessage('error', get_string('noattempt', 'groupquiz'));
+                    $renderer->setMessage(type: 'error', get_string('noattempt', 'groupquiz'));
                     $renderer->render_attempt(null);
                     $renderer->view_footer();
                     break;
