@@ -103,6 +103,18 @@ function xmldb_groupquiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2025112001, 'groupquiz');
     }
 
+    if ($oldversion < 2026060200) {
+        // Migrate state column from numeric values to string values to match core quiz pattern.
+        // Old: 0='notstarted', 10='inprogress', 20='abandoned', 30='finished'
+        // New: 'notstarted', 'inprogress', 'abandoned', 'finished'
+        $DB->execute("UPDATE {groupquiz_attempts} SET state = 'notstarted' WHERE state = '0'");
+        $DB->execute("UPDATE {groupquiz_attempts} SET state = 'inprogress' WHERE state = '10'");
+        $DB->execute("UPDATE {groupquiz_attempts} SET state = 'abandoned' WHERE state = '20'");
+        $DB->execute("UPDATE {groupquiz_attempts} SET state = 'finished' WHERE state = '30'");
+
+        upgrade_mod_savepoint(true, 2026060200, 'groupquiz');
+    }
+
     return true;
 }
 

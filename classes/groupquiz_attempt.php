@@ -44,10 +44,10 @@ DM20-0197
 class groupquiz_attempt {
 
     /** Constants for the status of the attempt */
-    const NOTSTARTED = 0;
-    const INPROGRESS = 10;
-    const ABANDONED = 20;
-    const FINISHED = 30;
+    const NOTSTARTED = 'notstarted';
+    const INPROGRESS = 'inprogress';
+    const ABANDONED = 'abandoned';
+    const FINISHED = 'finished';
 
     /** @var \stdClass The attempt record */
     protected $attempt;
