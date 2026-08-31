@@ -206,3 +206,36 @@ DM20-0197
     float: right;
 }
 
+/*
+ * Boost Dark supplies palette variables but not every semantic Bootstrap
+ * variable. Scope Group Quiz surfaces to the activity so core quiz styles
+ * remain untouched.
+ */
+[data-bs-theme="dark"] .groupquizbox,
+[data-bs-theme="dark"] .userinfo {
+    border-color: var(--bs-gray-700, #495057);
+    background: var(--bs-gray-1000, #1e1e25);
+    color: var(--bs-text-color, #cbd0d4);
+}
+
+[data-bs-theme="dark"] .groupquizbox .questionlist li {
+    border-color: var(--bs-gray-700, #495057);
+    background: var(--bs-gray-900, #2e3134);
+}
+
+[data-bs-theme="dark"] .rtqerrorstatus {
+    border: 1px solid #88414a;
+    background: #311315;
+    color: #ffd7d9;
+}
+
+[data-bs-theme="dark"] .groupquiz_highlight_correct {
+    background: #13351f;
+    color: #cdf8d2;
+}
+
+[data-bs-theme="dark"] #quizinfobox {
+    border: 1px solid #245a91;
+    background: #102a43;
+    color: #c8e1ff;
+}

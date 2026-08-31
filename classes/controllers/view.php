@@ -129,12 +129,15 @@ class view {
             $this->pagevars['action'] = 'noquestions';
             $this->pageurl->param('action', ''); // remove the action
         }
-        $groupid = $this->RTQ->get_groupmanager()->get_user_group();
+        $groupid = 0;
+        if ($this->pagevars['action'] !== 'noquestions') {
+            $groupid = $this->RTQ->get_groupmanager()->get_user_group();
 
-        if ($groupid == -1 && !$this->RTQ->is_instructor()) {
-            $renderer->setMessage('error', get_string('usernotingroup', 'groupquiz'));
-        } else if ($this->RTQ->is_instructor()) {
-            $groupid = 0;
+            if ($groupid == -1 && !$this->RTQ->is_instructor()) {
+                $renderer->setMessage('error', get_string('usernotingroup', 'groupquiz'));
+            } else if ($this->RTQ->is_instructor()) {
+                $groupid = 0;
+            }
         }
 
         switch ($this->pagevars['action']) {
@@ -260,4 +263,3 @@ class view {
     }
 
 }
-
