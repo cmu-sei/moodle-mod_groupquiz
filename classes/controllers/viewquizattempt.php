@@ -134,7 +134,7 @@ class viewquizattempt {
                     global $PAGE;
                     $PAGE->set_pagelayout('base');
                     $renderer->view_header(true);
-                    $renderer->setMessage(type: 'error', get_string('noattempt', 'groupquiz'));
+                    $renderer->setMessage('error', get_string('noattempt', 'groupquiz'));
                     $renderer->render_attempt(null);
                     $renderer->view_footer();
                     break;
@@ -145,7 +145,7 @@ class viewquizattempt {
                 if ($hascapability) {
                     $params = array(
                         'relateduserid' => $USER->id,
-			            'objectid'      => $this->pagevars['id'],
+			            'objectid'      => $this->RTQ->getCM()->id,
                         'context'       => $this->RTQ->getContext(),
                         'other'         => array(
                         'groupquizid'   => $this->RTQ->getRTQ()->id
@@ -179,4 +179,3 @@ class viewquizattempt {
     }
 
 }
-
