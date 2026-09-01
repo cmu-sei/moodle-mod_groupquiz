@@ -145,7 +145,7 @@ class viewquizattempt {
                 if ($hascapability) {
                     $params = array(
                         'relateduserid' => $USER->id,
-			            'objectid'      => $this->RTQ->getCM()->id,
+			            'objectid'      => $this->pagevars['attemptid'],
                         'context'       => $this->RTQ->getContext(),
                         'other'         => array(
                         'groupquizid'   => $this->RTQ->getRTQ()->id

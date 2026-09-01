@@ -57,6 +57,7 @@ function groupquiz_supports($feature) {
         default: return null;
     }
 }
+
 /**
  * Returns all other caps used in module
  * @return array
@@ -452,4 +453,3 @@ function groupquiz_reset_gradebook($courseid, $type='') {
         groupquiz_grade_item_update($groupquiz, 'reset');
     }
 }
-
