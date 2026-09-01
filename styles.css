@@ -206,3 +206,35 @@ DM20-0197
     float: right;
 }
 
+/*
+ * Scope Group Quiz surfaces to the activity so inherited selector names do
+ * not alter unrelated Moodle components.
+ */
+[data-bs-theme="dark"] .path-mod-groupquiz .groupquizbox,
+[data-bs-theme="dark"] .path-mod-groupquiz .userinfo {
+    border-color: var(--bs-gray-700, #495057);
+    background: var(--bs-secondary-bg, #343a40);
+    color: var(--bs-body-color, #cbd0d4);
+}
+
+[data-bs-theme="dark"] .path-mod-groupquiz .groupquizbox .questionlist li {
+    border-color: var(--bs-gray-700, #495057);
+    background: var(--bs-tertiary-bg, #393e4f);
+}
+
+[data-bs-theme="dark"] .path-mod-groupquiz .rtqerrorstatus {
+    border: 1px solid #88414a;
+    background: #311315;
+    color: #ffd7d9;
+}
+
+[data-bs-theme="dark"] .path-mod-groupquiz .groupquiz_highlight_correct {
+    background: #13351f;
+    color: #cdf8d2;
+}
+
+[data-bs-theme="dark"] .path-mod-groupquiz #quizinfobox {
+    border: 1px solid #245a91;
+    background: #102a43;
+    color: #c8e1ff;
+}
