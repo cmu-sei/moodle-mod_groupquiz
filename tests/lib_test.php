@@ -61,6 +61,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_process_options')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_grade_item_update')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('mod_groupquiz_core_calendar_provide_event_action')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_update_grades')]
 class lib_test extends \advanced_testcase {
     /**
      * Feature support is what the course module chooser and the gradebook read; a flipped answer here
@@ -339,6 +340,121 @@ class lib_test extends \advanced_testcase {
         $this->assertNull(
             mod_groupquiz_core_calendar_provide_event_action($event, new \core_calendar\action_factory())
         );
+    }
+
+    /**
+     * The gradebook asks the plugin to push one user's grade, passing a single user id.
+     */
+    public function test_groupquiz_update_grades_for_one_user(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $other = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        /** @var \mod_groupquiz_generator $groupquizgenerator */
+        $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
+        $groupquizgenerator->create_grade($instance, $student, 65);
+        $groupquizgenerator->create_grade($instance, $other, 20);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id));
+
+        $this->assertEquals(65, $this->gradebook_grade($course, $instance, $student->id));
+        // Only the user asked for is pushed.
+        $this->assertNull($this->gradebook_grade($course, $instance, $other->id));
+    }
+
+    /**
+     * With no user given, everyone who has a grade is pushed - which is what a course regrade relies on.
+     */
+    public function test_groupquiz_update_grades_for_all_users(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $first = $generator->create_and_enrol($course, 'student');
+        $second = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        /** @var \mod_groupquiz_generator $groupquizgenerator */
+        $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
+        $groupquizgenerator->create_grade($instance, $first, 65);
+        $groupquizgenerator->create_grade($instance, $second, 20);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance));
+
+        $this->assertEquals(65, $this->gradebook_grade($course, $instance, $first->id));
+        $this->assertEquals(20, $this->gradebook_grade($course, $instance, $second->id));
+    }
+
+    /**
+     * A user who has not been graded yet gets a null grade rather than an error.
+     */
+    public function test_groupquiz_update_grades_for_an_ungraded_user(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id));
+        $this->assertNull($this->gradebook_grade($course, $instance, $student->id));
+
+        // With $nullifnone off there is nothing to send, and the grade item is still kept in step.
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id, false));
+        $this->assertNull($this->gradebook_grade($course, $instance, $student->id));
+    }
+
+    /**
+     * Changing the grading method regrades the closed attempts; saving the form without changing it must
+     * not, or every save silently rewrites the grades of everyone who has attempted the activity.
+     *
+     * The instance deliberately has no grouping, so a regrade is observable: save_all_grades() has no
+     * groups to walk and says so through debugging().
+     */
+    public function test_groupquiz_update_instance_regrades_only_when_the_grade_method_changes(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $instance = $this->getDataGenerator()->create_module('groupquiz', [
+            'course' => $course->id,
+            'grademethod' => \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT,
+        ]);
+
+        $formdata = clone $instance;
+        $formdata->instance = $instance->id;
+        $formdata->coursemodule = $instance->cmid;
+        $formdata->name = 'Renamed, same grading method';
+        // The form posts the grading method as an int, while the stored value comes back as a string.
+        $formdata->grademethod = (int)$instance->grademethod;
+
+        $this->assertTrue(groupquiz_update_instance($formdata, null));
+        $this->assertDebuggingNotCalled();
+
+        $formdata->grademethod = \mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE;
+        $this->assertTrue(groupquiz_update_instance($formdata, null));
+        $this->assertDebuggingCalled('cannot find group');
+    }
+
+    /**
+     * Read a user's grade for an instance back out of the gradebook.
+     *
+     * @param \stdClass $course The course the instance is in.
+     * @param \stdClass $instance The groupquiz instance.
+     * @param int $userid The user to look up.
+     * @return float|null The gradebook grade, or null if the user has none.
+     */
+    protected function gradebook_grade($course, $instance, int $userid) {
+        $grades = grade_get_grades($course->id, 'mod', 'groupquiz', $instance->id, $userid);
+
+        return $grades->items[0]->grades[$userid]->grade;
     }
 
     /**

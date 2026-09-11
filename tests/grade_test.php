@@ -164,9 +164,44 @@ class grade_test extends \advanced_testcase {
         $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
         $groupquizgenerator->create_grade($instance, $student, 42.5);
 
-        // Only the one-grade case is covered on purpose: with no grade row, or more than one,
-        // grade::get_user_grade() calls exit() rather than returning, which would take the test
-        // runner down with it.
         $this->assertEquals(42.5, grade::get_user_grade($instance, $student->id));
+    }
+
+    /**
+     * A user who has not been graded yet has no grade, which the gradebook stores as null.
+     */
+    public function test_get_user_grade_without_a_grade(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id]);
+
+        $this->assertNull(grade::get_user_grade($instance, $student->id));
+    }
+
+    /**
+     * Duplicate grade rows are a bug in whatever wrote them, but reading them must not end the request.
+     */
+    public function test_get_user_grade_with_duplicate_grades(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id]);
+
+        /** @var \mod_groupquiz_generator $groupquizgenerator */
+        $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
+        $groupquizgenerator->create_grade($instance, $student, 10);
+        $groupquizgenerator->create_grade($instance, $student, 30);
+
+        $this->assertEquals(30, grade::get_user_grade($instance, $student->id));
+        $this->assertDebuggingCalled(
+            'get_user_grade found 2 grades for user ' . $student->id . ' in groupquiz ' . $instance->id
+        );
     }
 }

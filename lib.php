@@ -153,7 +153,9 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     $groupquiz->id = $groupquiz->instance;
     $DB->update_record('groupquiz', $groupquiz);
 
-    if ($groupquiz->grademethod !== $oldgroupquiz->grademethod) {
+    // The form posts an int and the database hands back a string, so compare the values, not the types:
+    // a strict comparison never matches and regrades every attempt on every save.
+    if ((int)$groupquiz->grademethod !== (int)$oldgroupquiz->grademethod) {
         $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $groupquiz->course, false, MUST_EXIST);
         $RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
@@ -346,21 +348,45 @@ function mod_groupquiz_core_calendar_provide_event_action(calendar_event $event,
  *
  * @category grade
  * @param object $groupquiz the groupquiz settings.
- * @param int $userid specific user only, 0 means all users.
+ * @param int|array $userid specific user only, 0 means all users. An array of user ids is also accepted.
  * @param bool $nullifnone If a single user is specified and $nullifnone is true a grade item with a null rawgrade will be inserted
+ * @return int 0 if ok, error code otherwise
  */
 function groupquiz_update_grades($groupquiz, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
-    $grades = array();
-    foreach ($userid as $user) {
-	$rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
+    if (empty($userid)) {
+        // Everyone who has a grade for this instance.
+        $userids = $DB->get_fieldset_select(
+            'groupquiz_grades',
+            'DISTINCT userid',
+            'groupquizid = ?',
+            [$groupquiz->id]
+        );
+    } else {
+        // Core passes a single user id; the grader passes the members of a group.
+        $userids = is_array($userid) ? $userid : [$userid];
+    }
+
+    $grades = [];
+    foreach ($userids as $user) {
+        $rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
+        if ($rawgrade === null && !$nullifnone) {
+            // No grade yet, and the caller does not want the gradebook told about it.
+            continue;
+        }
         $grade = new stdClass();
         $grade->userid   = $user;
         $grade->rawgrade = $rawgrade;
         $grades[$user] = $grade;
     }
+
+    if (empty($grades)) {
+        // Keep the grade item in step with the settings even when there is nothing to grade.
+        return groupquiz_grade_item_update($groupquiz);
+    }
+
     return groupquiz_grade_item_update($groupquiz, $grades);
 }
 
