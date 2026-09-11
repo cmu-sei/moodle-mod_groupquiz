@@ -335,7 +335,7 @@ function mod_groupquiz_core_calendar_provide_event_action(calendar_event $event,
 
     return $factory->create_instance(
         get_string('view'),
-        new \moodle_groupquiz('/mod/groupquiz/view.php', ['id' => $cm->id]),
+        new \moodle_url('/mod/groupquiz/view.php', ['id' => $cm->id]),
         1,
         true
     );

@@ -40,6 +40,7 @@ namespace mod_groupquiz;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
+require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/mod/groupquiz/lib.php');
 require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
@@ -59,6 +60,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_review_option_form_to_db')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_process_options')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_grade_item_update')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('mod_groupquiz_core_calendar_provide_event_action')]
 class lib_test extends \advanced_testcase {
     /**
      * Feature support is what the course module chooser and the gradebook read; a flipped answer here
@@ -276,5 +278,86 @@ class lib_test extends \advanced_testcase {
         // The sibling instance is untouched.
         $this->assertTrue($DB->record_exists('groupquiz', ['id' => $other->id]));
         $this->assertTrue($DB->record_exists('groupquiz_attempts', ['id' => $surviving->id]));
+    }
+
+    /**
+     * The Timeline block and the course overview turn a calendar event into an action through this
+     * callback, so it has to hand back a link to the activity.
+     */
+    public function test_mod_groupquiz_core_calendar_provide_event_action(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', [
+            'course' => $course->id,
+            'timeclose' => time() + DAYSECS,
+        ]);
+        $event = $this->create_action_event($course->id, $instance->id, 'close');
+
+        $this->setUser($student);
+        $action = mod_groupquiz_core_calendar_provide_event_action($event, new \core_calendar\action_factory());
+
+        $this->assertInstanceOf(\core_calendar\local\event\value_objects\action::class, $action);
+        $this->assertSame(get_string('view'), $action->get_name());
+        $this->assertSame(
+            (new \moodle_url('/mod/groupquiz/view.php', ['id' => $instance->cmid]))->out(false),
+            $action->get_url()->out(false)
+        );
+        $this->assertEquals(1, $action->get_item_count());
+        $this->assertTrue($action->is_actionable());
+    }
+
+    /**
+     * An activity the student has already completed drops off the Timeline.
+     */
+    public function test_mod_groupquiz_core_calendar_provide_event_action_when_already_complete(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $CFG->enablecompletion = 1;
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['enablecompletion' => 1]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', [
+            'course' => $course->id,
+            'timeclose' => time() + DAYSECS,
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $event = $this->create_action_event($course->id, $instance->id, 'close');
+
+        $cm = get_coursemodule_from_instance('groupquiz', $instance->id, $course->id, false, MUST_EXIST);
+        $completion = new \completion_info($course);
+        $completion->update_state($cm, COMPLETION_COMPLETE, $student->id);
+
+        $this->setUser($student);
+        $this->assertNull(
+            mod_groupquiz_core_calendar_provide_event_action($event, new \core_calendar\action_factory())
+        );
+    }
+
+    /**
+     * Create the kind of calendar event the callback is handed.
+     *
+     * @param int $courseid Course the event belongs to.
+     * @param int $instanceid Group Quiz instance the event belongs to.
+     * @param string $eventtype Event type, as stored on the event.
+     * @return \calendar_event
+     */
+    protected function create_action_event(int $courseid, int $instanceid, string $eventtype): \calendar_event {
+        return \calendar_event::create((object)[
+            'name' => 'Calendar event',
+            'modulename' => 'groupquiz',
+            'courseid' => $courseid,
+            'instance' => $instanceid,
+            'type' => CALENDAR_EVENT_TYPE_ACTION,
+            'eventtype' => $eventtype,
+            'timestart' => time(),
+        ]);
     }
 }
