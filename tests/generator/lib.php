@@ -70,7 +70,6 @@ class mod_groupquiz_generator extends testing_module_generator {
             'shuffleanswers' => 0,
             'showuserpicture' => 0,
             'requireallmemberssubmit' => 0,
-            'timecreated' => time(),
         ];
         foreach ($defaults as $field => $value) {
             if (!isset($record->$field)) {

@@ -40,6 +40,7 @@ namespace mod_groupquiz;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
+require_once($CFG->dirroot . '/calendar/lib.php');
 require_once($CFG->dirroot . '/mod/groupquiz/lib.php');
 require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
@@ -59,6 +60,8 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_review_option_form_to_db')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_process_options')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_grade_item_update')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('mod_groupquiz_core_calendar_provide_event_action')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_update_grades')]
 class lib_test extends \advanced_testcase {
     /**
      * Feature support is what the course module chooser and the gradebook read; a flipped answer here
@@ -122,6 +125,7 @@ class lib_test extends \advanced_testcase {
         $this->assertEquals(80, $record->grade);
         $this->assertEquals(\mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE, $record->grademethod);
         $this->assertNotEquals(0, $record->timemodified);
+        $this->assertNotEquals(0, $record->timecreated);
 
         $gradeitem = $DB->get_record('grade_items', [
             'itemtype' => 'mod',
@@ -238,7 +242,8 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Deleting an instance takes its attempts and its question list with it.
+     * Deleting an instance takes everything it owns with it: attempts and their question usages, the
+     * question list, the grades it kept for itself and its gradebook item.
      */
     public function test_groupquiz_delete_instance(): void {
         global $DB;
@@ -254,8 +259,10 @@ class lib_test extends \advanced_testcase {
 
         /** @var \mod_groupquiz_generator $groupquizgenerator */
         $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
-        $groupquizgenerator->create_attempt($instance, $student);
+        $attempt = $groupquizgenerator->create_attempt($instance, $student);
         $surviving = $groupquizgenerator->create_attempt($other, $student);
+        $groupquizgenerator->create_grade($instance, $student, 30);
+        $survivinggrade = $groupquizgenerator->create_grade($other, $student, 40);
         $DB->insert_record('groupquiz_questions', (object)[
             'groupquizid' => $instance->id,
             'questionid' => 1,
@@ -267,6 +274,8 @@ class lib_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('groupquiz', ['id' => $instance->id]));
         $this->assertFalse($DB->record_exists('groupquiz_attempts', ['groupquizid' => $instance->id]));
         $this->assertFalse($DB->record_exists('groupquiz_questions', ['groupquizid' => $instance->id]));
+        $this->assertFalse($DB->record_exists('groupquiz_grades', ['groupquizid' => $instance->id]));
+        $this->assertFalse($DB->record_exists('question_usages', ['id' => $attempt->uniqueid]));
         $this->assertFalse($DB->record_exists('grade_items', [
             'itemtype' => 'mod',
             'itemmodule' => 'groupquiz',
@@ -276,5 +285,203 @@ class lib_test extends \advanced_testcase {
         // The sibling instance is untouched.
         $this->assertTrue($DB->record_exists('groupquiz', ['id' => $other->id]));
         $this->assertTrue($DB->record_exists('groupquiz_attempts', ['id' => $surviving->id]));
+        $this->assertTrue($DB->record_exists('groupquiz_grades', ['id' => $survivinggrade->id]));
+        $this->assertTrue($DB->record_exists('question_usages', ['id' => $surviving->uniqueid]));
+    }
+
+    /**
+     * The Timeline block and the course overview turn a calendar event into an action through this
+     * callback, so it has to hand back a link to the activity.
+     */
+    public function test_mod_groupquiz_core_calendar_provide_event_action(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', [
+            'course' => $course->id,
+            'timeclose' => time() + DAYSECS,
+        ]);
+        $event = $this->create_action_event($course->id, $instance->id, 'close');
+
+        $this->setUser($student);
+        $action = mod_groupquiz_core_calendar_provide_event_action($event, new \core_calendar\action_factory());
+
+        $this->assertInstanceOf(\core_calendar\local\event\value_objects\action::class, $action);
+        $this->assertSame(get_string('view'), $action->get_name());
+        $this->assertSame(
+            (new \moodle_url('/mod/groupquiz/view.php', ['id' => $instance->cmid]))->out(false),
+            $action->get_url()->out(false)
+        );
+        $this->assertEquals(1, $action->get_item_count());
+        $this->assertTrue($action->is_actionable());
+    }
+
+    /**
+     * An activity the student has already completed drops off the Timeline.
+     */
+    public function test_mod_groupquiz_core_calendar_provide_event_action_when_already_complete(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $CFG->enablecompletion = 1;
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['enablecompletion' => 1]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', [
+            'course' => $course->id,
+            'timeclose' => time() + DAYSECS,
+            'completion' => COMPLETION_TRACKING_MANUAL,
+        ]);
+        $event = $this->create_action_event($course->id, $instance->id, 'close');
+
+        $cm = get_coursemodule_from_instance('groupquiz', $instance->id, $course->id, false, MUST_EXIST);
+        $completion = new \completion_info($course);
+        $completion->update_state($cm, COMPLETION_COMPLETE, $student->id);
+
+        $this->setUser($student);
+        $this->assertNull(
+            mod_groupquiz_core_calendar_provide_event_action($event, new \core_calendar\action_factory())
+        );
+    }
+
+    /**
+     * The gradebook asks the plugin to push one user's grade, passing a single user id.
+     */
+    public function test_groupquiz_update_grades_for_one_user(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $other = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        /** @var \mod_groupquiz_generator $groupquizgenerator */
+        $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
+        $groupquizgenerator->create_grade($instance, $student, 65);
+        $groupquizgenerator->create_grade($instance, $other, 20);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id));
+
+        $this->assertEquals(65, $this->gradebook_grade($course, $instance, $student->id));
+        // Only the user asked for is pushed.
+        $this->assertNull($this->gradebook_grade($course, $instance, $other->id));
+    }
+
+    /**
+     * With no user given, everyone who has a grade is pushed - which is what a course regrade relies on.
+     */
+    public function test_groupquiz_update_grades_for_all_users(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $first = $generator->create_and_enrol($course, 'student');
+        $second = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        /** @var \mod_groupquiz_generator $groupquizgenerator */
+        $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
+        $groupquizgenerator->create_grade($instance, $first, 65);
+        $groupquizgenerator->create_grade($instance, $second, 20);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance));
+
+        $this->assertEquals(65, $this->gradebook_grade($course, $instance, $first->id));
+        $this->assertEquals(20, $this->gradebook_grade($course, $instance, $second->id));
+    }
+
+    /**
+     * A user who has not been graded yet gets a null grade rather than an error.
+     */
+    public function test_groupquiz_update_grades_for_an_ungraded_user(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+        $instance = $generator->create_module('groupquiz', ['course' => $course->id, 'grade' => 100]);
+
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id));
+        $this->assertNull($this->gradebook_grade($course, $instance, $student->id));
+
+        // With $nullifnone off there is nothing to send, and the grade item is still kept in step.
+        $this->assertEquals(GRADE_UPDATE_OK, groupquiz_update_grades($instance, $student->id, false));
+        $this->assertNull($this->gradebook_grade($course, $instance, $student->id));
+    }
+
+    /**
+     * Changing the grading method regrades the closed attempts; saving the form without changing it must
+     * not, or every save silently rewrites the grades of everyone who has attempted the activity.
+     *
+     * The instance deliberately has no grouping, so a regrade is observable: save_all_grades() has no
+     * groups to walk and says so through debugging().
+     */
+    public function test_groupquiz_update_instance_regrades_only_when_the_grade_method_changes(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $instance = $this->getDataGenerator()->create_module('groupquiz', [
+            'course' => $course->id,
+            'grademethod' => \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT,
+        ]);
+
+        $formdata = clone $instance;
+        $formdata->instance = $instance->id;
+        $formdata->coursemodule = $instance->cmid;
+        $formdata->name = 'Renamed, same grading method';
+        // The form posts the grading method as an int, while the stored value comes back as a string.
+        $formdata->grademethod = (int)$instance->grademethod;
+
+        $this->assertTrue(groupquiz_update_instance($formdata, null));
+        $this->assertDebuggingNotCalled();
+
+        $formdata->grademethod = \mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE;
+        $this->assertTrue(groupquiz_update_instance($formdata, null));
+        $this->assertDebuggingCalled('cannot find group');
+    }
+
+    /**
+     * Read a user's grade for an instance back out of the gradebook.
+     *
+     * @param \stdClass $course The course the instance is in.
+     * @param \stdClass $instance The groupquiz instance.
+     * @param int $userid The user to look up.
+     * @return float|null The gradebook grade, or null if the user has none.
+     */
+    protected function gradebook_grade($course, $instance, int $userid) {
+        $grades = grade_get_grades($course->id, 'mod', 'groupquiz', $instance->id, $userid);
+
+        return $grades->items[0]->grades[$userid]->grade;
+    }
+
+    /**
+     * Create the kind of calendar event the callback is handed.
+     *
+     * @param int $courseid Course the event belongs to.
+     * @param int $instanceid Group Quiz instance the event belongs to.
+     * @param string $eventtype Event type, as stored on the event.
+     * @return \calendar_event
+     */
+    protected function create_action_event(int $courseid, int $instanceid, string $eventtype): \calendar_event {
+        return \calendar_event::create((object)[
+            'name' => 'Calendar event',
+            'modulename' => 'groupquiz',
+            'courseid' => $courseid,
+            'instance' => $instanceid,
+            'type' => CALENDAR_EVENT_TYPE_ACTION,
+            'eventtype' => $eventtype,
+            'timestart' => time(),
+        ]);
     }
 }

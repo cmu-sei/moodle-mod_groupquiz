@@ -110,7 +110,7 @@ function groupquiz_add_instance($groupquiz, $mform) {
         return $result;
     }
 
-    $groupquiz->created = time();
+    $groupquiz->timecreated = time();
     $groupquiz->id = $DB->insert_record('groupquiz', $groupquiz);
 
     // Do the processing required after an add or an update.
@@ -153,7 +153,9 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     $groupquiz->id = $groupquiz->instance;
     $DB->update_record('groupquiz', $groupquiz);
 
-    if ($groupquiz->grademethod !== $oldgroupquiz->grademethod) {
+    // The form posts an int and the database hands back a string, so compare the values, not the types:
+    // a strict comparison never matches and regrades every attempt on every save.
+    if ((int)$groupquiz->grademethod !== (int)$oldgroupquiz->grademethod) {
         $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $groupquiz->course, false, MUST_EXIST);
         $RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
@@ -225,7 +227,9 @@ function groupquiz_review_option_form_to_db($fromform, $field) {
  * @return bool true
  */
 function groupquiz_delete_instance($id) {
-    global $DB;
+    global $CFG, $DB;
+    require_once($CFG->dirroot . '/question/engine/lib.php');
+
     $groupquiz = $DB->get_record('groupquiz', array('id' => $id), '*', MUST_EXIST);
 
     // delete calander events
@@ -235,24 +239,29 @@ function groupquiz_delete_instance($id) {
         $event->delete();
     }
 
+    // The question usage behind each attempt belongs to this activity, so it goes with the attempts.
+    // Read the ids before the attempts are deleted, or there is nothing left to point at them.
+    $uniqueids = $DB->get_fieldset_select('groupquiz_attempts', 'uniqueid', 'groupquizid = ?', [$groupquiz->id]);
+    if (!empty($uniqueids)) {
+        \question_engine::delete_questions_usage_by_activities(new \qubaid_list($uniqueids));
+    }
+
     // delete all attempts for this groupquiz
     $DB->delete_records('groupquiz_attempts', array('groupquizid' => $groupquiz->id));
 
     // delete all questions for this groupquiz
     $DB->delete_records('groupquiz_questions', array('groupquizid' => $groupquiz->id));
 
+    // The grades this activity kept for itself are no use to anything once it is gone.
+    $DB->delete_records('groupquiz_grades', array('groupquizid' => $groupquiz->id));
+
     // finally delete the groupquiz object
     $DB->delete_records('groupquiz', array('id' => $groupquiz->id));
-
 
     // delete grade from database
     groupquiz_grade_item_delete($groupquiz);
 
-
-
     // note: all context files are deleted automatically
-
-    $DB->delete_records('groupquiz', array('id'=>$groupquiz->id));
 
     return true;
 }
@@ -335,7 +344,7 @@ function mod_groupquiz_core_calendar_provide_event_action(calendar_event $event,
 
     return $factory->create_instance(
         get_string('view'),
-        new \moodle_groupquiz('/mod/groupquiz/view.php', ['id' => $cm->id]),
+        new \moodle_url('/mod/groupquiz/view.php', ['id' => $cm->id]),
         1,
         true
     );
@@ -346,21 +355,45 @@ function mod_groupquiz_core_calendar_provide_event_action(calendar_event $event,
  *
  * @category grade
  * @param object $groupquiz the groupquiz settings.
- * @param int $userid specific user only, 0 means all users.
+ * @param int|array $userid specific user only, 0 means all users. An array of user ids is also accepted.
  * @param bool $nullifnone If a single user is specified and $nullifnone is true a grade item with a null rawgrade will be inserted
+ * @return int 0 if ok, error code otherwise
  */
 function groupquiz_update_grades($groupquiz, $userid = 0, $nullifnone = true) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
-    $grades = array();
-    foreach ($userid as $user) {
-	$rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
+    if (empty($userid)) {
+        // Everyone who has a grade for this instance.
+        $userids = $DB->get_fieldset_select(
+            'groupquiz_grades',
+            'DISTINCT userid',
+            'groupquizid = ?',
+            [$groupquiz->id]
+        );
+    } else {
+        // Core passes a single user id; the grader passes the members of a group.
+        $userids = is_array($userid) ? $userid : [$userid];
+    }
+
+    $grades = [];
+    foreach ($userids as $user) {
+        $rawgrade = \mod_groupquiz\utils\grade::get_user_grade($groupquiz, $user);
+        if ($rawgrade === null && !$nullifnone) {
+            // No grade yet, and the caller does not want the gradebook told about it.
+            continue;
+        }
         $grade = new stdClass();
         $grade->userid   = $user;
         $grade->rawgrade = $rawgrade;
         $grades[$user] = $grade;
     }
+
+    if (empty($grades)) {
+        // Keep the grade item in step with the settings even when there is nothing to grade.
+        return groupquiz_grade_item_update($groupquiz);
+    }
+
     return groupquiz_grade_item_update($groupquiz, $grades);
 }
 
