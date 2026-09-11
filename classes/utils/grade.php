@@ -46,20 +46,27 @@ class grade {
     /**
      * Gets the user grade
      *
-     * @param $groupquiz
-     * @param $userid
-     * @return array
+     * @param object $groupquiz The groupquiz instance.
+     * @param int $userid The user to look the grade up for.
+     * @return float|null The user's grade, or null if the user has not been graded yet.
      */
     public static function get_user_grade($groupquiz, $userid) {
         global $DB;
         $recs = $DB->get_records_select('groupquiz_grades', 'userid = ? AND groupquizid = ?',
-	        array($userid, $groupquiz->id), 'grade');
-	if (count($recs) != 1) {
-	   debugging("get_user_grade found too many grades for " . $userid, DEBUG_NORMAL);
-	   exit;
-	}
-	$grade = end($recs)->grade;
-	return $grade;
+            [$userid, $groupquiz->id], 'grade');
+        if (empty($recs)) {
+            // Nothing has been graded for this user yet, which is not an error: the gradebook wants a
+            // null rawgrade for them.
+            return null;
+        }
+        if (count($recs) > 1) {
+            // One grade per user per instance is the invariant. Report the breakage and take the highest
+            // grade rather than ending the request, which used to take the whole page down with it.
+            debugging('get_user_grade found ' . count($recs) . ' grades for user ' . $userid .
+                ' in groupquiz ' . $groupquiz->id, DEBUG_NORMAL);
+        }
+
+        return end($recs)->grade;
     }
 
 
@@ -184,7 +191,8 @@ class grade {
         $this->persist_grades($grades, $transaction);
 
         // update grades to gradebookapi.
-        $updated = groupquiz_update_grades($this->rtq->getRTQ(), array_keys($grades), array_values($grades));
+        // The grades are already in our own table, so the gradebook update only needs the user ids.
+        $updated = groupquiz_update_grades($this->rtq->getRTQ(), array_keys($grades));
 
         if ($updated === GRADE_UPDATE_FAILED) {
             $transaction->rollback(new \Exception('Unable to save grades to gradebook'));
