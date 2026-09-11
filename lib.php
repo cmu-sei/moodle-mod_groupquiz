@@ -110,7 +110,7 @@ function groupquiz_add_instance($groupquiz, $mform) {
         return $result;
     }
 
-    $groupquiz->created = time();
+    $groupquiz->timecreated = time();
     $groupquiz->id = $DB->insert_record('groupquiz', $groupquiz);
 
     // Do the processing required after an add or an update.
@@ -227,7 +227,9 @@ function groupquiz_review_option_form_to_db($fromform, $field) {
  * @return bool true
  */
 function groupquiz_delete_instance($id) {
-    global $DB;
+    global $CFG, $DB;
+    require_once($CFG->dirroot . '/question/engine/lib.php');
+
     $groupquiz = $DB->get_record('groupquiz', array('id' => $id), '*', MUST_EXIST);
 
     // delete calander events
@@ -237,24 +239,29 @@ function groupquiz_delete_instance($id) {
         $event->delete();
     }
 
+    // The question usage behind each attempt belongs to this activity, so it goes with the attempts.
+    // Read the ids before the attempts are deleted, or there is nothing left to point at them.
+    $uniqueids = $DB->get_fieldset_select('groupquiz_attempts', 'uniqueid', 'groupquizid = ?', [$groupquiz->id]);
+    if (!empty($uniqueids)) {
+        \question_engine::delete_questions_usage_by_activities(new \qubaid_list($uniqueids));
+    }
+
     // delete all attempts for this groupquiz
     $DB->delete_records('groupquiz_attempts', array('groupquizid' => $groupquiz->id));
 
     // delete all questions for this groupquiz
     $DB->delete_records('groupquiz_questions', array('groupquizid' => $groupquiz->id));
 
+    // The grades this activity kept for itself are no use to anything once it is gone.
+    $DB->delete_records('groupquiz_grades', array('groupquizid' => $groupquiz->id));
+
     // finally delete the groupquiz object
     $DB->delete_records('groupquiz', array('id' => $groupquiz->id));
-
 
     // delete grade from database
     groupquiz_grade_item_delete($groupquiz);
 
-
-
     // note: all context files are deleted automatically
-
-    $DB->delete_records('groupquiz', array('id'=>$groupquiz->id));
 
     return true;
 }

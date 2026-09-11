@@ -125,6 +125,7 @@ class lib_test extends \advanced_testcase {
         $this->assertEquals(80, $record->grade);
         $this->assertEquals(\mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE, $record->grademethod);
         $this->assertNotEquals(0, $record->timemodified);
+        $this->assertNotEquals(0, $record->timecreated);
 
         $gradeitem = $DB->get_record('grade_items', [
             'itemtype' => 'mod',
@@ -241,7 +242,8 @@ class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Deleting an instance takes its attempts and its question list with it.
+     * Deleting an instance takes everything it owns with it: attempts and their question usages, the
+     * question list, the grades it kept for itself and its gradebook item.
      */
     public function test_groupquiz_delete_instance(): void {
         global $DB;
@@ -257,8 +259,10 @@ class lib_test extends \advanced_testcase {
 
         /** @var \mod_groupquiz_generator $groupquizgenerator */
         $groupquizgenerator = $generator->get_plugin_generator('mod_groupquiz');
-        $groupquizgenerator->create_attempt($instance, $student);
+        $attempt = $groupquizgenerator->create_attempt($instance, $student);
         $surviving = $groupquizgenerator->create_attempt($other, $student);
+        $groupquizgenerator->create_grade($instance, $student, 30);
+        $survivinggrade = $groupquizgenerator->create_grade($other, $student, 40);
         $DB->insert_record('groupquiz_questions', (object)[
             'groupquizid' => $instance->id,
             'questionid' => 1,
@@ -270,6 +274,8 @@ class lib_test extends \advanced_testcase {
         $this->assertFalse($DB->record_exists('groupquiz', ['id' => $instance->id]));
         $this->assertFalse($DB->record_exists('groupquiz_attempts', ['groupquizid' => $instance->id]));
         $this->assertFalse($DB->record_exists('groupquiz_questions', ['groupquizid' => $instance->id]));
+        $this->assertFalse($DB->record_exists('groupquiz_grades', ['groupquizid' => $instance->id]));
+        $this->assertFalse($DB->record_exists('question_usages', ['id' => $attempt->uniqueid]));
         $this->assertFalse($DB->record_exists('grade_items', [
             'itemtype' => 'mod',
             'itemmodule' => 'groupquiz',
@@ -279,6 +285,8 @@ class lib_test extends \advanced_testcase {
         // The sibling instance is untouched.
         $this->assertTrue($DB->record_exists('groupquiz', ['id' => $other->id]));
         $this->assertTrue($DB->record_exists('groupquiz_attempts', ['id' => $surviving->id]));
+        $this->assertTrue($DB->record_exists('groupquiz_grades', ['id' => $survivinggrade->id]));
+        $this->assertTrue($DB->record_exists('question_usages', ['id' => $surviving->uniqueid]));
     }
 
     /**
