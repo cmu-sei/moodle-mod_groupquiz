@@ -41,7 +41,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version = 2026091101;
 
 // This is the version of Moodle this plugin requires.
-$plugin->requires = 2022041901.10;  // Moodle '4.0.1+ (Build: 20220701)';
+$plugin->requires = 2025041400;
 
 // This is the component name of the plugin - it always starts with 'component_'
 $plugin->component = 'mod_groupquiz';
