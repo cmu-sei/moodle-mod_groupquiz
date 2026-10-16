@@ -748,9 +748,9 @@ EOD;
 
     public function quiz_intro() {
     if (html_is_blank($this->rtq->getRTQ()->intro)) {
-            return;
+            return '';
         }
-        $output .= html_writer::start_div('groupquizbox');
+        $output = html_writer::start_div('groupquizbox');
         // return plain html stored by atto editor in the intro field
         $output .= $this->rtq->getRTQ()->intro;
         $output .= html_writer::end_div();
