@@ -53,6 +53,7 @@ function groupquiz_supports($feature) {
         case FEATURE_GRADE_OUTCOMES:          return false;
         case FEATURE_BACKUP_MOODLE2:          return true;
         case FEATURE_SHOW_DESCRIPTION:        return true;
+        case FEATURE_USES_QUESTIONS:          return true;
 
         default: return null;
     }
@@ -249,7 +250,8 @@ function groupquiz_delete_instance($id) {
     // delete all attempts for this groupquiz
     $DB->delete_records('groupquiz_attempts', array('groupquizid' => $groupquiz->id));
 
-    // delete all questions for this groupquiz
+    // Delete all questions for this groupquiz, and the references that tell the question bank they are in use.
+    groupquiz_delete_question_references($groupquiz->id);
     $DB->delete_records('groupquiz_questions', array('groupquizid' => $groupquiz->id));
 
     // The grades this activity kept for itself are no use to anything once it is gone.
@@ -485,4 +487,54 @@ function groupquiz_reset_gradebook($courseid, $type='') {
     foreach ($groupquizzes as $groupquiz) {
         groupquiz_grade_item_update($groupquiz, 'reset');
     }
+}
+
+/**
+ * Record in the question bank that a groupquiz question uses a question.
+ *
+ * The reference is pinned to the version groupquiz_questions.questionid points at, because that is the
+ * version attempts are built from. Without it the question bank reports the question as unused and lets
+ * it be deleted out from under the quiz.
+ *
+ * @param int $groupquizquestionid The groupquiz_questions id.
+ * @param int $questionid The question id.
+ * @param int $contextid The groupquiz module context id.
+ */
+function groupquiz_add_question_reference($groupquizquestionid, $questionid, $contextid) {
+    global $DB;
+
+    $version = $DB->get_record('question_versions', ['questionid' => $questionid], '*', MUST_EXIST);
+
+    $DB->insert_record('question_references', (object)[
+        'usingcontextid' => $contextid,
+        'component' => 'mod_groupquiz',
+        'questionarea' => 'slot',
+        'itemid' => $groupquizquestionid,
+        'questionbankentryid' => $version->questionbankentryid,
+        'version' => $version->version,
+    ]);
+}
+
+/**
+ * Delete the question references of one groupquiz question, or of every question in a groupquiz.
+ *
+ * Keyed on groupquiz_questions ids rather than the module context, so it still works when the course
+ * module is already gone.
+ *
+ * @param int $groupquizid The groupquiz id.
+ * @param int|null $groupquizquestionid A single groupquiz_questions id, or null for all of them.
+ */
+function groupquiz_delete_question_references($groupquizid, $groupquizquestionid = null) {
+    global $DB;
+
+    $params = ['groupquizid' => $groupquizid];
+    $where = 'groupquizid = :groupquizid';
+    if ($groupquizquestionid !== null) {
+        $params['id'] = $groupquizquestionid;
+        $where .= ' AND id = :id';
+    }
+
+    $select = "component = 'mod_groupquiz' AND questionarea = 'slot'
+               AND itemid IN (SELECT id FROM {groupquiz_questions} WHERE $where)";
+    $DB->delete_records_select('question_references', $select, $params);
 }

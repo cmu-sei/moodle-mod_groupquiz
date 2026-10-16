@@ -115,6 +115,29 @@ function xmldb_groupquiz_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026060200, 'groupquiz');
     }
 
+    if ($oldversion < 2026101500) {
+        // Register every existing groupquiz question with the question bank, pinned to the version it
+        // already points at. Rows whose question or course module is gone have nothing to reference.
+        $rs = $DB->get_recordset_sql("
+            SELECT gq.id AS itemid, ctx.id AS usingcontextid, qv.questionbankentryid, qv.version
+              FROM {groupquiz_questions} gq
+              JOIN {question_versions} qv ON qv.questionid = gq.questionid
+              JOIN {modules} m ON m.name = 'groupquiz'
+              JOIN {course_modules} cm ON cm.module = m.id AND cm.instance = gq.groupquizid
+              JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :contextlevel
+         LEFT JOIN {question_references} qr ON qr.itemid = gq.id
+                   AND qr.component = 'mod_groupquiz' AND qr.questionarea = 'slot'
+             WHERE qr.id IS NULL", ['contextlevel' => CONTEXT_MODULE]);
+        foreach ($rs as $record) {
+            $record->component = 'mod_groupquiz';
+            $record->questionarea = 'slot';
+            $DB->insert_record('question_references', $record);
+        }
+        $rs->close();
+
+        upgrade_mod_savepoint(true, 2026101500, 'groupquiz');
+    }
+
     return true;
 }
 

@@ -157,6 +157,8 @@ class questionmanager {
             $question->points = number_format($data->points, 2);
 
             $RTQquestionid = $DB->insert_record('groupquiz_questions', $question);
+            $contextid = \context_module::instance($this->rtq->getCM()->id)->id;
+            groupquiz_add_question_reference($RTQquestionid, $questionid, $contextid);
 
             $this->update_questionorder('addquestion', $RTQquestionid);
 
@@ -248,6 +250,7 @@ class questionmanager {
         global $DB;
 
         try {
+            groupquiz_delete_question_references($this->rtq->getRTQ()->id, $questionid);
             $DB->delete_records('groupquiz_questions', array('id' => $questionid));
             $this->update_questionorder('deletequestion', $questionid);
         } catch(\Exception $e) {
