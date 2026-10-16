@@ -40,12 +40,32 @@ DM20-0197
 /**
  * Structure step to restore one groupquiz activity
  */
-class restore_groupquiz_activity_structure_step extends restore_activity_structure_step {
+class restore_groupquiz_activity_structure_step extends restore_questions_activity_structure_step {
+
+    /** @var stdClass|null the attempt being restored, inserted once its question usage is. */
+    protected $currentattempt = null;
+
+    /** @var string the questionorder from the backup, remapped once the questions are restored. */
+    protected $oldquestionorder = '';
 
     protected function define_structure() {
 
+        $userinfo = $this->get_setting_value('userinfo');
+
         $paths = array();
         $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
+
+        $qinstance = new restore_path_element('groupquiz_question_instance',
+            '/activity/groupquiz/question_instances/question_instance');
+        $paths[] = $qinstance;
+        $this->add_question_references($qinstance, $paths);
+
+        if ($userinfo) {
+            $paths[] = new restore_path_element('groupquiz_grade', '/activity/groupquiz/grades/grade');
+            $attempt = new restore_path_element('groupquiz_attempt', '/activity/groupquiz/attempts/attempt');
+            $paths[] = $attempt;
+            $this->add_question_usages($attempt, $paths);
+        }
 
         // Return the paths wrapped into standard activity structure
         return $this->prepare_activity_structure($paths);
@@ -60,9 +80,15 @@ class restore_groupquiz_activity_structure_step extends restore_activity_structu
 
         // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
         // See MDL-9367.
+        $data->timeopen = $this->apply_date_offset($data->timeopen);
+        $data->timeclose = $this->apply_date_offset($data->timeclose);
 
-	//TODO time setting, behaviour settings, display settings
+        // A grouping that did not come across leaves the quiz without one, to be picked in its settings.
+        $data->grouping = $this->get_mappingid('grouping', $data->grouping, 0);
 
+        // The order lists groupquiz_questions ids, which change on restore; after_execute() remaps it.
+        $this->oldquestionorder = (string)$data->questionorder;
+        $data->questionorder = '';
 
         // insert the groupquiz record
         $newitemid = $DB->insert_record('groupquiz', $data);
@@ -70,8 +96,100 @@ class restore_groupquiz_activity_structure_step extends restore_activity_structu
         $this->apply_activity_instance($newitemid);
     }
 
+    protected function process_groupquiz_question_instance($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->groupquizid = $this->get_new_parentid('groupquiz');
+        // Point at the restored copy of the question, which is what its reference names.
+        $data->questionid = $this->get_mappingid('question', $data->questionid, $data->questionid);
+
+        $newitemid = $DB->insert_record('groupquiz_questions', $data);
+        $this->set_mapping('groupquiz_question_instance', $oldid, $newitemid);
+    }
+
+    /**
+     * Restore a question reference against the groupquiz_questions row it belongs to.
+     *
+     * Core's version assumes the parent is a quiz slot.
+     *
+     * @param array $data the data from the XML file.
+     */
+    public function process_question_reference($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $data->usingcontextid = $this->get_mappingid('context', $data->usingcontextid);
+        $data->itemid = $this->get_new_parentid('groupquiz_question_instance');
+        if ($entry = $this->get_mappingid('question_bank_entry', $data->questionbankentryid)) {
+            $data->questionbankentryid = $entry;
+        }
+        $DB->insert_record('question_references', $data);
+    }
+
+    protected function process_groupquiz_grade($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $data->groupquizid = $this->get_new_parentid('groupquiz');
+        $data->userid = $this->get_mappingid('user', $data->userid, 0);
+        if (!$data->userid) {
+            return;
+        }
+        $DB->insert_record('groupquiz_grades', $data);
+    }
+
+    protected function process_groupquiz_attempt($data) {
+        $data = (object)$data;
+        $data->groupquizid = $this->get_new_parentid('groupquiz');
+
+        $olduserid = $data->userid;
+        $data->userid = $this->get_mappingid('user', $olduserid, 0);
+        if (!$data->userid) {
+            $this->log('Mapped user ID not found for user ' . $olduserid . ', groupquiz ' . $data->groupquizid .
+                ', attempt ' . $data->attemptnum . '. Skipping groupquiz attempt', backup::LOG_INFO);
+            $this->currentattempt = null;
+            return;
+        }
+        $data->userstart = $this->get_mappingid('user', $data->userstart, 0);
+        if (!empty($data->userstop)) {
+            $data->userstop = $this->get_mappingid('user', $data->userstop, 0);
+        }
+        $data->forgroupid = $this->get_mappingid('group', $data->forgroupid, 0);
+
+        // The data is inserted in inform_new_usage_id(), once the question usage has its new id.
+        $this->currentattempt = clone($data);
+    }
+
+    protected function inform_new_usage_id($newusageid) {
+        global $DB;
+
+        $data = $this->currentattempt;
+        if ($data === null) {
+            return;
+        }
+
+        $oldid = $data->id;
+        $data->uniqueid = $newusageid;
+        $newitemid = $DB->insert_record('groupquiz_attempts', $data);
+        $this->set_mapping('groupquiz_attempt', $oldid, $newitemid);
+    }
+
     protected function after_execute() {
+        global $DB;
+
+        parent::after_execute();
         // Add groupquiz related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_groupquiz', 'intro', null);
+
+        $neworder = array();
+        foreach (explode(',', $this->oldquestionorder) as $oldid) {
+            if ($newid = $this->get_mappingid('groupquiz_question_instance', $oldid)) {
+                $neworder[] = $newid;
+            }
+        }
+        $DB->set_field('groupquiz', 'questionorder', implode(',', $neworder),
+            array('id' => $this->get_new_parentid('groupquiz')));
     }
 }
