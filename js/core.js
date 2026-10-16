@@ -246,11 +246,11 @@ groupquiz.getQuizInfo = function () {
             console.log('There was an error....' + response.message);
 	    if (response.message == 'attemptclosed') {
 		// redirect to viewquizattempt
-		var newparams = 'viewquizattempt.php?attemptid=' + groupquiz.get('attemptid') + '&id=' + groupquiz.get('id') + '&quizid=' + groupquiz.get('groupquizid');
-		var newurl = window.location.href.replace(/view.php$/, newparams);
+		// The attempt page URL carries action=startquiz, so build the target URL rather than editing it.
+		var newurl = M.cfg.wwwroot + '/mod/groupquiz/viewquizattempt.php?attemptid=' + groupquiz.get('attemptid') + '&id=' + groupquiz.get('id');
 		window.location.replace(newurl);
 	    } else {
-                window.location.replace(window.location.href + "?id=" + groupquiz.get('id'));
+                window.location.replace(M.cfg.wwwroot + '/mod/groupquiz/view.php?id=' + groupquiz.get('id'));
             }
         } else if (status == 200) {
             const questions = JSON.parse(response.status);
