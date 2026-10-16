@@ -150,17 +150,7 @@ class questionmanager {
 
         } else if ( $data = $mform->get_data() ) {
             // process data from the form
-
-            $question = new \stdClass();
-            $question->groupquizid = $this->rtq->getRTQ()->id;
-            $question->questionid = $questionid;
-            $question->points = number_format($data->points, 2);
-
-            $RTQquestionid = $DB->insert_record('groupquiz_questions', $question);
-            $contextid = \context_module::instance($this->rtq->getCM()->id)->id;
-            groupquiz_add_question_reference($RTQquestionid, $questionid, $contextid);
-
-            $this->update_questionorder('addquestion', $RTQquestionid);
+            $this->insert_question($questionid, $data->points);
 
             // ensure there is no action or questionid in the baseurl
             $this->baseurl->remove_params('action', 'questionid');
@@ -172,6 +162,62 @@ class questionmanager {
             $this->renderer->addquestionform($mform);
             $this->renderer->footer();
         }
+    }
+
+    /**
+     * Adds the questions ticked in the question bank, each worth its default mark.
+     *
+     * Unlike add_question() there is no points form: the bank submits the whole selection at once, and the
+     * points of each question can still be changed from the question list afterwards.
+     *
+     * @param int[] $questionids The question bank questionids
+     *
+     * @return int[] [number added, number skipped because they were already on the quiz]
+     */
+    public function add_questions(array $questionids)
+    {
+        global $DB;
+
+        $added = 0;
+        $skipped = 0;
+        foreach ($questionids as $questionid) {
+            if ($this->is_question_already_present($questionid)) {
+                $skipped++;
+                continue;
+            }
+            $defaultmark = $DB->get_field('question', 'defaultmark', ['id' => $questionid], MUST_EXIST);
+            $this->insert_question($questionid, $defaultmark);
+            $added++;
+        }
+
+        return [$added, $skipped];
+    }
+
+    /**
+     * Puts a question on the quiz at the last position and registers it with the question bank.
+     *
+     * @param int $questionid The question bank questionid
+     * @param float $points The points the question is worth
+     *
+     * @return int The new RTQ questionid
+     */
+    protected function insert_question($questionid, $points)
+    {
+        global $DB;
+
+        $question = new \stdClass();
+        $question->groupquizid = $this->rtq->getRTQ()->id;
+        $question->questionid = $questionid;
+        $question->points = number_format($points, 2);
+
+        $rtqquestionid = $DB->insert_record('groupquiz_questions', $question);
+
+        $contextid = \context_module::instance($this->rtq->getCM()->id)->id;
+        groupquiz_add_question_reference($rtqquestionid, $questionid, $contextid);
+
+        $this->update_questionorder('addquestion', $rtqquestionid);
+
+        return $rtqquestionid;
     }
 
     /**

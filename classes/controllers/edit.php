@@ -199,28 +199,24 @@ class edit {
 
             case 'addquestionlist':
 
-                $questionmanager = $this->groupquiz->get_questionmanager();
+                require_sesskey();
 
-                // actually it is params like q696 adn q692
-                $rawdata = (array) data_submitted();
-                foreach ($rawdata as $key => $value) { // Parse input for question ids.
+                // The bank posts one q<questionid> field per ticked question.
+                $questionids = [];
+                foreach ((array) data_submitted() as $key => $value) {
                     if (preg_match('!^q([0-9]+)$!', $key, $matches)) {
-                        $key = $matches[1];
-                        $questionid = $key;
-                        if (!$questionmanager->add_question($questionid)) {
-                            $type = 'error';
-                            $message = get_string('qadderror', 'topomojo');
-                            $renderer->setMessage($type, $message);
-                            break;
-                        } else {
-                            $type = 'success';
-                            $message = get_string('qaddsuccess', 'topomojo');
-                            $renderer->setMessage($type, $message);
-                        }
+                        $questionids[] = (int) $matches[1];
                     }
                 }
-                $renderer->setMessage($type, $message);
-                $renderer->print_header();
+
+                [$added, $skipped] = $this->groupquiz->get_questionmanager()->add_questions($questionids);
+
+                $message = get_string('questionsadded', 'groupquiz', $added);
+                if ($skipped) {
+                    $message .= ' ' . get_string('questionsskipped', 'groupquiz', $skipped);
+                }
+                $notifytype = $added ? \core\output\notification::NOTIFY_SUCCESS : \core\output\notification::NOTIFY_WARNING;
+                redirect(new \moodle_url('/mod/groupquiz/edit.php', ['cmid' => $this->cm->id]), $message, null, $notifytype);
 
                 break;
             case 'editquestionlist':
