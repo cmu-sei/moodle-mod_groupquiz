@@ -160,10 +160,10 @@ class edit {
 
                 if ($this->groupquiz->get_questionmanager()->move_question('up', $questionid)) {
                     $type = 'success';
-                    $message = get_string('qmovesuccess', 'activequiz');
+                    $message = get_string('qmovesuccess', 'groupquiz');
                 } else {
                     $type = 'error';
-                    $message = get_string('qmoveerror', 'activequiz');
+                    $message = get_string('qmoveerror', 'groupquiz');
                 }
 
                 $this->renderer->setMessage($type, $message);
@@ -178,10 +178,10 @@ class edit {
 
                 if ($this->groupquiz->get_questionmanager()->move_question('down', $questionid)) {
                     $type = 'success';
-                    $message = get_string('qmovesuccess', 'activequiz');
+                    $message = get_string('qmovesuccess', 'groupquiz');
                 } else {
                     $type = 'error';
-                    $message = get_string('qmoveerror', 'activequiz');
+                    $message = get_string('qmoveerror', 'groupquiz');
                 }
 
                 $this->renderer->setMessage($type, $message);
