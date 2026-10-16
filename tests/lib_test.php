@@ -62,6 +62,8 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_grade_item_update')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('mod_groupquiz_core_calendar_provide_event_action')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_update_grades')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_add_question_reference')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_delete_question_references')]
 class lib_test extends \advanced_testcase {
     /**
      * Feature support is what the course module chooser and the gradebook read; a flipped answer here
@@ -92,6 +94,8 @@ class lib_test extends \advanced_testcase {
             'GRADE_OUTCOMES' => [FEATURE_GRADE_OUTCOMES, false],
             'BACKUP_MOODLE2' => [FEATURE_BACKUP_MOODLE2, true],
             'SHOW_DESCRIPTION' => [FEATURE_SHOW_DESCRIPTION, true],
+            // Core asks this before treating the activity's questions as in use.
+            'USES_QUESTIONS' => [FEATURE_USES_QUESTIONS, true],
             'UNKNOWN_FEATURE' => ['unknown_feature', null],
         ];
     }
@@ -254,6 +258,7 @@ class lib_test extends \advanced_testcase {
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();
         $student = $generator->create_and_enrol($course, 'student');
+        $question = $this->create_question($course);
         $instance = $generator->create_module('groupquiz', ['course' => $course->id]);
         $other = $generator->create_module('groupquiz', ['course' => $course->id]);
 
@@ -263,11 +268,8 @@ class lib_test extends \advanced_testcase {
         $surviving = $groupquizgenerator->create_attempt($other, $student);
         $groupquizgenerator->create_grade($instance, $student, 30);
         $survivinggrade = $groupquizgenerator->create_grade($other, $student, 40);
-        $DB->insert_record('groupquiz_questions', (object)[
-            'groupquizid' => $instance->id,
-            'questionid' => 1,
-            'points' => 1,
-        ]);
+        $this->add_groupquiz_question($instance, $question);
+        $survivingslot = $this->add_groupquiz_question($other, $question);
 
         $this->assertTrue(groupquiz_delete_instance($instance->id));
 
@@ -287,6 +289,107 @@ class lib_test extends \advanced_testcase {
         $this->assertTrue($DB->record_exists('groupquiz_attempts', ['id' => $surviving->id]));
         $this->assertTrue($DB->record_exists('groupquiz_grades', ['id' => $survivinggrade->id]));
         $this->assertTrue($DB->record_exists('question_usages', ['id' => $surviving->uniqueid]));
+        $this->assertEquals(['mod_groupquiz' => [$survivingslot]], $this->references_for($question));
+    }
+
+    /**
+     * Adding a question registers it with the question bank, pinned to the version the activity points at,
+     * so the bank counts it as used and will not let it be deleted out from under the quiz.
+     */
+    public function test_groupquiz_add_question_reference(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $instance = $this->getDataGenerator()->create_module('groupquiz', ['course' => $course->id]);
+        $question = $this->create_question($course);
+        // A later version must not move the reference: attempts are built from the pinned one.
+        $this->getDataGenerator()->get_plugin_generator('core_question')->update_question($question);
+
+        $this->assertFalse(questions_in_use([$question->id]));
+
+        $slotid = $this->add_groupquiz_question($instance, $question);
+
+        $reference = $DB->get_record('question_references', ['component' => 'mod_groupquiz', 'itemid' => $slotid]);
+        $this->assertEquals(\context_module::instance($instance->cmid)->id, $reference->usingcontextid);
+        $this->assertEquals('slot', $reference->questionarea);
+        $this->assertEquals(get_question_bank_entry($question->id)->id, $reference->questionbankentryid);
+        $this->assertEquals(1, $reference->version);
+        $this->assertTrue(questions_in_use([$question->id]));
+    }
+
+    /**
+     * Removing one question from a groupquiz drops only that question's reference.
+     */
+    public function test_groupquiz_delete_question_references_for_one_question(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $instance = $this->getDataGenerator()->create_module('groupquiz', ['course' => $course->id]);
+        $removed = $this->create_question($course);
+        $kept = $this->create_question($course);
+        $removedslot = $this->add_groupquiz_question($instance, $removed);
+        $keptslot = $this->add_groupquiz_question($instance, $kept);
+
+        groupquiz_delete_question_references($instance->id, $removedslot);
+
+        $this->assertEquals([], $this->references_for($removed));
+        $this->assertEquals(['mod_groupquiz' => [$keptslot]], $this->references_for($kept));
+        $this->assertFalse(questions_in_use([$removed->id]));
+    }
+
+    /**
+     * Create a question in a course-level question bank.
+     *
+     * @param \stdClass $course
+     * @return \stdClass the question
+     */
+    private function create_question(\stdClass $course): \stdClass {
+        /** @var \core_question_generator $questiongenerator */
+        $questiongenerator = $this->getDataGenerator()->get_plugin_generator('core_question');
+        $qbank = $this->getDataGenerator()->create_module('qbank', ['course' => $course->id]);
+        $category = $questiongenerator->create_question_category(['contextid' => \context_module::instance($qbank->cmid)->id]);
+        return $questiongenerator->create_question('truefalse', null, ['category' => $category->id]);
+    }
+
+    /**
+     * Add a question to a groupquiz the way the edit page does.
+     *
+     * @param \stdClass $instance the groupquiz
+     * @param \stdClass $question
+     * @return int the groupquiz_questions id
+     */
+    private function add_groupquiz_question(\stdClass $instance, \stdClass $question): int {
+        global $DB;
+
+        $slotid = $DB->insert_record('groupquiz_questions', (object)[
+            'groupquizid' => $instance->id,
+            'questionid' => $question->id,
+            'points' => 1,
+        ]);
+        groupquiz_add_question_reference($slotid, $question->id, \context_module::instance($instance->cmid)->id);
+        return $slotid;
+    }
+
+    /**
+     * The groupquiz_questions ids that reference a question, grouped by component.
+     *
+     * @param \stdClass $question
+     * @return array
+     */
+    private function references_for(\stdClass $question): array {
+        global $DB;
+
+        $references = [];
+        $entryid = get_question_bank_entry($question->id)->id;
+        $records = $DB->get_records('question_references', ['questionbankentryid' => $entryid], 'itemid');
+        foreach ($records as $record) {
+            $references[$record->component][] = (int)$record->itemid;
+        }
+        return $references;
     }
 
     /**

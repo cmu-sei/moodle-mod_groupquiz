@@ -141,6 +141,8 @@ $string['qdeleteerror'] = 'Couldn\'t delete question';
 $string['questionedit'] = 'Edit question';
 $string['savequestion'] = 'Save question';
 $string['cantaddquestiontwice'] = 'You can not add the same question more than once to a quiz';
+$string['questionsadded'] = 'Added {$a} question(s) to the group quiz.';
+$string['questionsskipped'] = 'Skipped {$a} already on it.';
 $string['cannoteditafterattempts'] = 'You cannot add or remove questions because this quiz has been attempted.';
 $string['invalid_points'] = 'Invalid point value';
 
