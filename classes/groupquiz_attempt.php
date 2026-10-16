@@ -273,7 +273,7 @@ class groupquiz_attempt {
                         if (($field == 'reviewmarks') &&
                                     ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
                             $options->marks = \question_display_options::MARK_AND_MAX;
-                        } else {
+                        } else if (property_exists($options, $field)) {
                             $options->$field = \question_display_options::VISIBLE;
                         }
                         if (($field == 'reviewrightanswer') &&
@@ -290,10 +290,15 @@ class groupquiz_attempt {
 
                 foreach (\mod_groupquiz\groupquiz::$reviewfields as $field => $data) {
                     $name = 'review' . $field;
+                    // Core names the specific feedback option "feedback", as make_from_groupquiz() does.
+                    if ($field == 'specificfeedback') {
+                        $field = 'feedback';
+                    }
+                    // The attempt and overall feedback settings are not question display options, so they are skipped.
                     if ($reviewoptions->{$name} & $state) {
                         if ($field == 'marks') {
                             $options->$field = \question_display_options::MARK_AND_MAX;
-                        } else {
+                        } else if (property_exists($options, $field)) {
                             $options->$field = \question_display_options::VISIBLE;
                         }
                     }
