@@ -55,6 +55,11 @@ class backup_groupquiz_activity_task extends backup_activity_task {
      */
     protected function define_my_steps() {
         $this->add_step(new backup_groupquiz_activity_structure_step('groupquiz_structure', 'groupquiz.xml'));
+
+        // Include the question bank categories holding the annotated questions,
+        // then clean up the temp records that step leaves behind.
+        $this->add_step(new backup_calculate_question_categories('activity_question_categories'));
+        $this->add_step(new backup_delete_temp_questions('clean_temp_questions'));
     }
 
     /**

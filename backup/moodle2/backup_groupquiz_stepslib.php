@@ -39,27 +39,63 @@ defined('MOODLE_INTERNAL') || die;
  /**
  * Define the complete groupquiz structure for backup, with file and id annotations
  */
-class backup_groupquiz_activity_structure_step extends backup_activity_structure_step {
+class backup_groupquiz_activity_structure_step extends backup_questions_activity_structure_step {
 
     protected function define_structure() {
+
+        $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
         $groupquiz = new backup_nested_element('groupquiz', array('id'), array(
             'name', 'intro', 'introformat', 'timeopen', 'timeclose', 'timelimit',
-	    'grade', 'grademethod', 'reviewattempt', 'reviewcorrectness', 'reviewmarks',
-	    'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
-	    'reviewoverallfeedback', 'reviewmanualcomment', 'grouping', 'questionorder',
-	    'shuffleanswers', 'showuserpicture', 'requireallmemberssubmit',
+            'grade', 'grademethod', 'reviewattempt', 'reviewcorrectness', 'reviewmarks',
+            'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
+            'reviewoverallfeedback', 'reviewmanualcomment', 'grouping', 'questionorder',
+            'shuffleanswers', 'showuserpicture', 'requireallmemberssubmit',
             'timecreated', 'timemodified'));
 
+        $qinstances = new backup_nested_element('question_instances');
+        $qinstance = new backup_nested_element('question_instance', array('id'),
+            array('questionid', 'points'));
+        $this->add_question_references($qinstance, 'mod_groupquiz', 'slot');
+
+        $grades = new backup_nested_element('grades');
+        $grade = new backup_nested_element('grade', array('id'),
+            array('userid', 'grade', 'timemodified'));
+
+        $attempts = new backup_nested_element('attempts');
+        $attempt = new backup_nested_element('attempt', array('id'), array(
+            'userid', 'userstart', 'userstop', 'attemptnum', 'uniqueid', 'forgroupid',
+            'layout', 'sumgrades', 'state', 'timestart', 'timefinish', 'timemodified',
+            'preview'));
+        // The question usage holding each attempt's responses.
+        $this->add_question_usages($attempt, 'uniqueid');
+
         // Build the tree
-        //nothing here for groupquizs
+        $groupquiz->add_child($qinstances);
+        $qinstances->add_child($qinstance);
+        $groupquiz->add_child($grades);
+        $grades->add_child($grade);
+        $groupquiz->add_child($attempts);
+        $attempts->add_child($attempt);
 
         // Define sources
         $groupquiz->set_source_table('groupquiz', array('id' => backup::VAR_ACTIVITYID));
+        $qinstance->set_source_table('groupquiz_questions',
+            array('groupquizid' => backup::VAR_PARENTID), 'id ASC');
+        if ($userinfo) {
+            $grade->set_source_table('groupquiz_grades', array('groupquizid' => backup::VAR_PARENTID));
+            $attempt->set_source_table('groupquiz_attempts',
+                array('groupquizid' => backup::VAR_PARENTID), 'id ASC');
+        }
 
         // Define id annotations
-        //module has no id annotations
+        $groupquiz->annotate_ids('grouping', 'grouping');
+        $grade->annotate_ids('user', 'userid');
+        $attempt->annotate_ids('user', 'userid');
+        $attempt->annotate_ids('user', 'userstart');
+        $attempt->annotate_ids('user', 'userstop');
+        $attempt->annotate_ids('group', 'forgroupid');
 
         // Define file annotations
         $groupquiz->annotate_files('mod_groupquiz', 'intro', null); // This file area hasn't itemid
