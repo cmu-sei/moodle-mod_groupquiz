@@ -59,6 +59,13 @@ class mod_groupquiz_generator extends testing_module_generator {
 
         $record = (object)(array)$record;
 
+        // Group Quiz keeps the grouping its groups come from in its own grouping column, apart from the
+        // course module's groupingid. Behat's "activities" generator turns a grouping column into
+        // groupingid, so fall back to that when no grouping is given.
+        if (!isset($record->grouping) && !empty($record->groupingid)) {
+            $record->grouping = $record->groupingid;
+        }
+
         $defaults = [
             'timeopen' => 0,
             'timeclose' => 0,
