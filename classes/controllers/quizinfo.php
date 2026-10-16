@@ -183,7 +183,7 @@ class quizinfo {
             $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
             $this->RTQ->get_grader()->save_group_grade($attempt);
 
-            $this->jsonlib->send_error('attemptclosed timeleft ' . $timeleft . 'state ' . $state);
+            $this->jsonlib->send_error('attemptclosed');
 	}
 
 	if ($timeleft > 0) {
