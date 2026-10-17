@@ -67,7 +67,6 @@ class edit_renderer extends \plugin_renderer_base {
      * @param string $questionbankview HTML for the question bank view
      */
     public function listquestions($groupquizhasattempts, $questions, $questionbankview, $cm, $pagevars) {
-        global $CFG;
         $this->hasattempts = $groupquizhasattempts;
 
         // Question List
@@ -96,25 +95,7 @@ class edit_renderer extends \plugin_renderer_base {
             echo \html_writer::end_div();
             echo \html_writer::end_div();
 
-            $this->page->requires->js('/mod/groupquiz/js/core.js');
-            $this->page->requires->js('/mod/groupquiz/js/sortable/sortable.min.js');
-            $this->page->requires->js('/mod/groupquiz/js/edit_quiz.js');
-
-            // next set up a class to pass to js for js info
-            $jsinfo = new \stdClass();
-            $jsinfo->sesskey = sesskey();
-            $jsinfo->siteroot = $CFG->wwwroot;
-            $jsinfo->cmid = $this->groupquiz->getCM()->id;
-
-            // print jsinfo to javascript
-            echo \html_writer::start_tag('script', array('type' => 'text/javascript'));
-            echo "rtqinitinfo = " . json_encode($jsinfo);
-            echo \html_writer::end_tag('script');
-
-            $this->page->requires->strings_for_js(array(
-                'success',
-                'error'
-            ), 'core');
+            $this->page->requires->js_call_amd('mod_groupquiz/edit_quiz', 'init', [$this->groupquiz->getCM()->id]);
         }
     }
 
