@@ -194,7 +194,7 @@ class custom_view extends \core_question\local\bank\view {
         } else {
             print_string('nopermissionadd', 'question');
         }
-        \html_writer::end_tag('div');
+        echo \html_writer::end_tag('div');
     }
 
     /**

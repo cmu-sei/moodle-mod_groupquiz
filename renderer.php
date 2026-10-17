@@ -161,6 +161,12 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
 
             $this->rtq->call_question_modifiers('requires_jquery', null);
             $this->rtq->call_question_modifiers('add_css', null);
+
+            // Load the quiz scripts with the head scripts, at the top of the body. In the footer they are printed
+            // after the AMD inits, and the page stops parsing while it fetches them, so the inits can run before
+            // the page is built.
+            $this->page->requires->js('/mod/groupquiz/js/core.js', true);
+            $this->page->requires->js('/mod/groupquiz/js/student.js', true);
         }
 
         $this->base_header('view');
@@ -508,8 +514,6 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     public function init_quiz_js($attempt) {
         global $USER, $CFG;
 
-        $this->page->requires->js('/mod/groupquiz/js/core.js');
-
         // add window.onload script manually to handle removing the loading mask
         echo html_writer::start_tag('script', array('type' => 'text/javascript'));
         echo <<<EOD
@@ -518,8 +522,6 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
             }());
 EOD;
         echo html_writer::end_tag('script');
-
-        $this->page->requires->js('/mod/groupquiz/js/student.js');
 
         // next set up a class to pass to js for js info
         $jsinfo = new stdClass();
@@ -748,9 +750,9 @@ EOD;
 
     public function quiz_intro() {
     if (html_is_blank($this->rtq->getRTQ()->intro)) {
-            return;
+            return '';
         }
-        $output .= html_writer::start_div('groupquizbox');
+        $output = html_writer::start_div('groupquizbox');
         // return plain html stored by atto editor in the intro field
         $output .= $this->rtq->getRTQ()->intro;
         $output .= html_writer::end_div();
