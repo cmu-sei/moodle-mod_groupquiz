@@ -28,6 +28,8 @@ import {getString} from 'core/str';
 const SELECTORS = {
     list: '.groupquizbox .questionlist',
     handle: '.dragquestion',
+    // The list holds a copy of the dragged question until the drop has been handled.
+    questions: ':scope > li[data-questionid]:not(.sortable-list-is-dragged)',
     status: '#editstatus',
 };
 
@@ -59,7 +61,7 @@ const showStatus = (success, message) => {
  */
 const saveOrder = async(cmid, list) => {
     const pending = new Pending('mod_groupquiz/edit_quiz:saveorder');
-    const questionorder = Array.from(list.children).map((item) => item.dataset.questionid);
+    const questionorder = Array.from(list.querySelectorAll(SELECTORS.questions)).map((item) => item.dataset.questionid);
     const params = new URLSearchParams({
         sesskey: M.cfg.sesskey,
         cmid: cmid,
