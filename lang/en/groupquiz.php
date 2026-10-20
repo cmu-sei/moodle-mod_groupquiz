@@ -201,3 +201,23 @@ $string['groupquiz:grade'] = 'Grade Group Quizzes';
 $string['previewquiz'] = 'Preview quiz';
 $string['continuepreview'] = 'Continue last preview';
 
+// Privacy.
+$string['privacy:metadata:core_question'] = 'Each Group Quiz attempt stores its responses in a question usage held by the question engine.';
+$string['privacy:metadata:groupquiz_attempts'] = 'The attempts a group has made at a Group Quiz. One attempt is shared by all members of the group.';
+$string['privacy:metadata:groupquiz_attempts:attemptnum'] = 'The attempt number for the group.';
+$string['privacy:metadata:groupquiz_attempts:forgroupid'] = 'The group the attempt belongs to.';
+$string['privacy:metadata:groupquiz_attempts:preview'] = 'Whether the attempt is an instructor preview.';
+$string['privacy:metadata:groupquiz_attempts:state'] = 'The current state of the attempt.';
+$string['privacy:metadata:groupquiz_attempts:sumgrades'] = 'The total marks awarded for the attempt.';
+$string['privacy:metadata:groupquiz_attempts:timefinish'] = 'The time the attempt was submitted.';
+$string['privacy:metadata:groupquiz_attempts:timemodified'] = 'The time the attempt was last modified.';
+$string['privacy:metadata:groupquiz_attempts:timestart'] = 'The time the attempt was started.';
+$string['privacy:metadata:groupquiz_attempts:userid'] = 'The ID of the user who opened the attempt.';
+$string['privacy:metadata:groupquiz_attempts:userstart'] = 'The ID of the user who started the attempt.';
+$string['privacy:metadata:groupquiz_attempts:userstop'] = 'The ID of the user who submitted the attempt.';
+$string['privacy:metadata:groupquiz_grades'] = 'The grade each user received for a Group Quiz.';
+$string['privacy:metadata:groupquiz_grades:grade'] = 'The grade the user received.';
+$string['privacy:metadata:groupquiz_grades:timemodified'] = 'The time the grade was last modified.';
+$string['privacy:metadata:groupquiz_grades:userid'] = 'The ID of the user the grade is for.';
+$string['privacy:path:attempts'] = 'Attempts';
+$string['privacy:path:grades'] = 'Grades';
