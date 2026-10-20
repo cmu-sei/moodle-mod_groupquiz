@@ -49,6 +49,9 @@ class groupquiz_attempt {
     const ABANDONED = 'abandoned';
     const FINISHED = 'finished';
 
+    /** @var int The userstop value recorded when the time limit, not a member, closed the attempt. */
+    const USERSTOP_TIMEEXPIRED = -1;
+
     /** @var \stdClass The attempt record */
     protected $attempt;
 
@@ -89,6 +92,30 @@ class groupquiz_attempt {
         }
 
         return ($a->timefinish < $b->timefinish) ? -1 : 1;
+    }
+
+    /**
+     * Describe who submitted an attempt, for the attempts tables.
+     *
+     * Only USERSTOP_TIMEEXPIRED means the time limit closed the attempt. A userstop of 0 is what the
+     * privacy provider leaves when it erases the submitter, and a userstop pointing at no user record
+     * is equally unattributable; both read as an unknown user, never as an expired attempt.
+     *
+     * @param int|string|null $userstop The attempt's userstop value.
+     * @param int|null $timefinish The attempt's timefinish value.
+     * @return string The label, or '' for an attempt nobody has submitted yet.
+     */
+    public static function get_userstop_label($userstop, $timefinish): string {
+        global $DB;
+
+        if ((int)$userstop === self::USERSTOP_TIMEEXPIRED) {
+            return get_string('timeexpired', 'groupquiz');
+        }
+        if (empty($userstop)) {
+            return empty($timefinish) ? '' : get_string('unknownuser');
+        }
+        $user = $DB->get_record('user', ['id' => $userstop]);
+        return $user ? fullname($user) : get_string('unknownuser');
     }
 
     /**
@@ -707,7 +734,7 @@ class groupquiz_attempt {
         if ($loguser) {
             $this->attempt->userstop = $USER->id;
         } else {
-            $this->attempt->userstop = '-1';
+            $this->attempt->userstop = self::USERSTOP_TIMEEXPIRED;
         }
         $this->attempt->timefinish = time();
         $this->save();

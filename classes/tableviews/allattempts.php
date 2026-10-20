@@ -166,7 +166,6 @@ class allattempts extends \flexible_table implements \renderable {
      * @return array $data The array of data to show
      */
     protected function get_data($type) {
-        global $DB;
 
         $data = array();
         $attempts = $this->rtq->getall_attempts($type);
@@ -186,12 +185,7 @@ class allattempts extends \flexible_table implements \renderable {
             $groupid = $attempt->forgroupid;
 
             $ditem->groupid = $groupid;
-            $user = $DB->get_record("user", array('id' => $attempt->userstop));
-            if ($user) {
-                $ditem->userstop = fullname($user);
-            } else if (!$user && $attempt->timefinish) {
-                $ditem->userstop = "Time Expired";
-            }
+            $ditem->userstop = \mod_groupquiz\groupquiz_attempt::get_userstop_label($attempt->userstop, $attempt->timefinish);
 
             $ditem->groupname = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
             //$ditem->attemptno = $attempt->attemptnum;

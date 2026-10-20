@@ -189,6 +189,7 @@ $string['grade'] = 'Grade';
 
 // allattempts table
 $string['response_attempt_controls'] = 'Edit/View Attempt';
+$string['timeexpired'] = 'Time Expired';
 
 // roles
 $string['groupquiz:manage'] = 'Manage Group Quizzes';
