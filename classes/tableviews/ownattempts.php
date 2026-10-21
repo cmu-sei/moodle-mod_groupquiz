@@ -170,18 +170,13 @@ class ownattempts extends \flexible_table {
      * @return array $data The array of data to show
      */
     protected function get_data() {
-        global $DB, $USER;
+        global $USER;
 
         $data = array();
 
         foreach ($this->attempts as $attempt) {
             $ditem = new \stdClass();
-	    $user = $DB->get_record("user", array('id' => $attempt->userstop));
-	    if ($user) {
-	        $ditem->userstop = fullname($user);
-            } else if (!$user && $attempt->timefinish) {
-		$ditem->userstop = "Time Expired";
-	    }
+            $ditem->userstop = \mod_groupquiz\groupquiz_attempt::get_userstop_label($attempt->userstop, $attempt->timefinish);
 	    $ditem->attemptid  = $attempt->id;
             //$ditem->attemptnum = $attempt->attempnum;
             $ditem->group = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
