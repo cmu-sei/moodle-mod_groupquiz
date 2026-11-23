@@ -115,4 +115,38 @@ final class groupquiz_test extends \advanced_testcase {
         $this->assertInstanceOf(groupquiz_attempt::class, $rtq->openAttempt);
         $this->assertEquals($attempt->id, $rtq->openAttempt->id);
     }
+
+    /**
+     * An attempt that has not started yet is open too.
+     */
+    public function test_get_group_attempt_with_a_notstarted_attempt(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$rtq, $instance, $generator] = $this->make_groupquiz();
+        $student = $generator->create_user();
+        $attempt = $generator->get_plugin_generator('mod_groupquiz')->create_attempt($instance, $student, [
+            'forgroupid' => 123,
+            'state' => groupquiz_attempt::NOTSTARTED,
+        ]);
+
+        $this->assertTrue($rtq->get_group_attempt(123));
+        $this->assertEquals($attempt->id, $rtq->openAttempt->id);
+    }
+
+    /**
+     * Looking up a group with no open attempt leaves an attempt that was already loaded in place.
+     */
+    public function test_get_group_attempt_keeps_the_loaded_attempt_when_none_is_found(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        [$rtq, $instance, $generator] = $this->make_groupquiz();
+        $student = $generator->create_user();
+        $attempt = $generator->get_plugin_generator('mod_groupquiz')->create_attempt($instance, $student, [
+            'forgroupid' => 123,
+        ]);
+
+        $this->assertTrue($rtq->get_group_attempt(123));
+        $this->assertFalse($rtq->get_group_attempt(456));
+        $this->assertEquals($attempt->id, $rtq->openAttempt->id);
+    }
 }
