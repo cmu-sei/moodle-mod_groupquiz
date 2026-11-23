@@ -116,12 +116,7 @@ final class backup_restore_test extends \advanced_testcase {
 
         [$course, $grouping, $instance, $questions] = $this->create_quiz_with_questions();
 
-        // Moodle 5.2 moved duplication to cmactions and deprecated duplicate_module(); 5.0 only has the latter.
-        if (method_exists(\core_courseformat\local\cmactions::class, 'duplicate')) {
-            $newcm = (new \core_courseformat\local\cmactions($course))->duplicate($instance->cmid);
-        } else {
-            $newcm = duplicate_module($course, get_fast_modinfo($course)->get_cm($instance->cmid));
-        }
+        $newcm = (new \core_courseformat\local\cmactions($course))->duplicate($instance->cmid);
 
         $copy = $DB->get_record('groupquiz', ['id' => $newcm->instance], '*', MUST_EXIST);
         $this->assertEquals($grouping->id, $copy->grouping);
