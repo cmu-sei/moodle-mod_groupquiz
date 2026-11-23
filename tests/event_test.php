@@ -81,7 +81,8 @@ final class event_test extends \advanced_testcase {
         $this->assertEquals($instance->id, $url->get_param('groupquizid'));
         $this->assertEquals(7, $url->get_param('attemptid'));
         $this->assertEquals(2, $url->get_param('slot'));
-        $this->assertSame('savecomment', $url->get_param('action'));
+        // A log link is a plain GET, so it opens the attempt rather than the POST-only save action.
+        $this->assertNull($url->get_param('action'));
         $this->assertNull($url->get_param('sessionid'));
         $this->assertNull($url->get_param('attempt'));
     }

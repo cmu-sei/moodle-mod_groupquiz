@@ -101,7 +101,6 @@ class question_manually_graded extends \core\event\base {
             'groupquizid' => $this->other['groupquizid'],
             'attemptid' => $this->other['attemptid'],
             'slot' => $this->other['slot'],
-            'action' => 'savecomment',
         ]);
     }
 
