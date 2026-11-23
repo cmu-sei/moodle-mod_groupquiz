@@ -23,15 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
@@ -56,7 +62,6 @@ require_once($CFG->dirroot . '/mod/groupquiz/lib.php');
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_groupquiz_activity_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_groupquiz_activity_structure_step::class)]
 final class backup_restore_test extends \advanced_testcase {
-
     /**
      * A restored quiz keeps its questions, in their order, registered with the question bank,
      * and points at the restored course's copy of its grouping.
@@ -69,8 +74,12 @@ final class backup_restore_test extends \advanced_testcase {
         [$course, $grouping, $instance, $questions] = $this->create_quiz_with_questions();
         // Reverse the order so restoring in insertion order would show up.
         $slots = $DB->get_records_menu('groupquiz_questions', ['groupquizid' => $instance->id], 'id', 'questionid, id');
-        $DB->set_field('groupquiz', 'questionorder',
-            $slots[$questions[1]->id] . ',' . $slots[$questions[0]->id], ['id' => $instance->id]);
+        $DB->set_field(
+            'groupquiz',
+            'questionorder',
+            $slots[$questions[1]->id] . ',' . $slots[$questions[0]->id],
+            ['id' => $instance->id]
+        );
 
         $newcourseid = $this->backup_and_restore($course, false);
 
@@ -90,8 +99,10 @@ final class backup_restore_test extends \advanced_testcase {
         }
         $this->assertSame([$questions[1]->name, $questions[0]->name], $names);
 
-        $references = $DB->get_records('question_references',
-            ['component' => 'mod_groupquiz', 'questionarea' => 'slot', 'itemid' => $order[0]]);
+        $references = $DB->get_records(
+            'question_references',
+            ['component' => 'mod_groupquiz', 'questionarea' => 'slot', 'itemid' => $order[0]]
+        );
         $this->assertCount(1, $references);
         $reference = reset($references);
         $this->assertEquals(\context_module::instance($restoredcm->id)->id, $reference->usingcontextid);
@@ -127,8 +138,11 @@ final class backup_restore_test extends \advanced_testcase {
         foreach ($copied as $slot) {
             $this->assertEquals($copy->id, $slot->groupquizid);
         }
-        $this->assertEquals(2, $DB->count_records_select('question_references',
-            "component = 'mod_groupquiz' AND usingcontextid = ?", [\context_module::instance($newcm->id)->id]));
+        $this->assertEquals(2, $DB->count_records_select(
+            'question_references',
+            "component = 'mod_groupquiz' AND usingcontextid = ?",
+            [\context_module::instance($newcm->id)->id]
+        ));
         // The original keeps its own.
         $this->assertEquals(2, $DB->count_records('groupquiz_questions', ['groupquizid' => $instance->id]));
     }
@@ -191,7 +205,8 @@ final class backup_restore_test extends \advanced_testcase {
 
         $qbank = $generator->create_module('qbank', ['course' => $course->id]);
         $category = $questiongenerator->create_question_category(
-            ['contextid' => \context_module::instance($qbank->cmid)->id]);
+            ['contextid' => \context_module::instance($qbank->cmid)->id]
+        );
         $questions = [
             $questiongenerator->create_question('truefalse', null, ['category' => $category->id, 'name' => 'First']),
             $questiongenerator->create_question('truefalse', null, ['category' => $category->id, 'name' => 'Second']),
@@ -246,16 +261,28 @@ final class backup_restore_test extends \advanced_testcase {
         global $CFG, $USER;
 
         $CFG->keeptempdirectoriesonbackup = true;
-        $bc = new \backup_controller(\backup::TYPE_1COURSE, $course->id, \backup::FORMAT_MOODLE,
-            \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id);
+        $bc = new \backup_controller(
+            \backup::TYPE_1COURSE,
+            $course->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->get_plan()->get_setting('users')->set_value($users);
         $bc->execute_plan();
         $backupid = $bc->get_backupid();
         $bc->destroy();
 
         $newcourseid = \restore_dbops::create_new_course('Restored', 'RESTORED', $course->category);
-        $rc = new \restore_controller($backupid, $newcourseid, \backup::INTERACTIVE_NO,
-            \backup::MODE_GENERAL, $USER->id, \backup::TARGET_NEW_COURSE);
+        $rc = new \restore_controller(
+            $backupid,
+            $newcourseid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id,
+            \backup::TARGET_NEW_COURSE
+        );
         $rc->get_plan()->get_setting('users')->set_value($users);
         $this->assertTrue($rc->execute_precheck());
         $rc->execute_plan();

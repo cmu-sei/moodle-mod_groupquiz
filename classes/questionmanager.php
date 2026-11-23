@@ -18,7 +18,7 @@ namespace mod_groupquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-use \mod_groupquiz\forms\edit\add_question_form;
+use mod_groupquiz\forms\edit\add_question_form;
 
 /**
  * Question manager class
@@ -35,20 +35,28 @@ use \mod_groupquiz\forms\edit\add_question_form;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Manages the questions of a group quiz: adding, removing, ordering and grading them.
+ */
 class questionmanager {
-
     /** @var groupquiz */
     protected $rtq;
 
@@ -59,10 +67,10 @@ class questionmanager {
     protected $renderer;
 
     /** @var array internal use only as we'll always just give out the qbank ordered questions */
-    protected $rtqQuestions;
+    protected $rtqQuestions; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var array */
-    protected $qbankOrderedQuestions;
+    protected $qbankOrderedQuestions; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var \moodle_url */
     protected $baseurl;
@@ -77,19 +85,18 @@ class questionmanager {
      * @param \mod_groupquiz_renderer $renderer The realtime quiz renderer to render visual elements
      * @param array $pagevars page variables array
      */
-    public function __construct($rtq, $renderer, $pagevars = array())
-    {
+    public function __construct($rtq, $renderer, $pagevars = []) {
         global $DB;
 
         $this->rtq = $rtq;
         $this->renderer = $renderer;
         $this->pagevars = $pagevars;
-        $this->orderedquestions = array();
+        $this->orderedquestions = [];
 
-        if ( !empty($this->pagevars) ) {
+        if (!empty($this->pagevars)) {
             $this->baseurl = $this->pagevars['pageurl'];
         } else {
-            $params = array('id' => $this->rtq->getCM()->id);
+            $params = ['id' => $this->rtq->getCM()->id];
             $this->baseurl = new \moodle_url('/mod/groupquiz/edit.php', $params);
         }
 
@@ -102,8 +109,7 @@ class questionmanager {
      *
      * @return groupquiz
      */
-    public function getRTQ()
-    {
+    public function getrtq() {
         return $this->rtq;
     }
 
@@ -118,12 +124,11 @@ class questionmanager {
      *
      * @return mixed
      */
-    public function add_question($questionid)
-    {
+    public function add_question($questionid) {
         global $DB;
 
         // first check to see if the question has already been added
-        if ( $this->is_question_already_present($questionid) ) {
+        if ($this->is_question_already_present($questionid)) {
             $redurl = clone($this->pagevars['pageurl']);
             /** @var \moodle_url $redurl */
             $redurl->remove_params('action'); // go back to base edit page
@@ -134,28 +139,28 @@ class questionmanager {
         $actionurl->param('action', 'addquestion');
         $actionurl->param('questionid', $questionid);
 
-        $qrecord = $DB->get_record('question', array('id' => $questionid), '*', MUST_EXIST);
+        $qrecord = $DB->get_record('question', ['id' => $questionid], '*', MUST_EXIST);
 
-        $mform = new add_question_form($actionurl,
-            array(
+        $mform = new add_question_form(
+            $actionurl,
+            [
                 'rtq' => $this->rtq,
                 'questionname' => $qrecord->name,
                 'defaultmark' => $qrecord->defaultmark,
-                'edit' => false));
+            'edit' => false]
+        );
         // form handling
-        if ( $mform->is_cancelled() ) {
+        if ($mform->is_cancelled()) {
             // redirect back to list questions page
             $this->baseurl->remove_params('action');
             redirect($this->baseurl, null, 0);
-
-        } else if ( $data = $mform->get_data() ) {
+        } else if ($data = $mform->get_data()) {
             // process data from the form
             $this->insert_question($questionid, $data->points);
 
             // ensure there is no action or questionid in the baseurl
             $this->baseurl->remove_params('action', 'questionid');
             redirect($this->baseurl, null, 0);
-
         } else {
             // display the form
             $this->renderer->print_header();
@@ -174,8 +179,7 @@ class questionmanager {
      *
      * @return int[] [number added, number skipped because they were already on the quiz]
      */
-    public function add_questions(array $questionids)
-    {
+    public function add_questions(array $questionids) {
         global $DB;
 
         $added = 0;
@@ -201,8 +205,7 @@ class questionmanager {
      *
      * @return int The new RTQ questionid
      */
-    protected function insert_question($questionid, $points)
-    {
+    protected function insert_question($questionid, $points) {
         global $DB;
 
         $question = new \stdClass();
@@ -227,40 +230,38 @@ class questionmanager {
      *
      * @return mixed
      */
-    public function edit_question($questionid)
-    {
+    public function edit_question($questionid) {
         global $DB;
 
         $actionurl = clone($this->baseurl);
         $actionurl->param('action', 'editquestion');
         $actionurl->param('rtqquestionid', $questionid);
 
-        $rtqquestion = $DB->get_record('groupquiz_questions', array('id' => $questionid), '*', MUST_EXIST);
-        $qrecord = $DB->get_record('question', array('id' => $rtqquestion->questionid), '*', MUST_EXIST);
+        $rtqquestion = $DB->get_record('groupquiz_questions', ['id' => $questionid], '*', MUST_EXIST);
+        $qrecord = $DB->get_record('question', ['id' => $rtqquestion->questionid], '*', MUST_EXIST);
 
-        $mform = new add_question_form($actionurl,
-            array(
+        $mform = new add_question_form(
+            $actionurl,
+            [
                 'rtq' => $this->rtq,
                 'questionname' => $qrecord->name,
                 'defaultmark' => $qrecord->defaultmark,
-                'edit' => true));
+            'edit' => true]
+        );
 
         // form handling
-        if ( $mform->is_cancelled() ) {
+        if ($mform->is_cancelled()) {
             // redirect back to list questions page
             $this->baseurl->remove_params('action');
             redirect($this->baseurl, null, 0);
-
-        } else if ( $data = $mform->get_data() ) {
+        } else if ($data = $mform->get_data()) {
             // process data from the form
 
-            if ( number_format($data->points, 2) != $rtqquestion->points ) {
+            if (number_format($data->points, 2) != $rtqquestion->points) {
                 // if we have a different points, update any existing sessions/attempts max points and regrade.
 
                 $this->update_points(number_format($data->points, 2), $rtqquestion, $qrecord);
-
             }
-
 
             $question = new \stdClass();
             $question->id = $rtqquestion->id;
@@ -273,10 +274,9 @@ class questionmanager {
             // ensure there is no action or questionid in the baseurl
             $this->baseurl->remove_params('action', 'questionid');
             redirect($this->baseurl, null, 0);
-
         } else {
             // display the form
-            $mform->set_data(array('points' => number_format($rtqquestion->points, 2)));
+            $mform->set_data(['points' => number_format($rtqquestion->points, 2)]);
             $this->renderer->print_header();
             $this->renderer->addquestionform($mform);
             $this->renderer->footer();
@@ -290,16 +290,15 @@ class questionmanager {
      *
      * @return bool
      */
-    public function delete_question($questionid)
-    {
-	// TODO disable this if attempts exist
+    public function delete_question($questionid) {
+        // TODO disable this if attempts exist
         global $DB;
 
         try {
             groupquiz_delete_question_references($this->rtq->getRTQ()->id, $questionid);
-            $DB->delete_records('groupquiz_questions', array('id' => $questionid));
+            $DB->delete_records('groupquiz_questions', ['id' => $questionid]);
             $this->update_questionorder('deletequestion', $questionid);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false; // return false on error
         }
 
@@ -315,10 +314,9 @@ class questionmanager {
      *
      * @return bool
      */
-    public function move_question($direction, $questionid)
-    {
+    public function move_question($direction, $questionid) {
 
-        if ( $direction !== 'up' && $direction != 'down' ) {
+        if ($direction !== 'up' && $direction != 'down') {
             return false; // return false if the direction is not up or down
         }
 
@@ -333,10 +331,9 @@ class questionmanager {
      * @param array $fullorder
      * @return bool
      */
-    public function set_full_order($fullorder = array())
-    {
+    public function set_full_order($fullorder = []) {
 
-        if ( !is_array($fullorder) ) {
+        if (!is_array($fullorder)) {
             return false;
         }
 
@@ -350,8 +347,7 @@ class questionmanager {
      *
      * @return array of the question bank ordered questions of \mod_groupquiz\groupquiz_question objects
      */
-    public function get_questions()
-    {
+    public function get_questions() {
         return $this->qbankOrderedQuestions;
     }
 
@@ -363,15 +359,14 @@ class questionmanager {
      *
      * @return string
      */
-    public function get_questiontype_byqnum($qnum)
-    {
+    public function get_questiontype_byqnum($qnum) {
 
         // get the actual key for the qbank question
         $qbankkeys = array_keys($this->qbankOrderedQuestions);
         $desiredkey = $qbankkeys[$qnum - 1];
-        $rtqQuestion = $this->qbankOrderedQuestions[$desiredkey];
+        $rtqquestion = $this->qbankOrderedQuestions[$desiredkey];
 
-        return $rtqQuestion->getQuestion()->qtype;
+        return $rtqquestion->getQuestion()->qtype;
     }
 
     /**
@@ -381,8 +376,7 @@ class questionmanager {
      *
      * @return \mod_groupquiz\groupquiz_question
      */
-    public function get_first_question($attempt)
-    {
+    public function get_first_question($attempt) {
         return $this->get_question_with_slot(1, $attempt);
     }
 
@@ -394,14 +388,13 @@ class questionmanager {
      *
      * @return \mod_groupquiz\groupquiz_question
      */
-    public function get_question_with_slot($slotnum, $attempt)
-    {
+    public function get_question_with_slot($slotnum, $attempt) {
 
         $slots = $attempt->getSlots();
         $quba = $attempt->get_quba();
 
         // first check if this is the last question
-        if ( empty($slots[$slotnum]) ) {
+        if (empty($slots[$slotnum])) {
             $attempt->islastquestion(true);
         } else {
             $attempt->islastquestion(false);
@@ -410,18 +403,16 @@ class questionmanager {
         // since arrays are indexed starting at 0 and we reference questions starting with 1, we subtract 1
         $slotnum = $slotnum - 1;
 
-
         // get the first question
-        $qubaQuestion = $quba->get_question($slots[$slotnum]);
+        $qubaquestion = $quba->get_question($slots[$slotnum]);
 
-        foreach ($this->qbankOrderedQuestions as $qbankQuestion) {
-            /** @var \mod_groupquiz\groupquiz_question $qbankQuestion */
-
-            if ( $qbankQuestion->getQuestion()->id == $qubaQuestion->id ) {
+        /** @var \mod_groupquiz\groupquiz_question $qbankquestion */
+        foreach ($this->qbankOrderedQuestions as $qbankquestion) {
+            if ($qbankquestion->getQuestion()->id == $qubaquestion->id) {
                 // set the slot on the qbank question as this is the actual id we're using for question number
-                $qbankQuestion->set_slot($slots[$slotnum]);
+                $qbankquestion->set_slot($slots[$slotnum]);
 
-                return $qbankQuestion;
+                return $qbankquestion;
             }
         }
 
@@ -438,15 +429,13 @@ class questionmanager {
      *
      * @return array
      */
-    public function add_questions_to_quba(\question_usage_by_activity $quba)
-    {
+    public function add_questions_to_quba(\question_usage_by_activity $quba) {
 
         // we need the questionids of our questions
-        $questionids = array();
+        $questionids = [];
+        /** @var groupquiz_question $qbankquestion */
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-            /** @var groupquiz_question $qbankquestion */
-
-            if ( !in_array($qbankquestion->getQuestion()->id, $questionids) ) {
+            if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
             }
         }
@@ -454,9 +443,8 @@ class questionmanager {
 
         // loop through the ordered question bank questions and add them to the quba
         // object
-        $attemptlayout = array();
+        $attemptlayout = [];
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-
             $questionid = $qbankquestion->getQuestion()->id;
             $q = \question_bank::make_question($questions[$questionid]);
             $attemptlayout[$qbankquestion->getId()] = $quba->add_question($q, $qbankquestion->getPoints());
@@ -465,7 +453,7 @@ class questionmanager {
         // start the questions in the quba
         $quba->start_all_questions();
 
-        /**
+        /*
          * return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
          * these are what are used during an actual attempt rather than the questionid themselves, since the question engine will handle
          * the translation
@@ -478,8 +466,7 @@ class questionmanager {
      *
      * @return string
      */
-    protected function get_question_order()
-    {
+    protected function get_question_order() {
         return $this->rtq->getRTQ()->questionorder;
     }
 
@@ -489,13 +476,11 @@ class questionmanager {
      * @param string
      * @return bool
      */
-    protected function set_question_order($questionorder)
-    {
+    protected function set_question_order($questionorder) {
 
         $this->rtq->getRTQ()->questionorder = $questionorder;
 
         return $this->rtq->saveRTQ();
-
     }
 
     /**
@@ -509,14 +494,12 @@ class questionmanager {
      *
      * @return bool true/false if it was successful
      */
-    protected function update_questionorder($action, $questionid, $fullorder = array())
-    {
+    protected function update_questionorder($action, $questionid, $fullorder = []) {
 
         switch ($action) {
             case 'addquestion':
-
                 $questionorder = $this->get_question_order();
-                if ( empty($questionorder) ) {
+                if (empty($questionorder)) {
                     $questionorder = $questionid;
                 } else {
                     $questionorder .= ',' . $questionid;
@@ -530,13 +513,11 @@ class questionmanager {
                 return true;
                 break;
             case 'deletequestion':
-
                 $questionorder = $this->get_question_order();
                 $questionorder = explode(',', $questionorder);
 
                 foreach ($questionorder as $index => $qorder) {
-
-                    if ( $qorder == $questionid ) {
+                    if ($qorder == $questionid) {
                         unset($questionorder[$index]);
                         break;
                     }
@@ -551,15 +532,12 @@ class questionmanager {
 
                 break;
             case 'movequestionup':
-
                 $questionorder = $this->get_question_order();
                 $questionorder = explode(',', $questionorder);
 
                 foreach ($questionorder as $index => $qorder) {
-
-                    if ( $qorder == $questionid ) {
-
-                        if ( $index == 0 ) {
+                    if ($qorder == $questionid) {
+                        if ($index == 0) {
                             return false; // can't move first question up
                         }
 
@@ -582,17 +560,14 @@ class questionmanager {
 
                 break;
             case 'movequestiondown':
-
                 $questionorder = $this->get_question_order();
                 $questionorder = explode(',', $questionorder);
 
                 $questionordercount = count($questionorder);
 
                 foreach ($questionorder as $index => $qorder) {
-
-                    if ( $qorder == $questionid ) {
-
-                        if ( $index == $questionordercount - 1 ) {
+                    if ($qorder == $questionid) {
+                        if ($index == $questionordercount - 1) {
                             return false; // can't move last question down
                         }
 
@@ -615,25 +590,23 @@ class questionmanager {
 
                 break;
             case 'replaceorder':
-
                 $questionorder = $this->get_question_order();
                 $questionorder = explode(',', $questionorder);
 
                 // if we don't have the same number of questions return error
-                if ( count($fullorder) !== count($questionorder) ) {
+                if (count($fullorder) !== count($questionorder)) {
                     return false;
                 }
 
                 // next validate that the questions sent all match to a question in the current order
                 $allmatch = true;
                 foreach ($questionorder as $qorder) {
-                    if ( !in_array($qorder, $fullorder) ) {
+                    if (!in_array($qorder, $fullorder)) {
                         $allmatch = false;
                     }
                 }
 
-                if ( $allmatch ) {
-
+                if ($allmatch) {
                     $newquestionorder = implode(',', $fullorder);
                     $this->set_question_order($newquestionorder);
                     $this->refresh_questions();
@@ -656,12 +629,11 @@ class questionmanager {
      *
      * @return bool
      */
-    protected function is_question_already_present($questionid)
-    {
+    protected function is_question_already_present($questionid) {
 
         // loop through the db rtq questions and see if we find a match
-        foreach ($this->rtqQuestions as $dbRTQquestion) {
-            if ( $dbRTQquestion->questionid == $questionid ) {
+        foreach ($this->rtqQuestions as $dbrtqquestion) {
+            if ($dbrtqquestion->questionid == $questionid) {
                 return true;
             }
         }
@@ -676,8 +648,7 @@ class questionmanager {
      * in the correct order
      *
      */
-    protected function refresh_questions()
-    {
+    protected function refresh_questions() {
         $this->init_rtq_questions();
         $this->init_qbank_questions();
     }
@@ -686,10 +657,9 @@ class questionmanager {
      * Gets the list of questions from the DB
      *
      */
-    private function init_rtq_questions()
-    {
+    private function init_rtq_questions() {
         global $DB;
-        $this->rtqQuestions = $DB->get_records('groupquiz_questions', array('groupquizid' => $this->rtq->getRTQ()->id));
+        $this->rtqQuestions = $DB->get_records('groupquiz_questions', ['groupquizid' => $this->rtq->getRTQ()->id]);
     }
 
     /**
@@ -697,26 +667,24 @@ class questionmanager {
      * puts question bank ordered questions into the qbankorderedquestions var
      *
      */
-    private function init_qbank_questions()
-    {
+    private function init_qbank_questions() {
         global $DB;
 
         // start by ordering the RTQ question ids into an array
         $questionorder = $this->rtq->getRTQ()->questionorder;
 
         // generate empty array for ordered questions for no question order
-        if ( empty($questionorder) ) {
-
-            $this->qbankOrderedQuestions = array();
+        if (empty($questionorder)) {
+            $this->qbankOrderedQuestions = [];
 
             return;
-
-        } else { // otherwise explode it and continue on
+        } else {
+            // otherwise explode it and continue on
             $questionorder = explode(',', $questionorder);
         }
 
         // using the question order saved in rtq object, get the qbank question ids from the rtq questions
-        $orderedquestionids = array();
+        $orderedquestionids = [];
         foreach ($questionorder as $qorder) {
             // store the rtq question id as the key so that it can be used later when adding question time to
             // question bank question object
@@ -724,28 +692,32 @@ class questionmanager {
         }
 
         // get qbank questions based on the question ids from the RTQ questions table
-        list($sql, $params) = $DB->get_in_or_equal($orderedquestionids);
+        [$sql, $params] = $DB->get_in_or_equal($orderedquestionids);
         $query = 'SELECT * FROM {question} WHERE id ' . $sql;
         $questions = $DB->get_records_sql($query, $params);
 
         // Now order the qbank questions based on the order that we got above
-        $qbankOrderedQuestions = array();
-        foreach ($orderedquestionids as $rtqqid => $questionid) { // use the ordered question ids we got earlier
-            if ( !empty($questions[$questionid]) ) {
-
+        $qbankorderedquestions = [];
+        // use the ordered question ids we got earlier
+        foreach ($orderedquestionids as $rtqqid => $questionid) {
+            if (!empty($questions[$questionid])) {
                 // create realtime quiz question and add it to the array
-                $quizquestion = new \mod_groupquiz\groupquiz_question($rtqqid,
+                $quizquestion = new \mod_groupquiz\groupquiz_question(
+                    $rtqqid,
                     $this->rtqQuestions[$rtqqid]->points,
-                    $questions[$questionid]);
+                    $questions[$questionid]
+                );
 
-                $qbankOrderedQuestions[$rtqqid] = $quizquestion; // add question to the ordered questions
+                $qbankorderedquestions[$rtqqid] = $quizquestion; // add question to the ordered questions
             }
         }
 
-        $this->qbankOrderedQuestions = $qbankOrderedQuestions;
+        $this->qbankOrderedQuestions = $qbankorderedquestions;
     }
 
     /**
+     * Update the points of a question.
+     *
      * @param float $newpoints
      * @param \stdClass $questionrecord
      * @param \stdClass $qrecord
@@ -753,8 +725,7 @@ class questionmanager {
      * @throws \moodle_exception  Throws moodle exception when a slot isn't found, or if unable to grade
      * @return bool;
      */
-    public function update_points($newpoints, $questionrecord, $qrecord)
-    {
+    public function update_points($newpoints, $questionrecord, $qrecord) {
         global $DB;
 
         $q = new \mod_groupquiz\groupquiz_question(
@@ -765,25 +736,23 @@ class questionmanager {
 
             $attempts = $this->rtq->getall_attempts('all');
 
-            foreach ($attempts as $attempt) {
-                /** @var \mod_groupquiz\groupquiz_attempt $attempt */
-                if ( $slot = $attempt->get_question_slot($q) ) {
-                    $quba = $attempt->get_quba();
-                    $quba->set_max_mark($slot, $newpoints);
-                    $quba->regrade_question($slot, false, $newpoints);
-                    $attempt->save();
-                } else {
-                    throw new \moodle_exception('invalidslot', 'mod_groupquiz', '', null, $attempt->get_attempt());
-                }
+        /** @var \mod_groupquiz\groupquiz_attempt $attempt */
+        foreach ($attempts as $attempt) {
+            if ($slot = $attempt->get_question_slot($q)) {
+                $quba = $attempt->get_quba();
+                $quba->set_max_mark($slot, $newpoints);
+                $quba->regrade_question($slot, false, $newpoints);
+                $attempt->save();
+            } else {
+                throw new \moodle_exception('invalidslot', 'mod_groupquiz', '', null, $attempt->get_attempt());
             }
+        }
 
         // re-save all grades after regrading the question attempts for the slot.
-        if ( $this->rtq->get_grader()->save_all_grades(true) ) {
+        if ($this->rtq->get_grader()->save_all_grades(true)) {
             return true;
         } else {
             throw new \moodle_exception('cannotgrade', 'mod_groupquiz');
         }
     }
 }
-
-

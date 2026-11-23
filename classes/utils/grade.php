@@ -26,20 +26,28 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Grading helper that calculates grades for group quiz attempts and sends them to the gradebook.
+ */
 class grade {
-
     /** @var \mod_groupquiz\groupquiz */
     protected $rtq;
 
@@ -52,8 +60,12 @@ class grade {
      */
     public static function get_user_grade($groupquiz, $userid) {
         global $DB;
-        $recs = $DB->get_records_select('groupquiz_grades', 'userid = ? AND groupquizid = ?',
-            [$userid, $groupquiz->id], 'grade');
+        $recs = $DB->get_records_select(
+            'groupquiz_grades',
+            'userid = ? AND groupquizid = ?',
+            [$userid, $groupquiz->id],
+            'grade'
+        );
         if (empty($recs)) {
             // Nothing has been graded for this user yet, which is not an error: the gradebook wants a
             // null rawgrade for them.
@@ -82,31 +94,31 @@ class grade {
     /**
      * Save and (re)calculate grades for this RTQ
      *
-     * @param bool $regrade_attempts Regrade the question attempts themselves through the question engine
+     * @param bool $regradeattempts Regrade the question attempts themselves through the question engine
      * @return bool
      */
-    public function save_all_grades($regrade_attempts = false) {
-	//debugging("save_all_grades for " . $this->rtq->getRTQ()->id, DEBUG_DEVELOPER);
+    public function save_all_grades($regradeattempts = false) {
+        // debugging("save_all_grades for " . $this->rtq->getRTQ()->id, DEBUG_DEVELOPER);
         if (empty($this->rtq->getRTQ()->grouping)) {
-	    debugging("cannot find group", DEBUG_NORMAL);
+            debugging("cannot find group", DEBUG_NORMAL);
             return;
-	}
+        }
 
         $groups = groups_get_all_groups($this->rtq->getCourse()->id, null, $this->rtq->getRTQ()->grouping);
 
-	foreach ($groups as $group) {
-	    $groupid = $group->id;
-	    $attempts = $this->rtq->getall_attempts($open = 'closed', $groupid);
+        foreach ($groups as $group) {
+            $groupid = $group->id;
+            $attempts = $this->rtq->getall_attempts($open = 'closed', $groupid);
 
-	    foreach ($attempts as $attempt) {
+            foreach ($attempts as $attempt) {
                 // If we're regrading attempts, send them off to be re-graded before processing all sessions.
-                if ($regrade_attempts) {
+                if ($regradeattempts) {
                     $this->process_attempt_regrade($attempt);
                 }
-	        $this->save_group_grade($attempt);
-	    }
-	}
-	return true;
+                $this->save_group_grade($attempt);
+            }
+        }
+        return true;
     }
 
     /**
@@ -118,24 +130,23 @@ class grade {
      */
     public function save_group_grade($attempt) {
 
-	// update gradebook
+        // update gradebook
         $attempts = $this->rtq->getall_attempts($open = 'closed', $attempt->forgroupid);
 
         // check grading methods
         if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT) {
             // only grading first attempts.
-            return $this->process_attempts(array(reset($attempts)), $attempt->forgroupid);
+            return $this->process_attempts([reset($attempts)], $attempt->forgroupid);
         } else if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::groupquiz_LASTATTEMPT) {
             // only grading last attempts.
 
-            return $this->process_attempts(array(end($attempts)), $attempt->forgroupid);
+            return $this->process_attempts([end($attempts)], $attempt->forgroupid);
         } else {
             // otherwise do all attempts.
             // other grading methods are processed later.
 
             return $this->process_attempts($attempts, $attempt->forgroupid);
         }
-
     }
 
     /**
@@ -148,10 +159,9 @@ class grade {
         // regrade all questions for the question usage for this attempt.
         $attempt->get_quba()->regrade_all_questions();
 
-	$this->calculate_attempt_grade($attempt);
+        $this->calculate_attempt_grade($attempt);
 
         $attempt->save();
-
     }
 
     /**
@@ -164,24 +174,24 @@ class grade {
      */
     protected function process_attempts($attempts, $groupid) {
         global $DB;
-        $grades = array();
-	$attemptsgrades = array();
+        $grades = [];
+        $attemptsgrades = [];
         foreach ($attempts as $attempt) {
-	    if (is_null($attempt)) {
-		continue;
-	    }
-	    // check attempt state
+            if (is_null($attempt)) {
+                continue;
+            }
+            // check attempt state
             if ($attempt->getState() !== 'finished') {
                 continue; // don't calculate grades based on open attempts.
             }
 
-	    array_push($attemptsgrades, $attempt->sumgrades);
+            array_push($attemptsgrades, $attempt->sumgrades);
         }
-	$grade = $this->apply_grading_method($attemptsgrades);
+        $grade = $this->apply_grading_method($attemptsgrades);
 
         foreach (groups_get_members($groupid) as $user) {
             $uid = $user->id;
-            $grades[ $uid ] = $grade;
+            $grades[$uid] = $grade;
         }
 
         // run the whole thing on a transaction (persisting to our table and gradebook updates).
@@ -216,7 +226,7 @@ class grade {
      * @return array($forgroupid, $number)
      */
     protected function get_attempt_grade($attempt) {
-        return array($attempt->forgroupid, $this->calculate_attempt_grade($attempt));
+        return [$attempt->forgroupid, $this->calculate_attempt_grade($attempt)];
     }
 
 
@@ -291,23 +301,22 @@ class grade {
                 $totalslotpoints = $totalslotpoints + $slotpoints;
             }
         }
-        //$attempt->sumgrades = $totalslotpoints;
+        // $attempt->sumgrades = $totalslotpoints;
 
-	$scaledpoints = ($totalslotpoints / $totalpoints) *  $this->rtq->getRTQ()->grade;
+        $scaledpoints = ($totalslotpoints / $totalpoints) * $this->rtq->getRTQ()->grade;
 
         // TODO maybe dont save here
         $attempt->sumgrades = $scaledpoints;
         $attempt->save();
-	return $scaledpoints;
+        return $scaledpoints;
 
         // use cross multiplication to scale to the desired points
-        //$scaledpoints = ($totalslotpoints * $this->rtq->getRTQ()->sumgrades) / $totalpoints;
-	//var_dump($totalslotpoints);
-	//var_dump($totalpoints);
-	//var_dump($this->rtq->getRTQ()->sumgrades);
-	//var_dump($scaledpoints);
-        //return $scaledpoints;
-
+        // $scaledpoints = ($totalslotpoints * $this->rtq->getRTQ()->sumgrades) / $totalpoints;
+        // var_dump($totalslotpoints);
+        // var_dump($totalpoints);
+        // var_dump($this->rtq->getRTQ()->sumgrades);
+        // var_dump($scaledpoints);
+        // return $scaledpoints;
     }
 
     /**
@@ -322,8 +331,7 @@ class grade {
         global $DB;
 
         foreach ($grades as $userid => $grade) {
-
-            if ($usergrade = $DB->get_record('groupquiz_grades', array('userid' => $userid, 'groupquizid' => $this->rtq->getRTQ()->id))) {
+            if ($usergrade = $DB->get_record('groupquiz_grades', ['userid' => $userid, 'groupquizid' => $this->rtq->getRTQ()->id])) {
                 // we're updating
 
                 $usergrade->grade = $grade;
@@ -344,7 +352,6 @@ class grade {
                 if (!$DB->insert_record('groupquiz_grades', $usergrade)) {
                     $transaction->rollback(new \Exception('Can\'t insert user grades'));
                 }
-
             }
         }
 
@@ -362,10 +369,9 @@ class grade {
     protected function get_last_attempt($attempts) {
 
         // sort attempts by time finish
-        usort($attempts, array('\mod_groupquiz\groupquiz_attempt', 'sortby_timefinish'));
+        usort($attempts, ['\mod_groupquiz\groupquiz_attempt', 'sortby_timefinish']);
 
         return end($attempts);
-
     }
 
     /**
@@ -384,7 +390,7 @@ class grade {
 
         if (empty($forgroupid)) {
             // just add the grade for the userid to the sessiongrades
-            $attemptsgrades[ $uid ][ $attemptid ] = $grade;
+            $attemptsgrades[$uid][$attemptid] = $grade;
 
             return;
         }
@@ -409,28 +415,33 @@ class grade {
     protected function add_group_grade(&$attemptsgrades, $guserid, $attemptid, $grade) {
         // check to see if a session grade already exists for the userid
         // this could happen if the user is a part of more than 1 group
-        if (isset($attemptsgrades[ $guserid ][ $attemptid ])) {
+        if (isset($attemptsgrades[$guserid][$attemptid])) {
             // if it does, then only replace the grade with the new grade if its higher
-            if ($attemptsgrades[ $guserid ][ $attemptid ] < $grade) {
-                $attemptsgrades[ $guserid ][ $attemptid ] = $grade;
+            if ($attemptsgrades[$guserid][$attemptid] < $grade) {
+                $attemptsgrades[$guserid][$attemptid] = $grade;
             }
-        } else { // if no grade is present for this user and session add the grade for the user
-            if (!isset($attemptsgrades[ $guserid ])) { // this is for a group member who hasn't gotten a grade
-                $attemptsgrades[ $guserid ] = array();
+        } else {
+            // if no grade is present for this user and session add the grade for the user
+            // this is for a group member who hasn't gotten a grade
+            if (!isset($attemptsgrades[$guserid])) {
+                $attemptsgrades[$guserid] = [];
             }
-            $attemptsgrades[ $guserid ][ $attemptid ] = $grade;
+            $attemptsgrades[$guserid][$attemptid] = $grade;
         }
     }
 
+    /**
+     * Update the gradebook for the members of the group an attempt belongs to.
+     *
+     * @param object $attempt The attempt.
+     */
     public function update_gradebook_for_group($attempt) {
-	$forgroupid = $attempt->forgroupid;
-	$groupusers = $this->rtq->get_groupmanager()->get_group_members($forgroupid);
+        $forgroupid = $attempt->forgroupid;
+        $groupusers = $this->rtq->get_groupmanager()->get_group_members($forgroupid);
         foreach ($groupusers as $guser) {
             $this->add_group_grade($attemptsgrades, $guser->id, $attemptid, $grade);
-	    $this->persist_grades($grades);
+            $this->persist_grades($grades);
         }
-	$this->persist_grades($grades);
-
+        $this->persist_grades($grades);
     }
 }
-

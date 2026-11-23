@@ -22,43 +22,65 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/groupquiz/locallib.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
+/**
+ * Settings form for adding or editing a group quiz.
+ */
 class mod_groupquiz_mod_form extends moodleform_mod {
     /** @var array options to be used with date_time_selector fields in the quiz. */
-    public static $datefieldoptions = array('optional' => true);
-    protected static $reviewfields = array(); // Initialised in the constructor.
+    public static $datefieldoptions = ['optional' => true];
+    /** @var array The review settings and the language string of each; initialised in the constructor. */
+    protected static $reviewfields = [];
+    /** @var array The feedback records of the quiz. */
     protected $_feedbacks;
 
+    /**
+     * Create the form.
+     *
+     * @param stdClass $current The current instance data.
+     * @param int $section The section number.
+     * @param stdClass|null $cm The course module.
+     * @param stdClass $course The course.
+     */
     public function __construct($current, $section, $cm, $course) {
-        self::$reviewfields = array(
-            'attempt'          => array('theattempt', 'groupquiz'),
-            'correctness'      => array('whethercorrect', 'question'),
-            'marks'            => array('marks', 'groupquiz'),
-            'specificfeedback' => array('specificfeedback', 'question'),
-            'generalfeedback'  => array('generalfeedback', 'question'),
-            'rightanswer'      => array('rightanswer', 'question'),
-            'overallfeedback'  => array('reviewoverallfeedback', 'groupquiz'),
-            'manualcomment'    => array('manualcomment', 'groupquiz')
-        );
+        self::$reviewfields = [
+            'attempt'          => ['theattempt', 'groupquiz'],
+            'correctness'      => ['whethercorrect', 'question'],
+            'marks'            => ['marks', 'groupquiz'],
+            'specificfeedback' => ['specificfeedback', 'question'],
+            'generalfeedback'  => ['generalfeedback', 'question'],
+            'rightanswer'      => ['rightanswer', 'question'],
+            'overallfeedback'  => ['reviewoverallfeedback', 'groupquiz'],
+            'manualcomment'    => ['manualcomment', 'groupquiz'],
+        ];
         parent::__construct($current, $section, $cm, $course);
     }
 
+    /**
+     * Define the form.
+     */
     protected function definition() {
         global $COURSE, $CFG;
         $groupquizconfig = get_config('groupquiz');
@@ -69,7 +91,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Name.
-        $mform->addElement('text', 'name', get_string('name'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('name'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -85,16 +107,28 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('header', 'timing', get_string('timing', 'groupquiz'));
 
         // Open and close dates.
-        $mform->addElement('date_time_selector', 'timeopen', get_string('quizopen', 'groupquiz'),
-                self::$datefieldoptions);
+        $mform->addElement(
+            'date_time_selector',
+            'timeopen',
+            get_string('quizopen', 'groupquiz'),
+            self::$datefieldoptions
+        );
         $mform->addHelpButton('timeopen', 'quizopenclose', 'quiz');
 
-        $mform->addElement('date_time_selector', 'timeclose', get_string('quizclose', 'groupquiz'),
-                self::$datefieldoptions);
+        $mform->addElement(
+            'date_time_selector',
+            'timeclose',
+            get_string('quizclose', 'groupquiz'),
+            self::$datefieldoptions
+        );
 
         // Time limit.
-        $mform->addElement('duration', 'timelimit', get_string('timelimit', 'groupquiz'),
-                array('optional' => true));
+        $mform->addElement(
+            'duration',
+            'timelimit',
+            get_string('timelimit', 'groupquiz'),
+            ['optional' => true]
+        );
         $mform->addHelpButton('timelimit', 'timelimit', 'groupquiz');
         $mform->setAdvanced('timelimit', '');
         $mform->setDefault('timelimit', '3600');
@@ -111,19 +145,21 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('hidden', 'grade', $currentgrade);
         $mform->setType('grade', PARAM_FLOAT);
 
-        $mform->addElement('select', 'grademethod',
+        $mform->addElement(
+            'select',
+            'grademethod',
             get_string('grademethod', 'groupquiz'),
-            \mod_groupquiz\utils\scaletypes::get_display_types());
+            \mod_groupquiz\utils\scaletypes::get_display_types()
+        );
         $mform->setType('grademethod', PARAM_INT);
         $mform->addHelpButton('grademethod', 'grademethod', 'groupquiz');
-
 
         // -------------------------------------------------------------------------------
         // Group settings
         $mform->addElement('header', 'groupsubmissionsettings', get_string('groupsubmissionsettings', 'assign'));
 
         $groupings = groups_get_all_groupings($COURSE->id);
-        $options = array();
+        $options = [];
         foreach ($groupings as $grouping) {
             $options[$grouping->id] = $grouping->name;
         }
@@ -134,7 +170,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         if (groupquiz_has_attempts($this->current->id)) {
             $mform->freeze('grouping');
         }
-	    // is there a default set of groups?
+        // is there a default set of groups?
         $mform->addRule('grouping', null, 'required', null, 'client');
 
         // -------------------------------------------------------------------------------
@@ -147,21 +183,31 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->setDefault('shuffleanswers', '');
 
         // -------------------------------------------------------------------------------
-        $mform->addElement('header', 'reviewoptionshdr',
-                get_string('reviewoptionsheading', 'groupquiz'));
+        $mform->addElement(
+            'header',
+            'reviewoptionshdr',
+            get_string('reviewoptionsheading', 'groupquiz')
+        );
         $mform->addHelpButton('reviewoptionshdr', 'reviewoptionsheading', 'groupquiz');
         // Review options.
-//        $this->add_review_options_group($mform, $groupquizconfig, 'during',
-//                mod_groupquiz_display_options::DURING, true);
-//        $this->add_review_options_group($mform, $groupquizconfig, 'immediately',
-//                mod_groupquiz_display_options::IMMEDIATELY_AFTER);
-        $this->add_review_options_group($mform, $groupquizconfig, 'open',
-                mod_groupquiz_display_options::LATER_WHILE_OPEN);
-        $this->add_review_options_group($mform, $groupquizconfig, 'closed',
-                mod_groupquiz_display_options::AFTER_CLOSE);
+        // $this->add_review_options_group($mform, $groupquizconfig, 'during',
+        // mod_groupquiz_display_options::DURING, true);
+        // $this->add_review_options_group($mform, $groupquizconfig, 'immediately',
+        // mod_groupquiz_display_options::IMMEDIATELY_AFTER);
+        $this->add_review_options_group(
+            $mform,
+            $groupquizconfig,
+            'open',
+            mod_groupquiz_display_options::LATER_WHILE_OPEN
+        );
+        $this->add_review_options_group(
+            $mform,
+            $groupquizconfig,
+            'closed',
+            mod_groupquiz_display_options::AFTER_CLOSE
+        );
 
-
-	foreach (self::$reviewfields as $field => $notused) {
+        foreach (self::$reviewfields as $field => $notused) {
             $mform->disabledIf($field . 'closed', 'timeclose[enabled]');
         }
 
@@ -169,10 +215,14 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         $mform->addElement('header', 'display', get_string('appearance'));
 
         // Show user picture.
-        $mform->addElement('select', 'showuserpicture', get_string('showuserpicture', 'groupquiz'),
-                groupquiz_get_user_image_options());
+        $mform->addElement(
+            'select',
+            'showuserpicture',
+            get_string('showuserpicture', 'groupquiz'),
+            groupquiz_get_user_image_options()
+        );
         $mform->addHelpButton('showuserpicture', 'showuserpicture', 'groupquiz');
-        //$mform->setAdvanced('showuserpicture', $groupquizconfig->showuserpicture_adv);
+        // $mform->setAdvanced('showuserpicture', $groupquizconfig->showuserpicture_adv);
         $mform->setDefault('showuserpicture', $groupquizconfig->showuserpicture);
 
         // -------------------------------------------------------------------------------
@@ -180,7 +230,6 @@ class mod_groupquiz_mod_form extends moodleform_mod {
 
         // -------------------------------------------------------------------------------
         $this->add_action_buttons();
-
     }
 
     /**
@@ -190,13 +239,18 @@ class mod_groupquiz_mod_form extends moodleform_mod {
      * @param      $whenname
      * @param bool $withhelp
      */
-    protected function add_review_options_group($mform, $groupquizconfig, $whenname,
-            $when, $withhelp = false) {
+    protected function add_review_options_group(
+        $mform,
+        $groupquizconfig,
+        $whenname,
+        $when,
+        $withhelp = false
+    ) {
         global $OUTPUT;
 
-        $group = array();
+        $group = [];
         foreach (self::$reviewfields as $field => $string) {
-            list($identifier, $component) = $string;
+            [$identifier, $component] = $string;
 
             $label = get_string($identifier, $component);
             if ($withhelp) {
@@ -205,8 +259,13 @@ class mod_groupquiz_mod_form extends moodleform_mod {
 
             $group[] = $mform->createElement('checkbox', $field . $whenname, '', $label);
         }
-        $mform->addGroup($group, $whenname . 'optionsgrp',
-                get_string('review' . $whenname, 'groupquiz'), null, false);
+        $mform->addGroup(
+            $group,
+            $whenname . 'optionsgrp',
+            get_string('review' . $whenname, 'groupquiz'),
+            null,
+            false
+        );
 
         foreach (self::$reviewfields as $field => $notused) {
             $cfgfield = 'review' . $field;
@@ -226,6 +285,13 @@ class mod_groupquiz_mod_form extends moodleform_mod {
     }
 
 
+    /**
+     * Split a stored review setting into the form field for one time.
+     *
+     * @param array $toform The form data, updated in place.
+     * @param string $whenname The suffix of the field names for the time.
+     * @param int $when The bit of the time.
+     */
     protected function preprocessing_review_settings(&$toform, $whenname, $when) {
         foreach (self::$reviewfields as $field => $notused) {
             $fieldname = 'review' . $field;
@@ -235,7 +301,12 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         }
     }
 
-    function data_preprocessing(&$toform) {
+    /**
+     * Prepare the stored data for the form.
+     *
+     * @param array $toform The form data, updated in place.
+     */
+    public function data_preprocessing(&$toform) {
         if (isset($toform['grade'])) {
             // Convert to a real number, so we don't get 0.0000.
             $toform['grade'] = $toform['grade'] + 0;
@@ -244,18 +315,18 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         if (is_array($this->_feedbacks) && count($this->_feedbacks)) {
             $key = 0;
             foreach ($this->_feedbacks as $feedback) {
-                $draftid = file_get_submitted_draft_itemid('feedbacktext['.$key.']');
-                $toform['feedbacktext['.$key.']']['text'] = file_prepare_draft_area(
-                    $draftid,               // Draftid.
-                    $this->context->id,     // Context.
-                    'mod_groupquiz',             // Component.
-                    'feedback',             // Filarea.
+                $draftid = file_get_submitted_draft_itemid('feedbacktext[' . $key . ']');
+                $toform['feedbacktext[' . $key . ']']['text'] = file_prepare_draft_area(
+                    $draftid, // Draftid.
+                    $this->context->id, // Context.
+                    'mod_groupquiz', // Component.
+                    'feedback', // Filarea.
                     !empty($feedback->id) ? (int) $feedback->id : null, // Itemid.
                     null,
                     $feedback->feedbacktext // Text.
                 );
-                $toform['feedbacktext['.$key.']']['format'] = $feedback->feedbacktextformat;
-                $toform['feedbacktext['.$key.']']['itemid'] = $draftid;
+                $toform['feedbacktext[' . $key . ']']['format'] = $feedback->feedbacktextformat;
+                $toform['feedbacktext[' . $key . ']']['itemid'] = $draftid;
 
                 if ($toform['grade'] == 0) {
                     // When a quiz is un-graded, there can only be one lot of
@@ -267,25 +338,37 @@ class mod_groupquiz_mod_form extends moodleform_mod {
                 }
 
                 if ($feedback->mingrade > 0) {
-                    $toform['feedbackboundaries['.$key.']'] =
+                    $toform['feedbackboundaries[' . $key . ']'] =
                             round(100.0 * $feedback->mingrade / $toform['grade'], 6) . '%';
                 }
                 $key++;
             }
         }
-/*
+        /*
         if (isset($toform['timelimit'])) {
             $toform['timelimitenable'] = $toform['timelimit'] > 0;
         }
-*/
-        $this->preprocessing_review_settings($toform, 'during',
-                mod_groupquiz_display_options::DURING);
-        $this->preprocessing_review_settings($toform, 'immediately',
-                mod_groupquiz_display_options::IMMEDIATELY_AFTER);
-        $this->preprocessing_review_settings($toform, 'open',
-                mod_groupquiz_display_options::LATER_WHILE_OPEN);
-        $this->preprocessing_review_settings($toform, 'closed',
-                mod_groupquiz_display_options::AFTER_CLOSE);
+        */
+        $this->preprocessing_review_settings(
+            $toform,
+            'during',
+            mod_groupquiz_display_options::DURING
+        );
+        $this->preprocessing_review_settings(
+            $toform,
+            'immediately',
+            mod_groupquiz_display_options::IMMEDIATELY_AFTER
+        );
+        $this->preprocessing_review_settings(
+            $toform,
+            'open',
+            mod_groupquiz_display_options::LATER_WHILE_OPEN
+        );
+        $this->preprocessing_review_settings(
+            $toform,
+            'closed',
+            mod_groupquiz_display_options::AFTER_CLOSE
+        );
         $toform['attemptduring'] = true;
         $toform['overallfeedbackduring'] = false;
 
@@ -293,10 +376,13 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         if (empty($toform['completionusegrade'])) {
             $toform['completionpass'] = 0; // Forced unchecked.
         }
-
     }
 
-    function data_postprocessing($data) {
+    /**
+     * Process the submitted data; the group quiz makes no changes.
+     *
+     * @param stdClass $data The submitted data.
+     */
+    public function data_postprocessing($data) {
     }
-
 }

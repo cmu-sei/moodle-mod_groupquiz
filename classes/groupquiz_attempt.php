@@ -18,7 +18,7 @@ namespace mod_groupquiz;
 
 defined('MOODLE_INTERNAL') || die();
 
-//require_once('question_renderer.php');
+// require_once('question_renderer.php');
 
 /**
  * groupquiz Attempt wrapper class to encapsulate functions needed to individual
@@ -29,24 +29,35 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * A group's attempt at a group quiz, wrapping the attempt record and its question usage.
+ */
 class groupquiz_attempt {
-
-    /** Constants for the status of the attempt */
+    /** @var string Status of an attempt that has not started. */
     const NOTSTARTED = 'notstarted';
+    /** @var string Status of an attempt that is in progress. */
     const INPROGRESS = 'inprogress';
+    /** @var string Status of an attempt that was abandoned. */
     const ABANDONED = 'abandoned';
+    /** @var string Status of an attempt that is finished. */
     const FINISHED = 'finished';
 
     /** @var int The userstop value recorded when the time limit, not a member, closed the attempt. */
@@ -134,20 +145,19 @@ class groupquiz_attempt {
             $this->attempt = new \stdClass();
 
             // create a new quba since we're creating a new attempt
-            $this->quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz',
-            $this->questionmanager->getRTQ()->getContext());
+            $this->quba = \question_engine::make_questions_usage_by_activity(
+                'mod_groupquiz',
+                $this->questionmanager->getRTQ()->getContext()
+            );
             $this->quba->set_preferred_behaviour('immediatefeedback');
             $attemptlayout = $this->questionmanager->add_questions_to_quba($this->quba);
             // add the attempt layout to this instance
             $this->attempt->layout = implode(',', $attemptlayout);
-
-        } else { // else load it up in this class instance
-
+        } else {
+            // else load it up in this class instance
             $this->attempt = $dbattempt;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->attempt->uniqueid);
-
         }
-
     }
 
     /**
@@ -165,7 +175,7 @@ class groupquiz_attempt {
      * @return string
      * @throws \Exception throws exception upon an undefined status
      */
-    public function getState() {
+    public function getstate() {
 
         switch ($this->attempt->state) {
             case self::NOTSTARTED:
@@ -189,7 +199,7 @@ class groupquiz_attempt {
      *
      * @return bool
      */
-    public function setState($status) {
+    public function setstate($status) {
 
         switch ($status) {
             case 'notstarted':
@@ -245,10 +255,11 @@ class groupquiz_attempt {
         $qtoutput = $question->get_renderer($page);
         $behaviour = $qa->get_behaviour();
         return $behaviour->render($displayoptions, $questionnum, $qoutput, $qtoutput);
-
     }
 
     /**
+     * Get the number of tries left for a question.
+     *
      * @param int $slotnum The slot number to check
      * @param int $tottries The total tries
      *
@@ -256,8 +267,7 @@ class groupquiz_attempt {
      */
     public function check_tries_left($slotnum, $tottries) {
 
-
-        if (empty($this->attempt->responded_count) ){
+        if (empty($this->attempt->responded_count)) {
             $this->attempt->responded_count = 0;
         }
 
@@ -278,7 +288,6 @@ class groupquiz_attempt {
 
         // if we're reviewing set up display options for review
         if ($review) {
-
             // default display options for review
             $options->readonly = true;
             $options->marks = \question_display_options::HIDDEN;
@@ -297,18 +306,22 @@ class groupquiz_attempt {
             } else if ($reviewoptions instanceof \stdClass) {
                 foreach ($reviewoptions as $field => $data) {
                     if ($when == 'closed') {
-                        if (($field == 'reviewmarks') &&
-                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
+                        if (
+                            ($field == 'reviewmarks') &&
+                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)
+                        ) {
                             $options->marks = \question_display_options::MARK_AND_MAX;
                         } else if (property_exists($options, $field)) {
                             $options->$field = \question_display_options::VISIBLE;
                         }
-                        if (($field == 'reviewrightanswer') &&
-                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)) {
+                        if (
+                            ($field == 'reviewrightanswer') &&
+                                    ($data == \mod_groupquiz_display_options::AFTER_CLOSE)
+                        ) {
                             $options->rightanswer = \question_display_options::VISIBLE;
                         }
-		            }
-		        }
+                    }
+                }
 
                 $state = \mod_groupquiz_display_options::LATER_WHILE_OPEN;
                 if ($when == 'closed') {
@@ -332,7 +345,7 @@ class groupquiz_attempt {
                 }
             }
         } else {
-	        // default options for during quiz
+            // default options for during quiz
             $options->rightanswer = \question_display_options::HIDDEN;
             $options->numpartscorrect = \question_display_options::HIDDEN;
             $options->manualcomment = \question_display_options::HIDDEN;
@@ -371,7 +384,7 @@ class groupquiz_attempt {
      *
      * @return array
      */
-    public function getSlots() {
+    public function getslots() {
         return explode(',', $this->attempt->layout);
     }
 
@@ -387,15 +400,15 @@ class groupquiz_attempt {
         // build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
             // build n array of slots keyed by the questionid they match to
-            $slotsbyquestionid = array();
+            $slotsbyquestionid = [];
 
             foreach ($this->getSlots() as $slot) {
-                $slotsbyquestionid[ $this->quba->get_question($slot)->id ] = $slot;
+                $slotsbyquestionid[$this->quba->get_question($slot)->id] = $slot;
             }
             $this->slotsbyquestionid = $slotsbyquestionid;
         }
 
-        return (!empty($this->slotsbyquestionid[ $q->getQuestion()->id ]) ? $this->slotsbyquestionid[ $q->getQuestion()->id ] : false);
+        return (!empty($this->slotsbyquestionid[$q->getQuestion()->id]) ? $this->slotsbyquestionid[$q->getQuestion()->id] : false);
     }
 
     /**
@@ -410,10 +423,10 @@ class groupquiz_attempt {
         // build if not available
         if (empty($this->slotsbyquestionid) || !is_array($this->slotsbyquestionid)) {
             // build n array of slots keyed by the questionid they match to
-            $slotsbyquestionid = array();
+            $slotsbyquestionid = [];
 
             foreach ($this->getSlots() as $slot) {
-                $slotsbyquestionid[ $this->quba->get_question($slot)->id ] = $slot;
+                $slotsbyquestionid[$this->quba->get_question($slot)->id] = $slot;
             }
             $this->slotsbyquestionid = $slotsbyquestionid;
         }
@@ -424,8 +437,8 @@ class groupquiz_attempt {
             return false;
         }
 
+        /** @var \mod_groupquiz\groupquiz_question $question */
         foreach ($this->get_questions() as $question) {
-            /** @var \mod_groupquiz\groupquiz_question $question */
             if ($question->getQuestion()->id == $qid) {
                 return $question;
             }
@@ -455,10 +468,10 @@ class groupquiz_attempt {
 
         $qa = $this->quba->get_question_attempt($slot);
 
-        return array(
+        return [
             $qa->get_control_field_name('sequencecheck'),
-            $qa->get_sequence_check_count()
-        );
+            $qa->get_sequence_check_count(),
+        ];
     }
 
     /**
@@ -497,23 +510,22 @@ class groupquiz_attempt {
         $this->attempt->uniqueid = $this->quba->get_id();
         $this->attempt->timemodified = time();
 
-        if (isset($this->attempt->id)) { // update the record
-
+        // update the record
+        if (isset($this->attempt->id)) {
             try {
                 $DB->update_record('groupquiz_attempts', $this->attempt);
-            } catch(\Exception $e) {
-                error_log($e->getMessage());
+            } catch (\Exception $e) {
+                error_log($e->getMessage()); // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
 
                 return false; // return false on failure
             }
         } else {
-
             // insert new record
             try {
                 $newid = $DB->insert_record('groupquiz_attempts', $this->attempt);
                 $this->attempt->id = $newid;
-            } catch(\Exception $e) {
-		var_dump($e);
+            } catch (\Exception $e) {
+                var_dump($e);
                 return false; // return false on failure
             }
         }
@@ -562,7 +574,7 @@ class groupquiz_attempt {
         if (is_null($slots)) {
             $slots = $this->quba->get_slots();
         } else if (!$slots) {
-            $slots = array();
+            $slots = [];
         } else {
             $slots = explode(',', $slots);
         }
@@ -587,24 +599,26 @@ class groupquiz_attempt {
 
         // Process any data that was submitted.
         if (data_submitted() && confirm_sesskey()) {
-            if (optional_param('submit', false, PARAM_BOOL) &&
-                        \question_engine::is_manual_grade_in_range($this->attempt->uniqueid, $slot)) {
+            if (
+                optional_param('submit', false, PARAM_BOOL) &&
+                        \question_engine::is_manual_grade_in_range($this->attempt->uniqueid, $slot)
+            ) {
                 $transaction = $DB->start_delegated_transaction();
                 $this->quba->process_all_actions(time());
                 $this->save();
                 $transaction->allow_commit();
 
                 // Trigger event for question manually graded
-                $params = array(
+                $params = [
                     'objectid' => $this->quba->get_question($slot)->id,
                     'courseid' => $rtq->getCourse()->id,
                     'context'  => $rtq->getContext(),
-                    'other'    => array(
+                    'other'    => [
                         'groupquizid'     => $rtq->getRTQ()->id,
                         'attemptid' => $this->attempt->id,
                         'slot'      => $slot,
-                    )
-                );
+                    ],
+                ];
                 $event = \mod_groupquiz\event\question_manually_graded::create($params);
                 $event->trigger();
 
@@ -669,7 +683,7 @@ class groupquiz_attempt {
 
         $questionattempt = $this->quba->get_question_attempt($slot);
         $question = $this->quba->get_question($slot);
-        $rtqQuestion = $this->get_question_by_slot($slot);
+        $rtqquestion = $this->get_question_by_slot($slot);
 
         // use the renderer to display just the question text area, but in read only mode
         // basically how the quiz module does it, but we're being much more specific in the output
@@ -681,7 +695,7 @@ class groupquiz_attempt {
 
         $this->responsesummary = $qrenderer->formulation_and_controls($questionattempt, $qoptions);
 
-        if ($rtqQuestion->getShowHistory()) {
+        if ($rtqquestion->getShowHistory()) {
             $this->responsesummary .= $this->question_attempt_history($questionattempt);
         }
 
@@ -739,11 +753,11 @@ class groupquiz_attempt {
         $this->attempt->timefinish = time();
         $this->save();
 
-        $params = array(
+        $params = [
             'objectid'      => $this->attempt->groupquizid,
             'context'       => $rtq->getContext(),
-            'relateduserid' => $USER->id
-        );
+            'relateduserid' => $USER->id,
+        ];
         $event = \mod_groupquiz\event\attempt_ended::create($params);
         $event->add_record_snapshot('groupquiz_attempts', $this->attempt);
         $event->trigger();
@@ -763,11 +777,11 @@ class groupquiz_attempt {
     public function question_attempt_history($qa) {
 
         $table = new \html_table();
-        $table->head = array(
+        $table->head = [
             get_string('step', 'question'),
             get_string('time'),
             get_string('action', 'question'),
-        );
+        ];
 
         foreach ($qa->get_full_step_iterator() as $i => $step) {
             $stepno = $i + 1;
@@ -779,20 +793,25 @@ class groupquiz_attempt {
 
             $user = new \stdClass();
             $user->id = $step->get_user_id();
-            $row = array(
+            $row = [
                 $stepno,
                 userdate($step->get_timecreated(), get_string('strftimedatetimeshort')),
                 s($qa->summarise_action($step)),
-            );
+            ];
 
             $table->rowclasses[] = $rowclass;
             $table->data[] = $row;
         }
 
-        return \html_writer::tag('h4', get_string('responsehistory', 'question'),
-            array('class' => 'responsehistoryheader')) . \html_writer::tag('div',
-            \html_writer::table($table, true), array('class' => 'responsehistoryheader'));
-
+        return \html_writer::tag(
+            'h4',
+            get_string('responsehistory', 'question'),
+            ['class' => 'responsehistoryheader']
+        ) . \html_writer::tag(
+            'div',
+            \html_writer::table($table, true),
+            ['class' => 'responsehistoryheader']
+        );
     }
 
 
@@ -879,5 +898,4 @@ class groupquiz_attempt {
         }
         return $timeleft;
     }
-
 }

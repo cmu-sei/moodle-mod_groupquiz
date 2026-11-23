@@ -29,18 +29,31 @@ require_once($CFG->dirroot . '/question/editlib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Controller for the group quiz edit page.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class edit {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class. */
     protected $groupquiz;
@@ -54,6 +67,7 @@ class edit {
     /** @var \question_edit_contexts $contexts and array of contexts that has all parent contexts from the RTQ context. */
     protected $contexts;
 
+    /** @var \moodle_url The page url to base other calls on. */
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load. */
@@ -62,8 +76,10 @@ class edit {
     /** @var  \mod_groupquiz\output\edit_renderer $renderer. */
     protected $renderer;
 
+    /** @var bool Whether the group quiz has any attempts. */
     protected $groupquizhasattempts;
 
+    /** @var \stdClass The course module. */
     protected $cm;
 
     /**
@@ -76,7 +92,7 @@ class edit {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $pageurl = new \moodle_url($baseurl);
         $pageurl->remove_all_params();
@@ -90,11 +106,11 @@ class edit {
         // get necessary records from the DB.
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->cm = $cm;
@@ -106,9 +122,9 @@ class edit {
         } else {
             $this->context = \context_module::instance($cm->id);
         }
-        
+
         // set up question lib.
-        list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $pagevars) =
+        [$this->pageurl, $this->contexts, $cmid, $cm, $quiz, $pagevars] =
             question_edit_setup('editq', '/mod/groupquiz/edit.php');
 
         $PAGE->set_url($this->pageurl);
@@ -131,9 +147,8 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-        //TODO determine id we need to prevent reorder
+        // TODO determine id we need to prevent reorder
         switch ($this->action) {
-
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
                 $jsonlib = new \mod_groupquiz\utils\jsonlib();
 
@@ -155,7 +170,6 @@ class edit {
                 break;
 
             case 'moveup':
-
                 $questionid = required_param('questionid', PARAM_INT);
 
                 if ($this->groupquiz->get_questionmanager()->move_question('up', $questionid)) {
@@ -173,7 +187,6 @@ class edit {
 
                 break;
             case 'movedown':
-
                 $questionid = required_param('questionid', PARAM_INT);
 
                 if ($this->groupquiz->get_questionmanager()->move_question('down', $questionid)) {
@@ -191,14 +204,12 @@ class edit {
 
                 break;
             case 'addquestion':
-
                 $questionid = required_param('questionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->add_question($questionid);
 
                 break;
 
             case 'addquestionlist':
-
                 require_sesskey();
 
                 // The bank posts one q<questionid> field per ticked question.
@@ -220,13 +231,11 @@ class edit {
 
                 break;
             case 'editquestionlist':
-
                 $questionid = required_param('rtqquestionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->edit_question($questionid);
 
                 break;
             case 'deletequestion':
-
                 $questionid = required_param('questionid', PARAM_INT);
                 if ($this->groupquiz->get_questionmanager()->delete_question($questionid)) {
                     $type = 'success';
@@ -256,7 +265,7 @@ class edit {
      *
      * @return \mod_groupquiz\groupquiz
      */
-    public function getRTQ() {
+    public function getrtq() {
         return $this->groupquiz;
     }
 
@@ -267,7 +276,13 @@ class edit {
     protected function list_questions() {
 
         $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
-        $questionbankview = new \mod_groupquiz\question\bank\custom_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM(), $this->pagevars);
+        $questionbankview = new \mod_groupquiz\question\bank\custom_view(
+            $this->contexts,
+            $this->pageurl,
+            $this->groupquiz->getCourse(),
+            $this->groupquiz->getCM(),
+            $this->pagevars
+        );
 
         $questions = $this->groupquiz->get_questionmanager()->get_questions();
 
@@ -285,8 +300,5 @@ class edit {
         if ($addquestionlist) {
             $this->action = 'addquestionlist';
         }
-
     }
-
 }
-

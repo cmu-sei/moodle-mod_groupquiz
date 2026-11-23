@@ -29,19 +29,27 @@ defined('MOODLE_INTERNAL') || die();
 /*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Controller for the group quiz view page.
+ */
 class view {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
-    protected $RTQ;
+    protected $RTQ; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var \mod_groupquiz\groupquiz_session $session The session class for the groupquiz view */
     protected $session;
@@ -69,7 +77,7 @@ class view {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
 
@@ -79,11 +87,11 @@ class view {
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else if ($groupquizid) {
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         } else {
             throw new moodle_exception('invalidquizid', 'mod_groupquiz');
@@ -103,7 +111,7 @@ class view {
         $this->pagevars['isinstructor'] = $this->RTQ->is_instructor(); // set this up in the page vars so it can be passed to things like the renderer
 
         // finally set up the question manager and the possible groupquiz session
-        //$this->session = new \mod_groupquiz\groupquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
+        // $this->session = new \mod_groupquiz\groupquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
 
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->RTQ->getContext());
@@ -112,7 +120,6 @@ class view {
                 format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
-
     }
 
     /**
@@ -227,10 +234,10 @@ class view {
                 break;
             default:
                 // trigger event for course module viewed
-                $event = \mod_groupquiz\event\course_module_viewed::create(array(
+                $event = \mod_groupquiz\event\course_module_viewed::create([
                     'objectid' => $PAGE->cm->instance,
                     'context'  => $PAGE->context,
-                ));
+                ]);
 
                 $event->add_record_snapshot('course', $this->RTQ->getCourse());
                 $event->add_record_snapshot($PAGE->cm->modname, $this->RTQ->getRTQ());
@@ -261,5 +268,4 @@ class view {
         $this->pagevars['groupid'] = optional_param('groupid', '0', PARAM_INT);
         $this->pagevars['attemptid'] = optional_param('attemptid', '0', PARAM_INT);
     }
-
 }

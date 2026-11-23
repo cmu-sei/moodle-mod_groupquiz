@@ -27,25 +27,36 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * The methods the module can use to combine several attempt grades into one grade.
+ */
 class scaletypes {
-
-    /** Define grading scale types */
-    const groupquiz_FIRSTATTEMPT = 1;
-    const groupquiz_LASTATTEMPT = 2;
-    const groupquiz_ATTEMPTAVERAGE = 3;
-    const groupquiz_HIGHESTATTEMPTGRADE = 4;
+    /** @var int Grading scale type: the grade of the first attempt. */
+    const groupquiz_FIRSTATTEMPT = 1; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    /** @var int Grading scale type: the grade of the last attempt. */
+    const groupquiz_LASTATTEMPT = 2; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    /** @var int Grading scale type: the average of the attempt grades. */
+    const groupquiz_ATTEMPTAVERAGE = 3; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
+    /** @var int Grading scale type: the highest attempt grade. */
+    const groupquiz_HIGHESTATTEMPTGRADE = 4; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
 
     /**
@@ -55,12 +66,12 @@ class scaletypes {
      */
     public static function get_types() {
 
-        return array(
+        return [
             'firstattempt' => self::groupquiz_FIRSTATTEMPT,
             'lastattempt'  => self::groupquiz_LASTATTEMPT,
             'average'      => self::groupquiz_ATTEMPTAVERAGE,
             'highestgrade' => self::groupquiz_HIGHESTATTEMPTGRADE,
-        );
+        ];
     }
 
     /**
@@ -71,14 +82,11 @@ class scaletypes {
      */
     public static function get_display_types() {
 
-        return array(
+        return [
             self::groupquiz_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
             self::groupquiz_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
             self::groupquiz_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
             self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
-        );
+        ];
     }
-
 }
-
-

@@ -18,7 +18,7 @@ namespace mod_groupquiz\question\bank;
 
 defined('MOODLE_INTERNAL') || die();
 
-//use mod_groupquiz\question\bank\add_action_column;
+// use mod_groupquiz\question\bank\add_action_column;
 
 /**
  * Subclass of the question bank view class to change the way it works/looks
@@ -28,20 +28,28 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Question bank view used when adding questions to a group quiz.
+ */
 class custom_view extends \core_question\local\bank\view {
-
     /** @var bool whether the groupquiz this is used by has been attemptd. */
     protected $groupquizhasattempts = false;
 
@@ -81,7 +89,7 @@ class custom_view extends \core_question\local\bank\view {
             'question_status_column',
             'version_number_column',
             'creator_name_column',
-            'modifier_name_column'
+            'modifier_name_column',
         ];
 
         if (question_get_display_preference('qbshowtext', 0, PARAM_BOOL, new \moodle_url(''))) {
@@ -151,8 +159,8 @@ class custom_view extends \core_question\local\bank\view {
      * displayoptions Sets display options
      */
     public function render($pagevars, $tabname): string {
-	ob_start();
-        $this->display($pagevars); 
+        ob_start();
+        $this->display($pagevars);
         $out = ob_get_contents();
         ob_end_clean();
         return $out;
@@ -174,10 +182,9 @@ class custom_view extends \core_question\local\bank\view {
         $params['sesskey'] = sesskey();
 
         return new \moodle_url('/mod/groupquiz/edit.php', $params);
-
     }
 
-    /*
+    /**
      * This has been taken from the base class to allow us to call our own version of
      * create_new_question_button.
      *
@@ -189,8 +196,11 @@ class custom_view extends \core_question\local\bank\view {
         global $CFG;
         echo \html_writer::start_tag('div', ['class' => 'createnewquestion']);
         if ($canadd) {
-            $this->create_new_question_button($category->id, $this->editquestionurl->params(),
-                get_string('createnewquestion', 'question'));
+            $this->create_new_question_button(
+                $category->id,
+                $this->editquestionurl->params(),
+                get_string('createnewquestion', 'question')
+            );
         } else {
             print_string('nopermissionadd', 'question');
         }
@@ -279,5 +289,4 @@ class custom_view extends \core_question\local\bank\view {
     public function preview_question_url() {
         return groupquiz_question_preview_url($this->groupquiz, $question);
     }
-
 }

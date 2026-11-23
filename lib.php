@@ -22,15 +22,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
@@ -43,19 +49,30 @@ defined('MOODLE_INTERNAL') || die();
  * @return mixed True if module supports feature, false if not, null if doesn't know
  */
 function groupquiz_supports($feature) {
-    switch($feature) {
-        case FEATURE_MOD_ARCHETYPE:           return MOD_ARCHETYPE_OTHER;
-        case FEATURE_GROUPS:                  return false;
-        case FEATURE_GROUPINGS:               return true;
-        case FEATURE_MOD_INTRO:               return true;
-        case FEATURE_COMPLETION_TRACKS_VIEWS: return true;
-        case FEATURE_GRADE_HAS_GRADE:         return true;
-        case FEATURE_GRADE_OUTCOMES:          return false;
-        case FEATURE_BACKUP_MOODLE2:          return true;
-        case FEATURE_SHOW_DESCRIPTION:        return true;
-        case FEATURE_USES_QUESTIONS:          return true;
+    switch ($feature) {
+        case FEATURE_MOD_ARCHETYPE:
+            return MOD_ARCHETYPE_OTHER;
+        case FEATURE_GROUPS:
+            return false;
+        case FEATURE_GROUPINGS:
+            return true;
+        case FEATURE_MOD_INTRO:
+            return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
+            return true;
+        case FEATURE_GRADE_HAS_GRADE:
+            return true;
+        case FEATURE_GRADE_OUTCOMES:
+            return false;
+        case FEATURE_BACKUP_MOODLE2:
+            return true;
+        case FEATURE_SHOW_DESCRIPTION:
+            return true;
+        case FEATURE_USES_QUESTIONS:
+            return true;
 
-        default: return null;
+        default:
+            return null;
     }
 }
 
@@ -64,7 +81,7 @@ function groupquiz_supports($feature) {
  * @return array
  */
 function groupquiz_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups');
+    return ['moodle/site:accessallgroups'];
 }
 
 /**
@@ -77,7 +94,7 @@ function groupquiz_reset_userdata($data) {
     // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
     // See MDL-9367.
 
-    return array();
+    return [];
 }
 
 /**
@@ -91,7 +108,7 @@ function groupquiz_reset_userdata($data) {
  * @return array
  */
 function groupquiz_get_post_actions() {
-    return array('update', 'add');
+    return ['update', 'add'];
 }
 
 /**
@@ -102,7 +119,7 @@ function groupquiz_get_post_actions() {
  */
 function groupquiz_add_instance($groupquiz, $mform) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/mod/groupquiz/locallib.php');
+    require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
     $cmid = $groupquiz->coursemodule;
 
@@ -139,13 +156,14 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
         return $result;
     }
     // Get the current value, so we can see what changed.
-    $oldgroupquiz = $DB->get_record('groupquiz', array('id' => $groupquiz->instance));
+    $oldgroupquiz = $DB->get_record('groupquiz', ['id' => $groupquiz->instance]);
 
-    $groupquizdateschanged = $oldgroupquiz->timelimit   != $groupquiz->timelimit
-                     || $oldgroupquiz->timeclose   != $groupquiz->timeclose;
+    $groupquizdateschanged = $oldgroupquiz->timelimit != $groupquiz->timelimit
+                     || $oldgroupquiz->timeclose != $groupquiz->timeclose;
     // TODO determine if this needs to be done
+    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($groupquizdateschanged) {
-        //groupquiz_update_open_attempts(array('groupquizid' => $groupquiz->id));
+        // groupquiz_update_open_attempts(array('groupquizid' => $groupquiz->id));
     }
 
     $groupquiz->grade     = $oldgroupquiz->grade;
@@ -157,10 +175,10 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     // The form posts an int and the database hands back a string, so compare the values, not the types:
     // a strict comparison never matches and regrades every attempt on every save.
     if ((int)$groupquiz->grademethod !== (int)$oldgroupquiz->grademethod) {
-        $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $groupquiz->course, false, MUST_EXIST);
-        $RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
-	$RTQ->get_grader()->save_all_grades(true);
+        $rtq = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
+        $rtq->get_grader()->save_all_grades(true);
     }
 
     // Do the processing required after an add or an update.
@@ -168,9 +186,13 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
 
     // Do the processing required after an add or an update.
     return true;
-
 }
 
+/**
+ * Set up the review options and other derived values of a group quiz before it is saved.
+ *
+ * @param stdClass $groupquiz The quiz settings from the form.
+ */
 function groupquiz_process_options($groupquiz) {
     global $CFG;
     require_once($CFG->libdir . '/questionlib.php');
@@ -194,7 +216,6 @@ function groupquiz_process_options($groupquiz) {
     $groupquiz->reviewattempt |= mod_groupquiz_display_options::DURING;
     $groupquiz->reviewoverallfeedback &= ~mod_groupquiz_display_options::DURING;
     $groupquiz->reviewmanualcomment = groupquiz_review_option_form_to_db($groupquiz, 'manualcomment');
-
 }
 
 /**
@@ -203,12 +224,12 @@ function groupquiz_process_options($groupquiz) {
  * @param string $field one of the review option field names.
  */
 function groupquiz_review_option_form_to_db($fromform, $field) {
-    static $times = array(
+    static $times = [
         'during' => mod_groupquiz_display_options::DURING,
         'immediately' => mod_groupquiz_display_options::IMMEDIATELY_AFTER,
         'open' => mod_groupquiz_display_options::LATER_WHILE_OPEN,
         'closed' => mod_groupquiz_display_options::AFTER_CLOSE,
-    );
+    ];
 
     $review = 0;
     foreach ($times as $whenname => $when) {
@@ -231,10 +252,10 @@ function groupquiz_delete_instance($id) {
     global $CFG, $DB;
     require_once($CFG->dirroot . '/question/engine/lib.php');
 
-    $groupquiz = $DB->get_record('groupquiz', array('id' => $id), '*', MUST_EXIST);
+    $groupquiz = $DB->get_record('groupquiz', ['id' => $id], '*', MUST_EXIST);
 
     // delete calander events
-    $events = $DB->get_records('event', array('modulename' => 'groupquiz', 'instance' => $groupquiz->id));
+    $events = $DB->get_records('event', ['modulename' => 'groupquiz', 'instance' => $groupquiz->id]);
     foreach ($events as $event) {
         $event = calendar_event::load($event);
         $event->delete();
@@ -248,17 +269,17 @@ function groupquiz_delete_instance($id) {
     }
 
     // delete all attempts for this groupquiz
-    $DB->delete_records('groupquiz_attempts', array('groupquizid' => $groupquiz->id));
+    $DB->delete_records('groupquiz_attempts', ['groupquizid' => $groupquiz->id]);
 
     // Delete all questions for this groupquiz, and the references that tell the question bank they are in use.
     groupquiz_delete_question_references($groupquiz->id);
-    $DB->delete_records('groupquiz_questions', array('groupquizid' => $groupquiz->id));
+    $DB->delete_records('groupquiz_questions', ['groupquizid' => $groupquiz->id]);
 
     // The grades this activity kept for itself are no use to anything once it is gone.
-    $DB->delete_records('groupquiz_grades', array('groupquizid' => $groupquiz->id));
+    $DB->delete_records('groupquiz_grades', ['groupquizid' => $groupquiz->id]);
 
     // finally delete the groupquiz object
-    $DB->delete_records('groupquiz', array('id' => $groupquiz->id));
+    $DB->delete_records('groupquiz', ['id' => $groupquiz->id]);
 
     // delete grade from database
     groupquiz_grade_item_delete($groupquiz);
@@ -281,7 +302,7 @@ function groupquiz_delete_instance($id) {
 function groupquiz_get_coursemodule_info($coursemodule) {
 }
 
-/*
+/**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
  * @param  stdClass $groupquiz        groupquiz object
@@ -293,10 +314,10 @@ function groupquiz_get_coursemodule_info($coursemodule) {
 function groupquiz_view($groupquiz, $course, $cm, $context) {
 
     // Trigger course_module_viewed event.
-    $params = array(
+    $params = [
         'context' => $context,
-        'objectid' => $groupquiz->id
-    );
+        'objectid' => $groupquiz->id,
+    ];
 
     $event = \mod_groupquiz\event\course_module_viewed::create($params);
     $event->add_record_snapshot('course_modules', $cm);
@@ -318,8 +339,8 @@ function groupquiz_view($groupquiz, $course, $cm, $context) {
  * @return stdClass an object with the different type of areas indicating if they were updated or not
  * @since Moodle 3.2
  */
-function groupquiz_check_updates_since(cm_info $cm, $from, $filter = array()) {
-    $updates = course_check_module_updates_since($cm, $from, array('content'), $filter);
+function groupquiz_check_updates_since(cm_info $cm, $from, $filter = []) {
+    $updates = course_check_module_updates_since($cm, $from, ['content'], $filter);
     return $updates;
 }
 /**
@@ -332,8 +353,10 @@ function groupquiz_check_updates_since(cm_info $cm, $from, $filter = array()) {
  * @param \core_calendar\action_factory $factory
  * @return \core_calendar\local\event\entities\action_interface|null
  */
-function mod_groupquiz_core_calendar_provide_event_action(calendar_event $event,
-                                                       \core_calendar\action_factory $factory) {
+function mod_groupquiz_core_calendar_provide_event_action(
+    calendar_event $event,
+    \core_calendar\action_factory $factory
+) {
     $cm = get_fast_modinfo($event->courseid)->instances['groupquiz'][$event->instance];
 
     $completion = new \completion_info($cm->get_course());
@@ -410,7 +433,7 @@ function groupquiz_after_add_or_update($groupquiz) {
     $cmid = $groupquiz->coursemodule;
 
     // We need to use context now, so we need to make sure all needed info is already in db.
-    $DB->set_field('course_modules', 'instance', $groupquiz->id, array('id'=>$cmid));
+    $DB->set_field('course_modules', 'instance', $groupquiz->id, ['id' => $cmid]);
     $context = context_module::instance($cmid);
 
     // Update related grade item.
@@ -428,24 +451,24 @@ function groupquiz_after_add_or_update($groupquiz) {
  */
 function groupquiz_grade_item_update($groupquiz, $grades = null) {
     global $CFG;
-    if (!function_exists('grade_update')) { //workaround for buggy PHP versions
+    // workaround for buggy PHP versions
+    if (!function_exists('grade_update')) {
         require_once($CFG->libdir . '/gradelib.php');
     }
 
-    if (property_exists($groupquiz, 'cmidnumber')) { // May not be always present.
-        $params = array('itemname' => $groupquiz->name, 'idnumber' => $groupquiz->cmidnumber);
+    // May not be always present.
+    if (property_exists($groupquiz, 'cmidnumber')) {
+        $params = ['itemname' => $groupquiz->name, 'idnumber' => $groupquiz->cmidnumber];
     } else {
-        $params = array('itemname' => $groupquiz->name);
+        $params = ['itemname' => $groupquiz->name];
     }
 
     if ($groupquiz->grade == 0) {
         $params['gradetype'] = GRADE_TYPE_NONE;
-
     } else if ($groupquiz->grade > 0) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
         $params['grademax'] = $groupquiz->grade;
         $params['grademin'] = 0;
-
     }
 
     if ($grades === 'reset') {
@@ -457,6 +480,7 @@ function groupquiz_grade_item_update($groupquiz, $grades = null) {
 }
 
 
+// TODO remove
 /**
  * Delete grade item for given lab
  *
@@ -464,17 +488,30 @@ function groupquiz_grade_item_update($groupquiz, $grades = null) {
  * @param object $groupquiz object
  * @return object groupquiz
  */
-// TODO remove
 function groupquiz_grade_item_delete($groupquiz) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
-    return grade_update('mod/groupquiz', $groupquiz->course, 'mod', 'groupquiz', $groupquiz->id, 0,
-            null, array('deleted' => 1));
+    return grade_update(
+        'mod/groupquiz',
+        $groupquiz->course,
+        'mod',
+        'groupquiz',
+        $groupquiz->id,
+        0,
+        null,
+        ['deleted' => 1]
+    );
 }
 
 
-function groupquiz_reset_gradebook($courseid, $type='') {
+/**
+ * Reset the gradebook of the group quizzes in a course.
+ *
+ * @param int $courseid The course id.
+ * @param string $type The type of reset; not used.
+ */
+function groupquiz_reset_gradebook($courseid, $type = '') {
     global $CFG, $DB;
 
     $groupquizzes = $DB->get_records_sql("
@@ -482,7 +519,7 @@ function groupquiz_reset_gradebook($courseid, $type='') {
             FROM {modules} m
             JOIN {course_modules} cm ON m.id = cm.module
             JOIN {groupquiz} q ON cm.instance = q.id
-            WHERE m.name = 'groupquiz' AND cm.course = ?", array($courseid));
+            WHERE m.name = 'groupquiz' AND cm.course = ?", [$courseid]);
 
     foreach ($groupquizzes as $groupquiz) {
         groupquiz_grade_item_update($groupquiz, 'reset');

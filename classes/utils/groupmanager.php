@@ -26,21 +26,28 @@ defined('MOODLE_INTERNAL') || die();
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Helper for looking up the groups of a user and the members of a group in the quiz's course.
+ */
 class groupmanager {
-
-
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;
 
@@ -52,7 +59,6 @@ class groupmanager {
      */
     public function __construct($rtq) {
         $this->rtq = $rtq;
-
     }
 
 
@@ -74,7 +80,7 @@ class groupmanager {
         if (!empty($this->rtq->getRTQ()->grouping)) {
             return groups_get_all_groups($this->rtq->getCourse()->id, $userid, $this->rtq->getRTQ()->grouping);
         } else {
-            return array(); // return empty array when there is no grouping
+            return []; // return empty array when there is no grouping
         }
     }
 
@@ -88,14 +94,14 @@ class groupmanager {
     public function get_user_groups_name_array($userid = null, $withdots = false) {
 
         $groups = $this->get_user_groups($userid);
-        $retgroups = array();
+        $retgroups = [];
 
         if ($withdots) {
             $retgroups[''] = get_string('choosedots');
         }
 
         foreach ($groups as $group) {
-            $retgroups[ $group->id ] = $group->name;
+            $retgroups[$group->id] = $group->name;
         }
 
         return $retgroups;
@@ -135,6 +141,11 @@ class groupmanager {
         return groups_is_member($groupid, $userid);
     }
 
+    /**
+     * Get the group of the current user.
+     *
+     * @return int The group id, or -1 when the user is not in exactly one group.
+     */
     public function get_user_group() {
 
         $groups = $this->get_user_groups();
@@ -143,8 +154,6 @@ class groupmanager {
         }
         $groupid = array_values($groups)[0]->id;
 
-	return $groupid;
+        return $groupid;
     }
-
 }
-

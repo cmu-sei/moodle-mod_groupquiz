@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,18 +15,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore steps of the group quiz activity.
+ *
  * @package   mod_groupquiz
  * @category  backup
  * @copyright   2020 Carnegie Mellon University
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
 DM20-0197
@@ -41,22 +47,28 @@ DM20-0197
  * Structure step to restore one groupquiz activity
  */
 class restore_groupquiz_activity_structure_step extends restore_questions_activity_structure_step {
-
     /** @var stdClass|null the attempt being restored, inserted once its question usage is. */
     protected $currentattempt = null;
 
     /** @var string the questionorder from the backup, remapped once the questions are restored. */
     protected $oldquestionorder = '';
 
+    /**
+     * Define the paths to restore.
+     *
+     * @return array The activity structure.
+     */
     protected function define_structure() {
 
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths = array();
+        $paths = [];
         $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
 
-        $qinstance = new restore_path_element('groupquiz_question_instance',
-            '/activity/groupquiz/question_instances/question_instance');
+        $qinstance = new restore_path_element(
+            'groupquiz_question_instance',
+            '/activity/groupquiz/question_instances/question_instance'
+        );
         $paths[] = $qinstance;
         $this->add_question_references($qinstance, $paths);
 
@@ -71,6 +83,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restore the group quiz record.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz($data) {
         global $DB;
 
@@ -96,6 +113,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * Restore a question of the group quiz.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_question_instance($data) {
         global $DB;
 
@@ -128,6 +150,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $DB->insert_record('question_references', $data);
     }
 
+    /**
+     * Restore a grade.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_grade($data) {
         global $DB;
 
@@ -140,6 +167,13 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $DB->insert_record('groupquiz_grades', $data);
     }
 
+    /**
+     * Hold an attempt from the backup until its question usage has been restored.
+     *
+     * The attempt is saved by inform_new_usage_id(); an attempt of a user that cannot be mapped is skipped.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_attempt($data) {
         $data = (object)$data;
         $data->groupquizid = $this->get_new_parentid('groupquiz');
@@ -162,6 +196,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->currentattempt = clone($data);
     }
 
+    /**
+     * Save the restored attempt now that its question usage has a new id.
+     *
+     * @param int $newusageid The id of the restored question usage.
+     */
     protected function inform_new_usage_id($newusageid) {
         global $DB;
 
@@ -176,6 +215,9 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->set_mapping('groupquiz_attempt', $oldid, $newitemid);
     }
 
+    /**
+     * Restore the files and set the order of the restored questions.
+     */
     protected function after_execute() {
         global $DB;
 
@@ -183,13 +225,17 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         // Add groupquiz related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_groupquiz', 'intro', null);
 
-        $neworder = array();
+        $neworder = [];
         foreach (explode(',', $this->oldquestionorder) as $oldid) {
             if ($newid = $this->get_mappingid('groupquiz_question_instance', $oldid)) {
                 $neworder[] = $newid;
             }
         }
-        $DB->set_field('groupquiz', 'questionorder', implode(',', $neworder),
-            array('id' => $this->get_new_parentid('groupquiz')));
+        $DB->set_field(
+            'groupquiz',
+            'questionorder',
+            implode(',', $neworder),
+            ['id' => $this->get_new_parentid('groupquiz')]
+        );
     }
 }

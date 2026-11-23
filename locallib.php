@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,15 +22,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/**
+/*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
@@ -58,50 +63,53 @@ const SHOWIMAGE_SMALL = 1;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_groupquiz_display_options extends question_display_options {
-    /**#@+
-     * @var integer bits used to indicate various times in relation to a
-     * quiz attempt.
-     */
-    const DURING =            0x10000;
+    /** @var int Bit for the time during an attempt. */
+    const DURING = 0x10000;
+    /** @var int Bit for the time right after an attempt. */
     const IMMEDIATELY_AFTER = 0x01000;
-    const LATER_WHILE_OPEN =  0x00100;
-    const AFTER_CLOSE =       0x00010;
-    /**#@-*/
+    /** @var int Bit for the time later, while the quiz is still open. */
+    const LATER_WHILE_OPEN = 0x00100;
+    /** @var int Bit for the time after the quiz closes. */
+    const AFTER_CLOSE = 0x00010;
 
     /**
-     * @var boolean if this is false, then the student is not allowed to review
+     * @var bool if this is false, then the student is not allowed to review
      * anything about the attempt.
      */
     public $attempt = true;
 
     /**
-     * @var boolean if this is false, then the student is not allowed to review
+     * @var bool if this is false, then the student is not allowed to review
      * anything about the attempt.
      */
     public $overallfeedback = self::VISIBLE;
 
+    // TODO remove if not used
     /**
      * Set up the various options from the quiz settings, and a time constant.
-     * @param object $groupquiz the quiz settings.
-     * @param int $one of the {@link DURING}, {@link IMMEDIATELY_AFTER},
-     * {@link LATER_WHILE_OPEN} or {@link AFTER_CLOSE} constants.
-     * @return mod_groupquiz_display_options set up appropriately.
+     *
+     * @param object $groupquiz The quiz settings.
+     * @param int $when One of the DURING, IMMEDIATELY_AFTER, LATER_WHILE_OPEN or AFTER_CLOSE constants.
+     * @return mod_groupquiz_display_options The options set up for that time.
      */
-	// TODO remove if not used
     public static function make_from_groupquiz($groupquiz, $when) {
         $options = new self();
 
         $options->attempt = self::extract($groupquiz->reviewattempt, $when, true, false);
         $options->correctness = self::extract($groupquiz->reviewcorrectness, $when);
-        $options->marks = self::extract($groupquiz->reviewmarks, $when,
-                self::MARK_AND_MAX, self::MAX_ONLY);
+        $options->marks = self::extract(
+            $groupquiz->reviewmarks,
+            $when,
+            self::MARK_AND_MAX,
+            self::MAX_ONLY
+        );
         $options->feedback = self::extract($groupquiz->reviewspecificfeedback, $when);
         $options->generalfeedback = self::extract($groupquiz->reviewgeneralfeedback, $when);
         $options->rightanswer = self::extract($groupquiz->reviewrightanswer, $when);
         $options->overallfeedback = self::extract($groupquiz->reviewoverallfeedback, $when);
         $options->numpartscorrect = $options->feedback;
-	$options->manualcomment = $options->feedback;
-	//$options->manualcomment = self::extract($groupquiz->reviewmanualcomment, $when);
+        $options->manualcomment = $options->feedback;
+        // $options->manualcomment = self::extract($groupquiz->reviewmanualcomment, $when);
 
         if ($groupquiz->questiondecimalpoints != -1) {
             $options->markdp = $groupquiz->questiondecimalpoints;
@@ -112,8 +120,21 @@ class mod_groupquiz_display_options extends question_display_options {
         return $options;
     }
 
-    protected static function extract($bitmask, $bit,
-            $whenset = self::VISIBLE, $whennotset = self::HIDDEN) {
+    /**
+     * Return one of two values depending on whether a bit is set in a bitmask.
+     *
+     * @param int $bitmask The bitmask holding the settings.
+     * @param int $bit The bit to test.
+     * @param mixed $whenset The value returned when the bit is set.
+     * @param mixed $whennotset The value returned when the bit is not set.
+     * @return mixed The value for the bit.
+     */
+    protected static function extract(
+        $bitmask,
+        $bit,
+        $whenset = self::VISIBLE,
+        $whennotset = self::HIDDEN
+    ) {
         if ($bitmask & $bit) {
             return $whenset;
         } else {
@@ -123,6 +144,8 @@ class mod_groupquiz_display_options extends question_display_options {
 }
 
 /**
+ * Check whether a group quiz has any attempts.
+ *
  * @param int $groupquizid The quiz id.
  * @return bool whether this groupquiz has any (non-preview) attempts.
  */
@@ -131,8 +154,7 @@ function groupquiz_has_attempts($groupquizid) {
     if (empty($groupquizid)) {
         return false;
     }
-    return $DB->record_exists('groupquiz_attempts', array('groupquizid' => $groupquizid));
-
+    return $DB->record_exists('groupquiz_attempts', ['groupquizid' => $groupquizid]);
 }
 
 /**
@@ -162,13 +184,13 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
     $transaction = $DB->start_delegated_transaction();
 
     // Update the quiz table.
-    $DB->set_field('groupquiz', 'grade', $newgrade, array('id' => $groupquiz->instance));
+    $DB->set_field('groupquiz', 'grade', $newgrade, ['id' => $groupquiz->instance]);
 
+    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($oldgrade < 1) {
         // If the old grade was zero, we cannot rescale, we have to recompute.
         // We also recompute if the old grade was too small to avoid underflow problems.
-        //quiz_update_all_final_grades($quiz);
-
+        // quiz_update_all_final_grades($quiz);
     } else {
         // We can rescale the grades efficiently.
         $timemodified = time();
@@ -176,12 +198,12 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
                 UPDATE {groupquiz_grades}
                 SET grade = ? * grade, timemodified = ?
                 WHERE groupquizid = ?
-        ", array($newgrade/$oldgrade, $timemodified, $groupquiz->id));
+        ", [$newgrade / $oldgrade, $timemodified, $groupquiz->id]);
     }
 
     // Update grade item and send all grades to gradebook.
-    //groupquiz_grade_item_update($quiz);
-    //groupquiz_update_grades($quiz);
+    // groupquiz_grade_item_update($quiz);
+    // groupquiz_update_grades($quiz);
 
     $transaction->allow_commit();
     return true;
@@ -191,25 +213,25 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
 /**
  * Prints local lib tabs
  *
- * @param \mod_groupquiz\groupquiz $RTQ Realtime quiz class
+ * @param \mod_groupquiz\groupquiz $rtq Realtime quiz class
  * @param                            $currenttab
  *
  * @return string HTML string of the tabs
  */
-function groupquiz_view_tabs($RTQ, $currenttab) {
-    $tabs = array();
-    $row = array();
-    $ingroup = array();
-    $activated = array();
+function groupquiz_view_tabs($rtq, $currenttab) {
+    $tabs = [];
+    $row = [];
+    $ingroup = [];
+    $activated = [];
 
-    if ($RTQ->has_capability('mod/groupquiz:attempt')) {
-        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', array('id' => $RTQ->getCM()->id)), get_string('view', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:attempt')) {
+        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', ['id' => $rtq->getCM()->id]), get_string('view', 'groupquiz'));
     }
-    if ($RTQ->has_capability('mod/groupquiz:editquestions')) {
-        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', array('cmid' => $RTQ->getCM()->id)), get_string('edit', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:editquestions')) {
+        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', ['cmid' => $rtq->getCM()->id]), get_string('edit', 'groupquiz'));
     }
-    if ($RTQ->has_capability('mod/groupquiz:manage')) {
-        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', array('id' => $RTQ->getCM()->id)), get_string('responses', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:manage')) {
+        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', ['id' => $rtq->getCM()->id]), get_string('responses', 'groupquiz'));
     }
 
     if ($currenttab == 'view' && count($row) == 1) {
@@ -239,10 +261,10 @@ function groupquiz_view_tabs($RTQ, $currenttab) {
  * @return array string => lang string the options for whether to display the user's picture.
  */
 function groupquiz_get_user_image_options() {
-    return array(
+    return [
         SHOWIMAGE_NONE  => get_string('shownoimage', 'quiz'),
         SHOWIMAGE_SMALL => get_string('showsmallimage', 'quiz'),
-    );
+    ];
 }
 
 /**
@@ -252,19 +274,18 @@ function groupquiz_get_user_image_options() {
 function groupquiz_get_js_module() {
     global $PAGE;
 
-    return array(
+    return [
         'name' => 'mod_groupquiz',
         'fullpath' => '/mod/groupquiz/module.js',
-        'requires' => array('base', 'dom', 'event-delegate', 'event-key',
-                'core_question_engine', 'moodle-core-formchangechecker'),
-        'strings' => array(
-            array('cancel', 'moodle'),
-            array('flagged', 'question'),
-            array('functiondisabledbysecuremode', 'groupquiz'),
-            array('startattempt', 'groupquiz'),
-            array('timesup', 'groupquiz'),
-            array('changesmadereallygoaway', 'moodle'),
-        ),
-    );
+        'requires' => ['base', 'dom', 'event-delegate', 'event-key',
+                'core_question_engine', 'moodle-core-formchangechecker'],
+        'strings' => [
+            ['cancel', 'moodle'],
+            ['flagged', 'question'],
+            ['functiondisabledbysecuremode', 'groupquiz'],
+            ['startattempt', 'groupquiz'],
+            ['timesup', 'groupquiz'],
+            ['changesmadereallygoaway', 'moodle'],
+        ],
+    ];
 }
-

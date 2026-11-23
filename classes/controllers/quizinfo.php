@@ -31,19 +31,31 @@ require_once($CFG->dirroot . '/user/lib.php');
 /*
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
-NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
 Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
-[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see Copyright notice for non-US Government use and distribution.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
 This Software includes and/or makes use of the following Third-Party Software subject to its own license:
 1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
-2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Controller for the callbacks the quiz page's JavaScript makes to get information about the quiz.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class quizinfo {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
-    protected $RTQ;
+    protected $RTQ; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var string $action The specified action to take */
     protected $action;
@@ -55,7 +67,7 @@ class quizinfo {
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars = array();
+    protected $pagevars = [];
 
     /** @var \mod_groupquiz\utils\jsonlib $jsonlib The jsonlib for returning json */
     protected $jsonlib;
@@ -75,12 +87,11 @@ class quizinfo {
         $this->pageurl = null;
         $this->jsonlib = new \mod_groupquiz\utils\jsonlib();
 
-
         // first check if this is a jserror, if so, log it and end execution so we're not wasting time.
         $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
         if (!empty($jserror)) {
             // log the js error on the apache error logs
-            error_log($jserror);
+            error_log($jserror); // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
 
             // set a status and send it saying that we logged the error.
             $this->jsonlib->set('status', 'loggedjserror');
@@ -93,14 +104,15 @@ class quizinfo {
             $attemptid = required_param('attemptid', PARAM_INT);
 
             // only load things asked for, don't assume that we're loading whatever.
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
 
             require_login($course->id, false, $cm, false, true);
-        } catch(\moodle_exception $e) {
-            if (debugging()) { // if debugging throw error as normal.
-                throw new $e;
+        } catch (\moodle_exception $e) {
+            // if debugging throw error as normal.
+            if (debugging()) {
+                throw new $e();
             } else {
                 $this->jsonlib->send_error('invalid request');
             }
@@ -116,12 +128,11 @@ class quizinfo {
             // Student view
             $groupid = array_values($groups)[0]->id;
             $this->RTQ->get_group_attempt($groupid);
-
         } else {
             // Instructor view
             $attempt = $DB->get_record('groupquiz_attempts', [
                 'id'         => $jscurrentattempt,
-                'groupquizid'=> $groupquiz->id,
+                'groupquizid' => $groupquiz->id,
             ], '*', IGNORE_MISSING);
 
             if (!$attempt) {
@@ -143,7 +154,6 @@ class quizinfo {
             $this->jsonlib->send_error('invalidattempt');
             exit;
         }
-
     }
 
     /**
@@ -152,50 +162,49 @@ class quizinfo {
      */
     public function handle_request() {
 
-	global $DB;
-	$questions = $this->RTQ->openAttempt->get_questions();
-	$quba = $this->RTQ->openAttempt->get_quba();
+        global $DB;
+        $questions = $this->RTQ->openAttempt->get_questions();
+        $quba = $this->RTQ->openAttempt->get_quba();
 
-        $responses = array();
-	$attempt = $this->RTQ->openAttempt;
+        $responses = [];
+        $attempt = $this->RTQ->openAttempt;
         foreach ($attempt->getSlots() as $slot) {
             // render question form.
             $response = new \stdClass();
             $response->qnum = $slot;
-	    $response->html = $this->RTQ->get_renderer()->render_question_form($slot, $attempt);
-            list($seqname, $seqvalue) = $attempt->get_sequence_check($slot);
+            $response->html = $this->RTQ->get_renderer()->render_question_form($slot, $attempt);
+            [$seqname, $seqvalue] = $attempt->get_sequence_check($slot);
             $response->seqcheckname = $seqname;
             $response->seqcheckval = $seqvalue;
 
             array_push($responses, $response);
         }
 
-	// get openclose state
+        // get openclose state
         $state = $this->RTQ->get_openclose_state();
 
         // get timeleft
         $timenow = time();
         $timeleft = $attempt->get_time_left_display($timenow, $this->RTQ->getRTQ());
 
-	// check if we need to end quiz
-	if ((!$timeleft) || ($state == 'closed')) {
+        // check if we need to end quiz
+        if ((!$timeleft) || ($state == 'closed')) {
             $this->RTQ->openAttempt->close_attempt($this->RTQ, false);
             $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
             $this->RTQ->get_grader()->save_group_grade($attempt);
 
             $this->jsonlib->send_error('attemptclosed');
-	}
+        }
 
-	if ($timeleft > 0) {
+        if ($timeleft > 0) {
             $this->jsonlib->set('timeleft', json_encode($timeleft));
-	}
+        }
 
         if ($this->RTQ->openAttempt) {
             $this->jsonlib->set('status', json_encode($responses));
-	    $this->jsonlib->send_response();
-	} else {
+            $this->jsonlib->send_response();
+        } else {
             $this->jsonlib->send_error('unknown');
-	}
+        }
     }
 }
-
