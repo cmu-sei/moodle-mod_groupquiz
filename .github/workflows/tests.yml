@@ -57,7 +57,7 @@ jobs:
         # 5.3 require 8.3.0), so a cross-product would generate PHP 8.2 + MOODLE_502_STABLE, which
         # cannot install.
         #
-        # There is no MOODLE_500_STABLE leg. It ran on PHP 8.2 and later PHP 8.3 to cover 5.0 and its PHP
+        # There is no MOODLE_500_STABLE leg. It ran on PHP 8.3 (earlier on 8.2) to cover 5.0 and its PHP
         # floor for installs older than ours, and was dropped once every production Moodle moved to 5.2.4:
         # nothing we run is on 5.0 or PHP 8.2. $plugin->requires still says 5.0.0 on purpose, so CI no longer
         # checks that floor: raise it when a change needs newer core, and review changes with that in mind.
