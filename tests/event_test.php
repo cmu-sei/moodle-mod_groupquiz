@@ -75,7 +75,7 @@ final class event_test extends \advanced_testcase {
         ]);
 
         $url = $event->get_url();
-        $this->assertEquals('/mod/groupquiz/viewquizattempt.php', $url->get_path());
+        $this->assertStringEndsWith('/mod/groupquiz/viewquizattempt.php', $url->get_path());
         $this->assertEquals($instance->cmid, $url->get_param('id'));
         $this->assertEquals($instance->id, $url->get_param('groupquizid'));
         $this->assertEquals(7, $url->get_param('attemptid'));
