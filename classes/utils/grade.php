@@ -88,10 +88,10 @@ class grade {
     /**
      * Save and (re)calculate grades for this RTQ
      *
-     * @param bool $regrade_attempts Regrade the question attempts themselves through the question engine
+     * @param bool $regradeattempts Regrade the question attempts themselves through the question engine
      * @return bool
      */
-    public function save_all_grades($regrade_attempts = false) {
+    public function save_all_grades($regradeattempts = false) {
         // debugging("save_all_grades for " . $this->rtq->getRTQ()->id, DEBUG_DEVELOPER);
         if (empty($this->rtq->getRTQ()->grouping)) {
             debugging("cannot find group", DEBUG_NORMAL);
@@ -106,7 +106,7 @@ class grade {
 
             foreach ($attempts as $attempt) {
                 // If we're regrading attempts, send them off to be re-graded before processing all sessions.
-                if ($regrade_attempts) {
+                if ($regradeattempts) {
                     $this->process_attempt_regrade($attempt);
                 }
                 $this->save_group_grade($attempt);

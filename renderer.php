@@ -64,7 +64,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     /** @var array Message to display with the page, is array with the first param being the type of message
      *              the second param being the message
      */
-    protected $pageMessage;
+    protected $pageMessage; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     // TODO:  eventually think about making page specific renderer helpers so that we can make static calls for standard
     // TODO:      rendering on things.  E.g. editrenderer::questionblock();
@@ -72,14 +72,14 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
     /**
      * Initialize the renderer with some variables
      *
-     * @param \mod_groupquiz\groupquiz $RTQ
+     * @param \mod_groupquiz\groupquiz $rtq
      * @param moodle_url                 $pageurl Always require the page url
      * @param array                      $pagevars (optional)
      */
-    public function init($RTQ, $pageurl, $pagevars = []) {
+    public function init($rtq, $pageurl, $pagevars = []) {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
-        $this->rtq = $RTQ;
+        $this->rtq = $rtq;
     }
 
 
@@ -91,7 +91,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @param string $type
      * @param string $message
      */
-    public function setMessage($type, $message) {
+    public function setmessage($type, $message) {
         $this->pageMessage = [$type, $message];
     }
 
@@ -118,7 +118,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * shows a message if there is one
      *
      */
-    protected function showMessage() {
+    protected function showmessage() {
 
         if (empty($this->pageMessage)) {
             return; // return if there is no message
@@ -458,7 +458,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @return string The HTML.
      */
     public function render_user($qnum, $attempt) {
-        global $DB, $OUTPUT;
+        global $DB, $OUTPUT; // phpcs:ignore moodle.PHP.ForbiddenGlobalUse.BadGlobal
 
         // gather data
         $quba = $attempt->get_quba();
@@ -484,7 +484,7 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
                 $userid = $last->get_user_id();
                 $user = $DB->get_record("user", ['id' => $userid]);
                 $avataroptions = ['link' => false, 'visibletoscreenreaders' => false];
-                $useravatar = $OUTPUT->user_picture($user, $avataroptions);
+                $useravatar = $OUTPUT->user_picture($user, $avataroptions); // phpcs:ignore moodle.PHP.ForbiddenGlobalUse.BadGlobal
                 $username = fullname($user);
                 // $time = userdate($last->get_timecreated()) . " " . usertimezone();
                 // $time = userdate($last->get_timecreated(), '%A, %B %d, %Y, %I:%M:%S %p %Z');

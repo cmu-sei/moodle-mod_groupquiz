@@ -43,7 +43,7 @@ DM20-0197
  */
 class quizdata {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
-    protected $RTQ;
+    protected $RTQ; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var string $action The specified action to take */
     protected $action;
@@ -76,7 +76,7 @@ class quizdata {
         $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
         if (!empty($jserror)) {
             // log the js error on the apache error logs
-            error_log($jserror);
+            error_log($jserror); // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
 
             // set a status and send it saying that we logged the error.
             $this->jsonlib->set('status', 'loggedjserror');

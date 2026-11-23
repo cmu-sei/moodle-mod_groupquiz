@@ -180,6 +180,7 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
     // Update the quiz table.
     $DB->set_field('groupquiz', 'grade', $newgrade, ['id' => $groupquiz->instance]);
 
+    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($oldgrade < 1) {
         // If the old grade was zero, we cannot rescale, we have to recompute.
         // We also recompute if the old grade was too small to avoid underflow problems.
@@ -206,25 +207,25 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
 /**
  * Prints local lib tabs
  *
- * @param \mod_groupquiz\groupquiz $RTQ Realtime quiz class
+ * @param \mod_groupquiz\groupquiz $rtq Realtime quiz class
  * @param                            $currenttab
  *
  * @return string HTML string of the tabs
  */
-function groupquiz_view_tabs($RTQ, $currenttab) {
+function groupquiz_view_tabs($rtq, $currenttab) {
     $tabs = [];
     $row = [];
     $ingroup = [];
     $activated = [];
 
-    if ($RTQ->has_capability('mod/groupquiz:attempt')) {
-        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', ['id' => $RTQ->getCM()->id]), get_string('view', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:attempt')) {
+        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', ['id' => $rtq->getCM()->id]), get_string('view', 'groupquiz'));
     }
-    if ($RTQ->has_capability('mod/groupquiz:editquestions')) {
-        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', ['cmid' => $RTQ->getCM()->id]), get_string('edit', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:editquestions')) {
+        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', ['cmid' => $rtq->getCM()->id]), get_string('edit', 'groupquiz'));
     }
-    if ($RTQ->has_capability('mod/groupquiz:manage')) {
-        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', ['id' => $RTQ->getCM()->id]), get_string('responses', 'groupquiz'));
+    if ($rtq->has_capability('mod/groupquiz:manage')) {
+        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', ['id' => $rtq->getCM()->id]), get_string('responses', 'groupquiz'));
     }
 
     if ($currenttab == 'view' && count($row) == 1) {

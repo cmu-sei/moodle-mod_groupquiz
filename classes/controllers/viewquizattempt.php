@@ -43,7 +43,7 @@ DM20-0197
  */
 class viewquizattempt {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
-    protected $RTQ;
+    protected $RTQ; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var \moodle_url $pageurl The page url to base other calls on */
     protected $pageurl;

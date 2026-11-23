@@ -78,7 +78,7 @@ require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
 
-/// Get all required strings
+// Get all required strings
 
 $strgroupquizzes = get_string("modulenameplural", "groupquiz");
 $strgroupquiz = get_string("modulename", "groupquiz");
@@ -88,14 +88,14 @@ $PAGE->set_title(strip_tags($course->shortname . ': ' . $strgroupquizzes));
 // $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
-/// Get all the appropriate data
+// Get all the appropriate data
 
 if (!$groupquizs = get_all_instances_in_course("groupquiz", $course)) {
     notice("There are no groupquizes", "../../course/view.php?id=$course->id");
     die;
 }
 
-/// Print the list of instances (your module will probably extend this)
+// Print the list of instances (your module will probably extend this)
 
 $timenow = time();
 $strname = get_string("name");
@@ -125,7 +125,7 @@ foreach ($groupquizs as $groupquiz) {
         $link = '<a href="' . $url . '">' . $groupquiz->name . '</a>';
     }
 
-    if ($course->format == 'weeks' or $course->format == 'topics') {
+    if ($course->format == 'weeks' || $course->format == 'topics') {
         $table->data[] = [$groupquiz->section, $link];
     } else {
         $table->data[] = [$link];
@@ -134,6 +134,6 @@ foreach ($groupquizs as $groupquiz) {
 
 echo html_writer::table($table);
 
-/// Finish the page
+// Finish the page
 
 echo $OUTPUT->footer();

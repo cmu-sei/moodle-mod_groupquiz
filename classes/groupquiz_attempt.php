@@ -169,7 +169,7 @@ class groupquiz_attempt {
      * @return string
      * @throws \Exception throws exception upon an undefined status
      */
-    public function getState() {
+    public function getstate() {
 
         switch ($this->attempt->state) {
             case self::NOTSTARTED:
@@ -193,7 +193,7 @@ class groupquiz_attempt {
      *
      * @return bool
      */
-    public function setState($status) {
+    public function setstate($status) {
 
         switch ($status) {
             case 'notstarted':
@@ -378,7 +378,7 @@ class groupquiz_attempt {
      *
      * @return array
      */
-    public function getSlots() {
+    public function getslots() {
         return explode(',', $this->attempt->layout);
     }
 
@@ -431,8 +431,8 @@ class groupquiz_attempt {
             return false;
         }
 
+        /** @var \mod_groupquiz\groupquiz_question $question */
         foreach ($this->get_questions() as $question) {
-            /** @var \mod_groupquiz\groupquiz_question $question */
             if ($question->getQuestion()->id == $qid) {
                 return $question;
             }
@@ -509,7 +509,7 @@ class groupquiz_attempt {
             try {
                 $DB->update_record('groupquiz_attempts', $this->attempt);
             } catch (\Exception $e) {
-                error_log($e->getMessage());
+                error_log($e->getMessage()); // phpcs:ignore moodle.PHP.ForbiddenFunctions.FoundWithAlternative
 
                 return false; // return false on failure
             }
@@ -677,7 +677,7 @@ class groupquiz_attempt {
 
         $questionattempt = $this->quba->get_question_attempt($slot);
         $question = $this->quba->get_question($slot);
-        $rtqQuestion = $this->get_question_by_slot($slot);
+        $rtqquestion = $this->get_question_by_slot($slot);
 
         // use the renderer to display just the question text area, but in read only mode
         // basically how the quiz module does it, but we're being much more specific in the output
@@ -689,7 +689,7 @@ class groupquiz_attempt {
 
         $this->responsesummary = $qrenderer->formulation_and_controls($questionattempt, $qoptions);
 
-        if ($rtqQuestion->getShowHistory()) {
+        if ($rtqquestion->getShowHistory()) {
             $this->responsesummary .= $this->question_attempt_history($questionattempt);
         }
 

@@ -155,6 +155,7 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     $groupquizdateschanged = $oldgroupquiz->timelimit != $groupquiz->timelimit
                      || $oldgroupquiz->timeclose != $groupquiz->timeclose;
     // TODO determine if this needs to be done
+    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($groupquizdateschanged) {
         // groupquiz_update_open_attempts(array('groupquizid' => $groupquiz->id));
     }
@@ -170,8 +171,8 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     if ((int)$groupquiz->grademethod !== (int)$oldgroupquiz->grademethod) {
         $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
         $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $groupquiz->course, false, MUST_EXIST);
-        $RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
-        $RTQ->get_grader()->save_all_grades(true);
+        $rtq = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, null, null);
+        $rtq->get_grader()->save_all_grades(true);
     }
 
     // Do the processing required after an add or an update.

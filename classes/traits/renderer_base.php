@@ -56,7 +56,7 @@ trait renderer_base {
      * @param string $type
      * @param string $message
      */
-    public function setMessage($type, $message) {
+    public function setmessage($type, $message) {
         $this->pageMessage = [$type, $message];
     }
 
@@ -83,7 +83,7 @@ trait renderer_base {
      * shows a message if there is one
      *
      */
-    public function showMessage() {
+    public function showmessage() {
 
         if (empty($this->pageMessage)) {
             return; // return if there is no message

@@ -46,7 +46,7 @@ class jsonlib {
     protected $response;
 
     /** @var array $status codes Array to hold different status codes to return with response */
-    protected $status_codes = [
+    protected $status_codes = [ // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
@@ -210,8 +210,8 @@ class jsonlib {
     private function send_headers($status) {
 
         if (!empty($this->status_codes[$status])) {
-            $status_string = $status . ' ' . $this->status_codes[$status];
-            header($_SERVER['SERVER_PROTOCOL'] . ' ' . $status_string, true, $status);
+            $statusstring = $status . ' ' . $this->status_codes[$status];
+            header($_SERVER['SERVER_PROTOCOL'] . ' ' . $statusstring, true, $status);
             header('cache-control: private, max-age=0, no-cache');
             header('pragma: no-cache');
             header('Content-Type: application/json; charset=utf-8');

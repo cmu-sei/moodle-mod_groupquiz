@@ -113,8 +113,8 @@ class edit_renderer extends \plugin_renderer_base {
         $return = '<ol class="questionlist">';
         $questioncount = count($questions);
         $questionnum = 1;
+        /** @var \mod_groupquiz\groupquiz_question $question */
         foreach ($questions as $question) {
-            /** @var \mod_groupquiz\groupquiz_question $question */
             $return .= '<li data-questionid="' . $question->getId() . '">';
             $return .= $this->display_question_block($question, $questionnum, $questioncount);
             $return .= '</li>';
@@ -152,10 +152,10 @@ class edit_renderer extends \plugin_renderer_base {
 
         $return .= \html_writer::div($namehtml, 'name');
 
-        $controlHTML = '';
+        $controlhtml = '';
 
         $spacericon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
-        $controlHTML .= \html_writer::start_tag('noscript');
+        $controlhtml .= \html_writer::start_tag('noscript');
         // if we're on a later question than the first one add the move up control
         if ($qnum > 1) {
             $moveupurl = clone($this->pageurl);
@@ -165,9 +165,9 @@ class edit_renderer extends \plugin_renderer_base {
             $alt = get_string('questionmoveup', 'mod_groupquiz', $qnum);
 
             $upicon = new \pix_icon('t/up', $alt);
-            $controlHTML .= \html_writer::link($moveupurl, $this->output->render($upicon));
+            $controlhtml .= \html_writer::link($moveupurl, $this->output->render($upicon));
         } else {
-            $controlHTML .= $this->output->render($spacericon);
+            $controlhtml .= $this->output->render($spacericon);
         }
         // if we're not on the last question add the move down control
         if ($qnum < $qcount) {
@@ -178,12 +178,12 @@ class edit_renderer extends \plugin_renderer_base {
             $alt = get_string('questionmovedown', 'mod_groupquiz', $qnum);
 
             $downicon = new \pix_icon('t/down', $alt);
-            $controlHTML .= \html_writer::link($movedownurl, $this->output->render($downicon));
+            $controlhtml .= \html_writer::link($movedownurl, $this->output->render($downicon));
         } else {
-            $controlHTML .= $this->output->render($spacericon);
+            $controlhtml .= $this->output->render($spacericon);
         }
 
-        $controlHTML .= \html_writer::end_tag('noscript');
+        $controlhtml .= \html_writer::end_tag('noscript');
 
         // do not allow edit or delete if attempts exist
         if (!$this->hasattempts) {
@@ -192,13 +192,13 @@ class edit_renderer extends \plugin_renderer_base {
             $editurl->param('rtqquestionid', $question->getId());
             $alt = get_string('questionedit', 'groupquiz', $qnum);
             $deleteicon = new \pix_icon('t/edit', $alt);
-            $controlHTML .= \html_writer::link($editurl, $this->output->render($deleteicon));
+            $controlhtml .= \html_writer::link($editurl, $this->output->render($deleteicon));
             $deleteurl = clone($this->pageurl);
             $deleteurl->param('action', 'deletequestion');
             $deleteurl->param('questionid', $question->getId());
             $alt = get_string('questiondelete', 'mod_groupquiz', $qnum);
             $deleteicon = new \pix_icon('t/delete', $alt);
-            $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
+            $controlhtml .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
         }
         $previewurl = \qbank_previewquestion\helper::question_preview_url($question->getQuestion()->id);
         // $previewurl = question_preview_url($question->getQuestion()->id);
@@ -206,8 +206,8 @@ class edit_renderer extends \plugin_renderer_base {
         $options = ['height' => 800, 'width' => 900];
         $popup = new \popup_action('click', $previewurl, 'preview', $options);
         $actionlink = new \action_link($previewurl, '', $popup, ['target' => '_blank'], $previewicon);
-        $controlHTML .= $this->output->render($actionlink);
-        $return .= \html_writer::div($controlHTML, 'controls');
+        $controlhtml .= $this->output->render($actionlink);
+        $return .= \html_writer::div($controlhtml, 'controls');
 
         return $return;
     }

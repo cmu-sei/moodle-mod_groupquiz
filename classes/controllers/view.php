@@ -49,7 +49,7 @@ DM20-0197
  */
 class view {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
-    protected $RTQ;
+    protected $RTQ; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var \mod_groupquiz\groupquiz_session $session The session class for the groupquiz view */
     protected $session;

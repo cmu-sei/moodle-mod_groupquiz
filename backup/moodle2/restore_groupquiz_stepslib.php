@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore steps of the group quiz activity.
+ *
  * @package   mod_groupquiz
  * @category  backup
  * @copyright   2020 Carnegie Mellon University

@@ -259,7 +259,7 @@ class edit {
      *
      * @return \mod_groupquiz\groupquiz
      */
-    public function getRTQ() {
+    public function getrtq() {
         return $this->groupquiz;
     }
 

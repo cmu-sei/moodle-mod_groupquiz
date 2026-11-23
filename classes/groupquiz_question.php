@@ -75,7 +75,7 @@ class groupquiz_question {
     /**
      * not used function until we only support 5.4 and higher
      */
-    public function JsonSerialize() {
+    public function jsonserialize() {
         // to make sue of the is function on json_encode, this class also needs to implement JsonSerializable
 
         // TODO: This will be supported if Moodle moves to only supporting php 5.4 and higher
@@ -86,7 +86,7 @@ class groupquiz_question {
      *
      * @return int
      */
-    public function getId() {
+    public function getid() {
         return $this->id;
     }
 
@@ -95,7 +95,7 @@ class groupquiz_question {
      *
      * @return float
      */
-    public function getPoints() {
+    public function getpoints() {
         return $this->points;
     }
 
@@ -104,7 +104,7 @@ class groupquiz_question {
      *
      * @return \stdClass
      */
-    public function getQuestion() {
+    public function getquestion() {
         return $this->question;
     }
 

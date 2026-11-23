@@ -61,10 +61,10 @@ class questionmanager {
     protected $renderer;
 
     /** @var array internal use only as we'll always just give out the qbank ordered questions */
-    protected $rtqQuestions;
+    protected $rtqQuestions; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var array */
-    protected $qbankOrderedQuestions;
+    protected $qbankOrderedQuestions; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /** @var \moodle_url */
     protected $baseurl;
@@ -103,7 +103,7 @@ class questionmanager {
      *
      * @return groupquiz
      */
-    public function getRTQ() {
+    public function getrtq() {
         return $this->rtq;
     }
 
@@ -358,9 +358,9 @@ class questionmanager {
         // get the actual key for the qbank question
         $qbankkeys = array_keys($this->qbankOrderedQuestions);
         $desiredkey = $qbankkeys[$qnum - 1];
-        $rtqQuestion = $this->qbankOrderedQuestions[$desiredkey];
+        $rtqquestion = $this->qbankOrderedQuestions[$desiredkey];
 
-        return $rtqQuestion->getQuestion()->qtype;
+        return $rtqquestion->getQuestion()->qtype;
     }
 
     /**
@@ -398,16 +398,16 @@ class questionmanager {
         $slotnum = $slotnum - 1;
 
         // get the first question
-        $qubaQuestion = $quba->get_question($slots[$slotnum]);
+        $qubaquestion = $quba->get_question($slots[$slotnum]);
 
-        foreach ($this->qbankOrderedQuestions as $qbankQuestion) {
-            /** @var \mod_groupquiz\groupquiz_question $qbankQuestion */
+        /** @var \mod_groupquiz\groupquiz_question $qbankquestion */
+        foreach ($this->qbankOrderedQuestions as $qbankquestion) {
 
-            if ($qbankQuestion->getQuestion()->id == $qubaQuestion->id) {
+            if ($qbankquestion->getQuestion()->id == $qubaquestion->id) {
                 // set the slot on the qbank question as this is the actual id we're using for question number
-                $qbankQuestion->set_slot($slots[$slotnum]);
+                $qbankquestion->set_slot($slots[$slotnum]);
 
-                return $qbankQuestion;
+                return $qbankquestion;
             }
         }
 
@@ -428,8 +428,8 @@ class questionmanager {
 
         // we need the questionids of our questions
         $questionids = [];
+        /** @var groupquiz_question $qbankquestion */
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-            /** @var groupquiz_question $qbankquestion */
 
             if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
@@ -449,7 +449,7 @@ class questionmanager {
         // start the questions in the quba
         $quba->start_all_questions();
 
-        /**
+        /*
          * return the attempt layout which is a set of ids that are the slot ids from the question engine usage by activity instance
          * these are what are used during an actual attempt rather than the questionid themselves, since the question engine will handle
          * the translation
@@ -628,8 +628,8 @@ class questionmanager {
     protected function is_question_already_present($questionid) {
 
         // loop through the db rtq questions and see if we find a match
-        foreach ($this->rtqQuestions as $dbRTQquestion) {
-            if ($dbRTQquestion->questionid == $questionid) {
+        foreach ($this->rtqQuestions as $dbrtqquestion) {
+            if ($dbrtqquestion->questionid == $questionid) {
                 return true;
             }
         }
@@ -693,7 +693,7 @@ class questionmanager {
         $questions = $DB->get_records_sql($query, $params);
 
         // Now order the qbank questions based on the order that we got above
-        $qbankOrderedQuestions = [];
+        $qbankorderedquestions = [];
         // use the ordered question ids we got earlier
         foreach ($orderedquestionids as $rtqqid => $questionid) {
             if (!empty($questions[$questionid])) {
@@ -704,11 +704,11 @@ class questionmanager {
                     $questions[$questionid]
                 );
 
-                $qbankOrderedQuestions[$rtqqid] = $quizquestion; // add question to the ordered questions
+                $qbankorderedquestions[$rtqqid] = $quizquestion; // add question to the ordered questions
             }
         }
 
-        $this->qbankOrderedQuestions = $qbankOrderedQuestions;
+        $this->qbankOrderedQuestions = $qbankorderedquestions;
     }
 
     /**
@@ -732,8 +732,8 @@ class questionmanager {
 
             $attempts = $this->rtq->getall_attempts('all');
 
+        /** @var \mod_groupquiz\groupquiz_attempt $attempt */
         foreach ($attempts as $attempt) {
-            /** @var \mod_groupquiz\groupquiz_attempt $attempt */
             if ($slot = $attempt->get_question_slot($q)) {
                 $quba = $attempt->get_quba();
                 $quba->set_max_mark($slot, $newpoints);

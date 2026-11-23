@@ -90,7 +90,7 @@ class groupquiz {
 
 
     /** @var groupquiz_attempt|bool|null The open attempt of the group, once it has been loaded. */
-    public $openAttempt;
+    public $openAttempt; // phpcs:ignore moodle.NamingConventions.ValidVariableName.MemberNameUnderscore
 
     /**
      * takes the realtime quiz object passed to add/update instance
@@ -122,10 +122,10 @@ class groupquiz {
      * @param object $quiz The specific real time quiz record for this activity
      * @param \moodle_url $pageurl The page url
      * @param array  $pagevars The variables and options for the page
-     * @param string $renderer_subtype Renderer sub-type to load if requested
+     * @param string $renderersubtype Renderer sub-type to load if requested
      *
      */
-    public function __construct($cm, $course, $groupquiz, $pageurl, $pagevars = [], $renderer_subtype = null) {
+    public function __construct($cm, $course, $groupquiz, $pageurl, $pagevars = [], $renderersubtype = null) {
         global $CFG, $PAGE;
 
         $this->cm = $cm;
@@ -136,7 +136,7 @@ class groupquiz {
         $this->context = \context_module::instance($cm->id);
         $PAGE->set_context($this->context);
 
-        $this->renderer = $PAGE->get_renderer('mod_groupquiz', $renderer_subtype);
+        $this->renderer = $PAGE->get_renderer('mod_groupquiz', $renderersubtype);
         $this->questionmanager = new \mod_groupquiz\questionmanager($this, $this->renderer, $this->pagevars);
         $this->grader = new \mod_groupquiz\utils\grade($this);
         $this->groupmanager = new \mod_groupquiz\utils\groupmanager($this);
@@ -151,7 +151,7 @@ class groupquiz {
      *
      * @return object
      */
-    public function getCM() {
+    public function getcm() {
         return $this->cm;
     }
 
@@ -160,7 +160,7 @@ class groupquiz {
      *
      * @return object
      */
-    public function getCourse() {
+    public function getcourse() {
         return $this->course;
     }
 
@@ -169,7 +169,7 @@ class groupquiz {
      *
      * @return object
      */
-    public function getRTQ() {
+    public function getrtq() {
         return $this->groupquiz;
     }
 
@@ -178,7 +178,7 @@ class groupquiz {
      *
      * @return bool
      */
-    public function saveRTQ() {
+    public function savertq() {
         global $DB;
 
         return $DB->update_record('groupquiz', $this->groupquiz);
@@ -189,7 +189,7 @@ class groupquiz {
      *
      * @return \context_module
      */
-    public function getContext() {
+    public function getcontext() {
         return $this->context;
     }
 
@@ -359,8 +359,8 @@ class groupquiz {
             // we're going through all question types defined by the instance
             $questiontypes = [];
             $questions = $this->get_questionmanager()->get_questions();
+            /** @var \mod_groupquiz\groupquiz_question $question */
             foreach ($questions as $question) {
-                /** @var \mod_groupquiz\groupquiz_question $question */
                 $questiontypes[] = $question->getQuestion()->qtype;
             }
         }
@@ -379,11 +379,11 @@ class groupquiz {
                 if (!$reflection->implementsInterface('\mod_groupquiz\questionmodifiers\ibasequestionmodifier')) {
                     throw new \moodle_exception('invlidimplementation', 'groupquiz', null, null, 'You question modifier does not implement the base modifier interface... ' . $type);
                 } else {
-                    $rMethod = $reflection->getMethod($action);
+                    $rmethod = $reflection->getMethod($action);
                     $fparams = array_slice($params, 2);
 
                     // next validate that we've gotten the right number of parameters for calling the action
-                    if ($rMethod->getNumberOfRequiredParameters() != count($fparams)) {
+                    if ($rmethod->getNumberOfRequiredParameters() != count($fparams)) {
                         throw new \moodle_exception('invalidnumberofparams', 'groupquiz', null, null, 'Invalid number of parameters passed to question modifiers call');
                     } else {
                         // now just call and return the method's return
@@ -458,15 +458,15 @@ class groupquiz {
 
         // use the getall attempts with the specified options
         $attempts = $this->getall_attempts('all', $groupid);
-        $openAttempt = false;
+        $openattempt = false;
+        /** @var groupquiz_attempt $attempt */
         foreach ($attempts as $attempt) {
-            /** @var groupquiz_attempt $attempt doc comment for type hinting */
             if ($attempt->getState() == 'inprogress' || $attempt->getState() == 'notstarted') {
-                $openAttempt = $attempt;
+                $openattempt = $attempt;
             }
         }
         // returns most recent one?
-        return $openAttempt;
+        return $openattempt;
     }
 
     /**
@@ -479,9 +479,9 @@ class groupquiz {
         if (is_null($group)) {
             return false;
         }
-        $openAttempt = $this->get_open_attempt_for_group($group);
-        if (!is_null($openAttempt)) {
-            $this->openAttempt = $openAttempt;
+        $openattempt = $this->get_open_attempt_for_group($group);
+        if (!is_null($openattempt)) {
+            $this->openAttempt = $openattempt;
             return true;
         }
         return false;
@@ -502,9 +502,9 @@ class groupquiz {
         }
 
         if (!$preview && !is_null($group) && $group != 0) {
-            $openAttempt = $this->get_open_attempt_for_group($group);
-            if ($openAttempt !== false) {
-                $this->openAttempt = $openAttempt;
+            $openattempt = $this->get_open_attempt_for_group($group);
+            if ($openattempt !== false) {
+                $this->openAttempt = $openattempt;
                 return true;
             }
         }
@@ -514,9 +514,9 @@ class groupquiz {
                 $group = 0;
             }
 
-            $openAttempt = $this->get_open_attempt_for_group($group);
-            if ($openAttempt !== false) {
-                $this->openAttempt = $openAttempt;
+            $openattempt = $this->get_open_attempt_for_group($group);
+            if ($openattempt !== false) {
+                $this->openAttempt = $openattempt;
                 return true;
             }
         }

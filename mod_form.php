@@ -300,7 +300,7 @@ class mod_groupquiz_mod_form extends moodleform_mod {
      *
      * @param array $toform The form data, updated in place.
      */
-    function data_preprocessing(&$toform) {
+    public function data_preprocessing(&$toform) {
         if (isset($toform['grade'])) {
             // Convert to a real number, so we don't get 0.0000.
             $toform['grade'] = $toform['grade'] + 0;
@@ -377,6 +377,6 @@ class mod_groupquiz_mod_form extends moodleform_mod {
      *
      * @param stdClass $data The submitted data.
      */
-    function data_postprocessing($data) {
+    public function data_postprocessing($data) {
     }
 }

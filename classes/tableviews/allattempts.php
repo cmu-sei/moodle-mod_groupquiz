@@ -180,8 +180,8 @@ class allattempts extends \flexible_table implements \renderable {
             }
         }
 
+        /** @var \mod_groupquiz\groupquiz_attempt $attempt */
         foreach ($attempts as $attempt) {
-            /** @var \mod_groupquiz\groupquiz_attempt $attempt */
             $ditem = new \stdClass();
             $ditem->attemptid = $attempt->id;
 

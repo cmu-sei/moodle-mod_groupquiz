@@ -57,14 +57,14 @@ class report_overview_renderer extends \plugin_renderer_base {
     /**
      * Initialize the renderer with some variables
      *
-     * @param \mod_groupquiz\groupquiz $RTQ
+     * @param \mod_groupquiz\groupquiz $rtq
      * @param moodle_url                 $pageurl Always require the page url
      * @param array                      $pagevars (optional)
      */
-    public function init($RTQ, $pageurl, $pagevars = []) {
+    public function init($rtq, $pageurl, $pagevars = []) {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
-        $this->rtq = $RTQ;
+        $this->rtq = $rtq;
     }
 
     /**
