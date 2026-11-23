@@ -97,9 +97,10 @@ class question_manually_graded extends \core\event\base {
      */
     public function get_url() {
         return new \moodle_url('/mod/groupquiz/viewquizattempt.php', [
-            'attempt' => $this->other['attemptid'],
+            'id' => $this->contextinstanceid,
+            'groupquizid' => $this->other['groupquizid'],
+            'attemptid' => $this->other['attemptid'],
             'slot' => $this->other['slot'],
-            'sessionid' => $this->other['sessionid'],
             'action' => 'savecomment',
         ]);
     }
@@ -114,8 +115,16 @@ class question_manually_graded extends \core\event\base {
     protected function validate_data() {
         parent::validate_data();
 
+        if (!isset($this->other['groupquizid'])) {
+            throw new \coding_exception('The \'groupquizid\' value must be set in other.');
+        }
+
         if (!isset($this->other['attemptid'])) {
             throw new \coding_exception('The \'attemptid\' value must be set in other.');
+        }
+
+        if (!isset($this->other['slot'])) {
+            throw new \coding_exception('The \'slot\' value must be set in other.');
         }
     }
 }
