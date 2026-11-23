@@ -42,7 +42,8 @@ DM20-0197
  */
 
 namespace mod_groupquiz;
-namespace mod_groupquiz;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
  * Unit tests for the mod_groupquiz events.
