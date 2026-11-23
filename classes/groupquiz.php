@@ -589,10 +589,13 @@ class groupquiz {
     }
 
     /**
-     * Get the quiz introduction.
+     * Intended to return the quiz introduction.
+     *
+     * It reads an intro property that this class does not declare, so it returns null; the introduction is held in
+     * the intro field of the quiz record, $this->groupquiz->intro.
      *
      * @param int $attemptid The attempt id; not used.
-     * @return mixed The value of the intro property.
+     * @return null Always null, as the property it reads does not exist.
      */
     public function get_intro($attemptid) {
         return $this->intro;
