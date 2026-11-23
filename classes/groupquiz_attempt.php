@@ -141,7 +141,8 @@ class groupquiz_attempt {
             $attemptlayout = $this->questionmanager->add_questions_to_quba($this->quba);
             // add the attempt layout to this instance
             $this->attempt->layout = implode(',', $attemptlayout);
-        } else { // else load it up in this class instance
+        } else {
+            // else load it up in this class instance
             $this->attempt = $dbattempt;
             $this->quba = \question_engine::load_questions_usage_by_activity($this->attempt->uniqueid);
         }
@@ -495,7 +496,8 @@ class groupquiz_attempt {
         $this->attempt->uniqueid = $this->quba->get_id();
         $this->attempt->timemodified = time();
 
-        if (isset($this->attempt->id)) { // update the record
+        // update the record
+        if (isset($this->attempt->id)) {
             try {
                 $DB->update_record('groupquiz_attempts', $this->attempt);
             } catch (\Exception $e) {

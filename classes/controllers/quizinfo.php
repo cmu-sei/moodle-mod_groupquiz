@@ -103,7 +103,8 @@ class quizinfo {
 
             require_login($course->id, false, $cm, false, true);
         } catch (\moodle_exception $e) {
-            if (debugging()) { // if debugging throw error as normal.
+            // if debugging throw error as normal.
+            if (debugging()) {
                 throw new $e();
             } else {
                 $this->jsonlib->send_error('invalid request');

@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_groupquiz\output;
-
 /**
  * Renderer outputting the quiz editing UI.
  *
@@ -35,6 +33,8 @@ This Software includes and/or makes use of the following Third-Party Software su
 2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
 DM20-0197
  */
+
+namespace mod_groupquiz\output;
 
 use mod_groupquiz\traits\renderer_base;
 
@@ -153,7 +153,8 @@ class edit_renderer extends \plugin_renderer_base {
 
         $spacericon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
         $controlHTML .= \html_writer::start_tag('noscript');
-        if ($qnum > 1) { // if we're on a later question than the first one add the move up control
+        // if we're on a later question than the first one add the move up control
+        if ($qnum > 1) {
             $moveupurl = clone($this->pageurl);
             $moveupurl->param('action', 'moveup');
             $moveupurl->param('questionid', $question->getId()); // add the rtqqid so that the question manager handles the translation
@@ -165,7 +166,8 @@ class edit_renderer extends \plugin_renderer_base {
         } else {
             $controlHTML .= $this->output->render($spacericon);
         }
-        if ($qnum < $qcount) { // if we're not on the last question add the move down control
+        // if we're not on the last question add the move down control
+        if ($qnum < $qcount) {
             $movedownurl = clone($this->pageurl);
             $movedownurl->param('action', 'movedown');
             $movedownurl->param('questionid', $question->getId());

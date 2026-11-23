@@ -671,7 +671,8 @@ class questionmanager {
             $this->qbankOrderedQuestions = [];
 
             return;
-        } else { // otherwise explode it and continue on
+        } else {
+            // otherwise explode it and continue on
             $questionorder = explode(',', $questionorder);
         }
 
@@ -690,7 +691,8 @@ class questionmanager {
 
         // Now order the qbank questions based on the order that we got above
         $qbankOrderedQuestions = [];
-        foreach ($orderedquestionids as $rtqqid => $questionid) { // use the ordered question ids we got earlier
+        // use the ordered question ids we got earlier
+        foreach ($orderedquestionids as $rtqqid => $questionid) {
             if (!empty($questions[$questionid])) {
                 // create realtime quiz question and add it to the array
                 $quizquestion = new \mod_groupquiz\groupquiz_question(

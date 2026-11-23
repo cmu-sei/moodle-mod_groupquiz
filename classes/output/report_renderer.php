@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace mod_groupquiz\output;
-
 /**
  * Renderer outputting the quiz editing UI.
  *
@@ -35,6 +33,8 @@ This Software includes and/or makes use of the following Third-Party Software su
 2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes and the University of Wisconsin.
 DM20-0197
  */
+
+namespace mod_groupquiz\output;
 
 use mod_groupquiz\traits\renderer_base;
 

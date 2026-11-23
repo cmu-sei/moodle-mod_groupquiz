@@ -411,8 +411,10 @@ class grade {
             if ($attemptsgrades[$guserid][$attemptid] < $grade) {
                 $attemptsgrades[$guserid][$attemptid] = $grade;
             }
-        } else { // if no grade is present for this user and session add the grade for the user
-            if (!isset($attemptsgrades[$guserid])) { // this is for a group member who hasn't gotten a grade
+        } else {
+            // if no grade is present for this user and session add the grade for the user
+            // this is for a group member who hasn't gotten a grade
+            if (!isset($attemptsgrades[$guserid])) {
                 $attemptsgrades[$guserid] = [];
             }
             $attemptsgrades[$guserid][$attemptid] = $grade;

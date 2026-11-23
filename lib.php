@@ -439,11 +439,13 @@ function groupquiz_after_add_or_update($groupquiz) {
  */
 function groupquiz_grade_item_update($groupquiz, $grades = null) {
     global $CFG;
-    if (!function_exists('grade_update')) { // workaround for buggy PHP versions
+    // workaround for buggy PHP versions
+    if (!function_exists('grade_update')) {
         require_once($CFG->libdir . '/gradelib.php');
     }
 
-    if (property_exists($groupquiz, 'cmidnumber')) { // May not be always present.
+    // May not be always present.
+    if (property_exists($groupquiz, 'cmidnumber')) {
         $params = ['itemname' => $groupquiz->name, 'idnumber' => $groupquiz->cmidnumber];
     } else {
         $params = ['itemname' => $groupquiz->name];

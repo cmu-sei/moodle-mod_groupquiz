@@ -130,7 +130,8 @@ class jsonlib {
         $this->response->message = $message;
 
         $response = json_encode($this->response);
-        if ($response === false) { // check for error
+        // check for error
+        if ($response === false) {
             $message = $this->get_json_error();
             $this->send_headers(500);
             die($message);
@@ -149,7 +150,8 @@ class jsonlib {
     public function send_response() {
 
         $response = json_encode($this->response);
-        if ($response === false) { // check for error
+        // check for error
+        if ($response === false) {
             $response = $this->get_json_error(); // return error as bare text since json_encode isn't working
             $this->send_headers(500);
         }
