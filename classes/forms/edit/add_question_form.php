@@ -41,6 +41,13 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Form for confirming that a question is added to the group quiz.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class add_question_form extends \moodleform {
     /**
      * Overriding parent function to account for namespace in the class name

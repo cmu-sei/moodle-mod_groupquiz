@@ -35,7 +35,11 @@ DM20-0197
  */
 
 namespace mod_groupquiz\output;
+
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderable for the question type chooser.
+ */
 class question_chooser extends \core_question\output\qbank_chooser {
 }

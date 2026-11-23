@@ -35,7 +35,9 @@ DM20-0197
 
 namespace mod_groupquiz\traits;
 
-
+/**
+ * Trait with the page header and message handling shared by the group quiz renderers.
+ */
 trait renderer_base {
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;

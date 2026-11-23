@@ -122,6 +122,12 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
         ];
     }
 
+    /**
+     * Combine the submitted checkboxes into one bitmask.
+     *
+     * @param array|int $data The submitted data, or an existing value.
+     * @return int The bitmask.
+     */
     protected function normalise_data($data) {
         $times = self::times();
         $value = 0;
@@ -137,10 +143,21 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
         return $value;
     }
 
+    /**
+     * Get the saved value of the setting.
+     *
+     * @return mixed The saved bitmask.
+     */
     public function get_setting() {
         return $this->config_read($this->name);
     }
 
+    /**
+     * Save the setting.
+     *
+     * @param array|int $data The submitted data.
+     * @return string An empty string, as there is no error.
+     */
     public function write_setting($data) {
         if (is_array($data) || empty($data)) {
             $data = $this->normalise_data($data);
@@ -149,6 +166,13 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
         return '';
     }
 
+    /**
+     * Build the HTML of the setting.
+     *
+     * @param array|int $data The current value.
+     * @param string $query The admin search query to highlight.
+     * @return string The HTML.
+     */
     public function output_html($data, $query = '') {
         if (is_array($data) || empty($data)) {
             $data = $this->normalise_data($data);

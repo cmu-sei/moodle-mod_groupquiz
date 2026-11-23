@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Helper for building and sending the JSON responses used by the quiz page.
+ */
 class jsonlib {
     /** @var stdClass $response class to hold resonse information */
     protected $response;

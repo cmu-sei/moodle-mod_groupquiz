@@ -38,18 +38,36 @@ namespace mod_groupquiz\question\bank;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Question bank column with the action for adding a question to the group quiz.
+ */
 class add_action_column extends \core_question\local\bank\question_action_base {
+    /** @var string The text of the add icon. */
     protected $stradd;
 
+    /**
+     * Set up the column.
+     */
     public function init(): void {
         parent::init();
         $this->stradd = get_string('addtoquiz', 'groupquiz');
     }
 
+    /**
+     * Get the name of the column.
+     *
+     * @return string The name.
+     */
     public function get_name() {
         return 'addtortqaction';
     }
 
+    /**
+     * Output the add icon for a question.
+     *
+     * @param object $question The question row.
+     * @param string $rowclasses The CSS classes of the row.
+     */
     protected function display_content($question, $rowclasses) {
         if (!question_has_capability_on($question, 'use')) {
             return;
@@ -57,6 +75,11 @@ class add_action_column extends \core_question\local\bank\question_action_base {
         $this->print_icon('t/add', $this->stradd, $this->qbank->add_to_groupquiz_url($question->id));
     }
 
+    /**
+     * Get the question fields the column needs.
+     *
+     * @return array The field names.
+     */
     public function get_required_fields(): array {
         return ['q.id'];
     }

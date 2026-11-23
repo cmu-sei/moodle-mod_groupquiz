@@ -47,6 +47,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Manages the questions of a group quiz: adding, removing, ordering and grading them.
+ */
 class questionmanager {
     /** @var groupquiz */
     protected $rtq;
@@ -709,6 +712,8 @@ class questionmanager {
     }
 
     /**
+     * Update the points of a question.
+     *
      * @param float $newpoints
      * @param \stdClass $questionrecord
      * @param \stdClass $qrecord

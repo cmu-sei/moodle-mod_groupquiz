@@ -40,6 +40,13 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Table showing a list of attempts at a group quiz.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class allattempts extends \flexible_table implements \renderable {
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;

@@ -44,6 +44,9 @@ and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Controller for the group quiz view page.
+ */
 class view {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;

@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Controller for the reports page.
+ */
 class reports {
     /** @var \mod_groupquiz\groupquiz Active quiz class */
     protected $groupquiz;

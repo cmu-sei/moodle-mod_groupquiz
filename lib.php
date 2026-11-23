@@ -181,6 +181,11 @@ function groupquiz_update_instance(stdClass $groupquiz, $mform) {
     return true;
 }
 
+/**
+ * Set up the review options and other derived values of a group quiz before it is saved.
+ *
+ * @param stdClass $groupquiz The quiz settings from the form.
+ */
 function groupquiz_process_options($groupquiz) {
     global $CFG;
     require_once($CFG->libdir . '/questionlib.php');
@@ -290,7 +295,7 @@ function groupquiz_delete_instance($id) {
 function groupquiz_get_coursemodule_info($coursemodule) {
 }
 
-/*
+/**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
  * @param  stdClass $groupquiz        groupquiz object
@@ -468,6 +473,7 @@ function groupquiz_grade_item_update($groupquiz, $grades = null) {
 }
 
 
+// TODO remove
 /**
  * Delete grade item for given lab
  *
@@ -475,7 +481,6 @@ function groupquiz_grade_item_update($groupquiz, $grades = null) {
  * @param object $groupquiz object
  * @return object groupquiz
  */
-// TODO remove
 function groupquiz_grade_item_delete($groupquiz) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
@@ -493,6 +498,12 @@ function groupquiz_grade_item_delete($groupquiz) {
 }
 
 
+/**
+ * Reset the gradebook of the group quizzes in a course.
+ *
+ * @param int $courseid The course id.
+ * @param string $type The type of reset; not used.
+ */
 function groupquiz_reset_gradebook($courseid, $type = '') {
     global $CFG, $DB;
 

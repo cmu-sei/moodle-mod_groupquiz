@@ -39,12 +39,18 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * The methods the module can use to combine several attempt grades into one grade.
+ */
 class scaletypes {
-    /** Define grading scale types */
-    const groupquiz_FIRSTATTEMPT = 1;
-    const groupquiz_LASTATTEMPT = 2;
-    const groupquiz_ATTEMPTAVERAGE = 3;
-    const groupquiz_HIGHESTATTEMPTGRADE = 4;
+    /** @var int Grading scale type: the grade of the first attempt. */
+    const GROUPQUIZ_FIRSTATTEMPT = 1;
+    /** @var int Grading scale type: the grade of the last attempt. */
+    const GROUPQUIZ_LASTATTEMPT = 2;
+    /** @var int Grading scale type: the average of the attempt grades. */
+    const GROUPQUIZ_ATTEMPTAVERAGE = 3;
+    /** @var int Grading scale type: the highest attempt grade. */
+    const GROUPQUIZ_HIGHESTATTEMPTGRADE = 4;
 
 
     /**
@@ -55,10 +61,10 @@ class scaletypes {
     public static function get_types() {
 
         return [
-            'firstattempt' => self::groupquiz_FIRSTATTEMPT,
-            'lastattempt'  => self::groupquiz_LASTATTEMPT,
-            'average'      => self::groupquiz_ATTEMPTAVERAGE,
-            'highestgrade' => self::groupquiz_HIGHESTATTEMPTGRADE,
+            'firstattempt' => self::GROUPQUIZ_FIRSTATTEMPT,
+            'lastattempt'  => self::GROUPQUIZ_LASTATTEMPT,
+            'average'      => self::GROUPQUIZ_ATTEMPTAVERAGE,
+            'highestgrade' => self::GROUPQUIZ_HIGHESTATTEMPTGRADE,
         ];
     }
 
@@ -71,10 +77,10 @@ class scaletypes {
     public static function get_display_types() {
 
         return [
-            self::groupquiz_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
-            self::groupquiz_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
-            self::groupquiz_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
-            self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
+            self::GROUPQUIZ_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
+            self::GROUPQUIZ_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
+            self::GROUPQUIZ_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
+            self::GROUPQUIZ_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
         ];
     }
 }

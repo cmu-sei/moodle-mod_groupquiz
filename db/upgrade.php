@@ -56,6 +56,12 @@ DM20-0197
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Upgrade the group quiz database tables.
+ *
+ * @param int $oldversion The version the plugin is being upgraded from.
+ * @return bool True on success.
+ */
 function xmldb_groupquiz_upgrade($oldversion) {
     global $CFG, $DB;
     $dbman = $DB->get_manager();

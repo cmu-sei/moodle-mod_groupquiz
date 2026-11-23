@@ -40,6 +40,9 @@ use mod_groupquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer for the group quiz edit page.
+ */
 class edit_renderer extends \plugin_renderer_base {
     use renderer_base;
 
@@ -219,6 +222,9 @@ class edit_renderer extends \plugin_renderer_base {
         echo $mform->display();
     }
 
+    /**
+     * Output the error shown when the quiz has an open session.
+     */
     public function opensession() {
 
         echo \html_writer::tag('h3', get_string('editpage_opensession_error', 'groupquiz'));

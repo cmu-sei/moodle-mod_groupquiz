@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Helper for looking up the groups of a user and the members of a group in the quiz's course.
+ */
 class groupmanager {
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;
@@ -132,6 +135,11 @@ class groupmanager {
         return groups_is_member($groupid, $userid);
     }
 
+    /**
+     * Get the group of the current user.
+     *
+     * @return int The group id, or -1 when the user is not in exactly one group.
+     */
     public function get_user_group() {
 
         $groups = $this->get_user_groups();

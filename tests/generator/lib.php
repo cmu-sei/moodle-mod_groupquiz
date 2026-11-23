@@ -71,7 +71,7 @@ class mod_groupquiz_generator extends testing_module_generator {
             'timeclose' => 0,
             'timelimit' => 0,
             'grade' => 100,
-            'grademethod' => \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT,
+            'grademethod' => \mod_groupquiz\utils\scaletypes::GROUPQUIZ_FIRSTATTEMPT,
             'grouping' => 0,
             'questionorder' => '',
             'shuffleanswers' => 0,

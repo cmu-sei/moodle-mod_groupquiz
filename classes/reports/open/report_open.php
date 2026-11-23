@@ -38,11 +38,14 @@ namespace mod_groupquiz\reports\open;
 use mod_groupquiz\reports\ireport;
 use mod_groupquiz\tableviews\overallgradesview;
 
+/**
+ * Report listing the open attempts of a group quiz.
+ */
 class report_open extends \mod_groupquiz\reports\groupquiz_report_base implements ireport {
     /**
      * The tableview for the current request.  is added by the handle request function.
      *
-     * @var
+     * @var mixed
      */
     protected $tableview;
 

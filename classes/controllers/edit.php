@@ -41,6 +41,13 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Controller for the group quiz edit page.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class edit {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class. */
     protected $groupquiz;
@@ -54,6 +61,7 @@ class edit {
     /** @var \question_edit_contexts $contexts and array of contexts that has all parent contexts from the RTQ context. */
     protected $contexts;
 
+    /** @var \moodle_url The page url to base other calls on. */
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load. */
@@ -62,8 +70,10 @@ class edit {
     /** @var  \mod_groupquiz\output\edit_renderer $renderer. */
     protected $renderer;
 
+    /** @var bool Whether the group quiz has any attempts. */
     protected $groupquizhasattempts;
 
+    /** @var \stdClass The course module. */
     protected $cm;
 
     /**

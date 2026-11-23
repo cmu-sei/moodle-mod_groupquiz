@@ -40,6 +40,9 @@ use mod_groupquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer for the open attempts report.
+ */
 class report_open_renderer extends \plugin_renderer_base {
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;

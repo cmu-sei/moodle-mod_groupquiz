@@ -57,15 +57,14 @@ const SHOWIMAGE_SMALL = 1;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_groupquiz_display_options extends question_display_options {
-    /**#@+
-     * @var integer bits used to indicate various times in relation to a
-     * quiz attempt.
-     */
+    /** @var int Bit for the time during an attempt. */
     const DURING = 0x10000;
+    /** @var int Bit for the time right after an attempt. */
     const IMMEDIATELY_AFTER = 0x01000;
+    /** @var int Bit for the time later, while the quiz is still open. */
     const LATER_WHILE_OPEN = 0x00100;
+    /** @var int Bit for the time after the quiz closes. */
     const AFTER_CLOSE = 0x00010;
-    /**#@-*/
 
     /**
      * @var bool if this is false, then the student is not allowed to review
@@ -79,14 +78,14 @@ class mod_groupquiz_display_options extends question_display_options {
      */
     public $overallfeedback = self::VISIBLE;
 
+    // TODO remove if not used
     /**
      * Set up the various options from the quiz settings, and a time constant.
-     * @param object $groupquiz the quiz settings.
-     * @param int $one of the {@link DURING}, {@link IMMEDIATELY_AFTER},
-     * {@link LATER_WHILE_OPEN} or {@link AFTER_CLOSE} constants.
-     * @return mod_groupquiz_display_options set up appropriately.
+     *
+     * @param object $groupquiz The quiz settings.
+     * @param int $when One of the DURING, IMMEDIATELY_AFTER, LATER_WHILE_OPEN or AFTER_CLOSE constants.
+     * @return mod_groupquiz_display_options The options set up for that time.
      */
-    // TODO remove if not used
     public static function make_from_groupquiz($groupquiz, $when) {
         $options = new self();
 
@@ -115,6 +114,15 @@ class mod_groupquiz_display_options extends question_display_options {
         return $options;
     }
 
+    /**
+     * Return one of two values depending on whether a bit is set in a bitmask.
+     *
+     * @param int $bitmask The bitmask holding the settings.
+     * @param int $bit The bit to test.
+     * @param mixed $whenset The value returned when the bit is set.
+     * @param mixed $whennotset The value returned when the bit is not set.
+     * @return mixed The value for the bit.
+     */
     protected static function extract(
         $bitmask,
         $bit,
@@ -130,6 +138,8 @@ class mod_groupquiz_display_options extends question_display_options {
 }
 
 /**
+ * Check whether a group quiz has any attempts.
+ *
  * @param int $groupquizid The quiz id.
  * @return bool whether this groupquiz has any (non-preview) attempts.
  */

@@ -38,6 +38,9 @@ namespace mod_groupquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Event triggered when a group quiz course module is viewed.
+ */
 class course_module_viewed extends \core\event\course_module_viewed {
     /**
      * Init method.
@@ -50,6 +53,11 @@ class course_module_viewed extends \core\event\course_module_viewed {
         $this->data['objecttable'] = 'groupquiz';
     }
 
+    /**
+     * Get the mapping of the object id for backup and restore.
+     *
+     * @return array The mapping.
+     */
     public static function get_objectid_mapping() {
         return ['db' => 'groupquiz', 'restore' => 'groupquiz'];
     }

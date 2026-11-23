@@ -46,6 +46,13 @@ and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Controller for the callbacks the quiz page's JavaScript makes to get information about the quiz.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class quizinfo {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;

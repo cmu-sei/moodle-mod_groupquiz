@@ -46,6 +46,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
     /** @var string the questionorder from the backup, remapped once the questions are restored. */
     protected $oldquestionorder = '';
 
+    /**
+     * Define the paths to restore.
+     *
+     * @return array The activity structure.
+     */
     protected function define_structure() {
 
         $userinfo = $this->get_setting_value('userinfo');
@@ -71,6 +76,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restore the group quiz record.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz($data) {
         global $DB;
 
@@ -96,6 +106,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->apply_activity_instance($newitemid);
     }
 
+    /**
+     * Restore a question of the group quiz.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_question_instance($data) {
         global $DB;
 
@@ -128,6 +143,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $DB->insert_record('question_references', $data);
     }
 
+    /**
+     * Restore a grade.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_grade($data) {
         global $DB;
 
@@ -140,6 +160,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $DB->insert_record('groupquiz_grades', $data);
     }
 
+    /**
+     * Restore an attempt, once its question usage has been restored.
+     *
+     * @param array $data The record from the backup.
+     */
     protected function process_groupquiz_attempt($data) {
         $data = (object)$data;
         $data->groupquizid = $this->get_new_parentid('groupquiz');
@@ -162,6 +187,11 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->currentattempt = clone($data);
     }
 
+    /**
+     * Save the restored attempt now that its question usage has a new id.
+     *
+     * @param int $newusageid The id of the restored question usage.
+     */
     protected function inform_new_usage_id($newusageid) {
         global $DB;
 
@@ -176,6 +206,9 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         $this->set_mapping('groupquiz_attempt', $oldid, $newitemid);
     }
 
+    /**
+     * Restore the files and set the order of the restored questions.
+     */
     protected function after_execute() {
         global $DB;
 

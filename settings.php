@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Admin settings of the group quiz module.
+ *
  * @package   mod_groupquiz
  * @copyright 2020 Carnegie Mellon Univiersity
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

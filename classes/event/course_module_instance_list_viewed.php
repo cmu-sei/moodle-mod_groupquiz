@@ -38,5 +38,8 @@ namespace mod_groupquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Event triggered when the list of group quizzes in a course is viewed.
+ */
 class course_module_instance_list_viewed extends \core\event\course_module_instance_list_viewed {
 }

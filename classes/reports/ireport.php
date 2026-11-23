@@ -37,10 +37,20 @@ DM20-0197
 
 namespace mod_groupquiz\reports;
 
+/**
+ * Interface that every group quiz report implements.
+ */
 interface ireport {
+    /**
+     * Create the report.
+     *
+     * @param \mod_groupquiz\groupquiz $groupquiz The quiz the report is for.
+     */
     public function __construct(\mod_groupquiz\groupquiz $groupquiz);
 
     /**
+     * Handle the request for this specific report.
+     *
      * @param \moodle_url $pageurl
      * @param array $pagevars
      * @return mixed

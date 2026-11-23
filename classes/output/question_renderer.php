@@ -41,7 +41,19 @@ defined('MOODLE_INTERNAL') || die();
 // require_once($CFG->dirroot . '/question/engine/renderer.php');
 
 
+/**
+ * Question renderer that adds the user to the response history.
+ */
 class question_renderer extends \core_question_renderer{
+    /**
+     * Build the table of steps of a question attempt.
+     *
+     * @param \question_attempt $qa The question attempt.
+     * @param \qbehaviour_renderer $behaviouroutput The behaviour renderer.
+     * @param \qtype_renderer $qtoutput The question type renderer.
+     * @param \question_display_options $options The display options.
+     * @return string The HTML of the history.
+     */
     protected function response_history(
         \question_attempt $qa,
         \qbehaviour_renderer $behaviouroutput,

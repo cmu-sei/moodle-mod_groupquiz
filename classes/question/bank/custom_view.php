@@ -40,6 +40,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Question bank view used when adding questions to a group quiz.
+ */
 class custom_view extends \core_question\local\bank\view {
     /** @var bool whether the groupquiz this is used by has been attemptd. */
     protected $groupquizhasattempts = false;
@@ -175,7 +178,7 @@ class custom_view extends \core_question\local\bank\view {
         return new \moodle_url('/mod/groupquiz/edit.php', $params);
     }
 
-    /*
+    /**
      * This has been taken from the base class to allow us to call our own version of
      * create_new_question_button.
      *

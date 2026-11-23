@@ -41,6 +41,9 @@ DM20-0197
 
 defined('MOODLE_INTERNAL') || die;
 
+/**
+ * Run when the plugin is installed.
+ */
 function xmldb_groupquiz_install() {
     global $CFG;
 

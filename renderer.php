@@ -44,6 +44,13 @@ and the University of Wisconsin.
 DM20-0197
  */
 
+/**
+ * Renderer for the group quiz start page, quiz attempt page and grade display.
+ *
+ * @package mod_groupquiz
+ * @copyright 2020 Carnegie Mellon University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_groupquiz_renderer extends plugin_renderer_base {
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;
@@ -290,6 +297,9 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         }
     }
 
+    /**
+     * Output the button that starts, or continues, the attempt of the current user's group.
+     */
     public function render_start_button() {
         $output = '';
 
@@ -334,7 +344,6 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      *
      * @param \mod_groupquiz\groupquiz_attempt $attempt
      */
-
     public function render_quiz(\mod_groupquiz\groupquiz_attempt $attempt) {
         $this->setMessage('error', get_string('savereminder', 'groupquiz'));
         $this->showMessage();
@@ -441,6 +450,13 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
         return $output;
     }
 
+    /**
+     * Build the HTML for the user who last responded to a question.
+     *
+     * @param int $qnum The slot number of the question.
+     * @param \mod_groupquiz\groupquiz_attempt $attempt The attempt the question belongs to.
+     * @return string The HTML.
+     */
     public function render_user($qnum, $attempt) {
         global $DB, $OUTPUT;
 
@@ -513,7 +529,6 @@ class mod_groupquiz_renderer extends plugin_renderer_base {
      * @param \mod_groupquiz\groupquiz_attempt $attempt
      * @throws moodle_exception throws exception when invalid question on the attempt is found
      */
-
     public function init_quiz_js($attempt) {
         global $USER, $CFG;
 
@@ -750,8 +765,13 @@ EOD;
         return $output;
     }
 
-    /** End attempt view rendering **/
+    // End attempt view rendering.
 
+    /**
+     * Build the HTML for the quiz introduction.
+     *
+     * @return string The HTML, or an empty string when the introduction is blank.
+     */
     public function quiz_intro() {
         if (html_is_blank($this->rtq->getRTQ()->intro)) {
             return '';
@@ -764,6 +784,9 @@ EOD;
         return $output;
     }
 
+    /**
+     * Output the grade of the current user.
+     */
     public function render_grade() {
         global $USER;
 
@@ -784,6 +807,9 @@ EOD;
         echo html_writer::end_div();
     }
 
+    /**
+     * Output the button that returns to the quiz view page.
+     */
     public function render_return_button() {
         $output = '';
         $params = [
@@ -795,6 +821,12 @@ EOD;
         echo $output;
     }
 
+    /**
+     * Build the HTML for the countdown timer of the attempt.
+     *
+     * @param \mod_groupquiz\groupquiz_attempt $attemptobj The attempt being timed.
+     * @return string|null The HTML, or nothing when the quiz has no time limit or the attempt is not in progress.
+     */
     public function countdown_timer($attemptobj) {
         $output = '';
 

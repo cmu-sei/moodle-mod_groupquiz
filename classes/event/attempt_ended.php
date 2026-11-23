@@ -38,6 +38,9 @@ namespace mod_groupquiz\event;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Event triggered when an attempt is ended.
+ */
 class attempt_ended extends \core\event\base {
     /**
      * Init method.

@@ -41,11 +41,17 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * A group's attempt at a group quiz, wrapping the attempt record and its question usage.
+ */
 class groupquiz_attempt {
-    /** Constants for the status of the attempt */
+    /** @var string Status of an attempt that has not started. */
     const NOTSTARTED = 'notstarted';
+    /** @var string Status of an attempt that is in progress. */
     const INPROGRESS = 'inprogress';
+    /** @var string Status of an attempt that was abandoned. */
     const ABANDONED = 'abandoned';
+    /** @var string Status of an attempt that is finished. */
     const FINISHED = 'finished';
 
     /** @var int The userstop value recorded when the time limit, not a member, closed the attempt. */
@@ -246,6 +252,8 @@ class groupquiz_attempt {
     }
 
     /**
+     * Get the number of tries left for a question.
+     *
      * @param int $slotnum The slot number to check
      * @param int $tottries The total tries
      *

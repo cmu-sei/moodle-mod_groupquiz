@@ -37,6 +37,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Base class for the group quiz reports; holds the quiz the report is for.
+ */
 class groupquiz_report_base {
     /**
      * @var \mod_groupquiz\groupquiz $active quiz
@@ -44,6 +47,11 @@ class groupquiz_report_base {
     protected $groupquiz;
 
 
+    /**
+     * Create the report.
+     *
+     * @param \mod_groupquiz\groupquiz $groupquiz The quiz the report is for.
+     */
     public function __construct(\mod_groupquiz\groupquiz $groupquiz) {
         $this->groupquiz = $groupquiz;
     }

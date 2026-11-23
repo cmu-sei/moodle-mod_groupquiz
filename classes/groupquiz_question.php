@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * A question that is part of a group quiz, with its position and points.
+ */
 class groupquiz_question {
     /** @var int $id The RTQ question id */
     protected $id;

@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Question bank condition that only lists questions of the question types enabled for group quizzes.
+ *
  * @package   mod_groupquiz
  * @copyright 2020 Carnegie Mellon University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -33,7 +35,9 @@ DM20-0197
  */
 
 namespace mod_groupquiz;
+
 use core_question\bank\search\condition;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -58,10 +62,20 @@ class groupquiz_disabled_condition extends condition {
         $this->params = $params;
     }
 
+    /**
+     * Get the SQL for the condition.
+     *
+     * @return string The SQL fragment.
+     */
     public function where() {
         return $this->where;
     }
 
+    /**
+     * Get the parameters of the SQL for the condition.
+     *
+     * @return array The parameters.
+     */
     public function params() {
         return $this->params;
     }

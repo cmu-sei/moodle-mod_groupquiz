@@ -40,6 +40,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * The group quiz object: the quiz record with its course, course module, context, questions and attempts.
+ */
 class groupquiz {
     /**
      * @var array $review fields Static review fields to add as options
@@ -86,6 +89,7 @@ class groupquiz {
     protected $pagevars;
 
 
+    /** @var groupquiz_attempt|bool|null The open attempt of the group, once it has been loaded. */
     public $openAttempt;
 
     /**
@@ -394,6 +398,13 @@ class groupquiz {
         return $return;
     }
 
+    /**
+     * Get the attempts of the quiz.
+     *
+     * @param string $open "open", "closed" or "all"; anything else counts as "all".
+     * @param int|null $groupid Only the attempts of this group, or null for every group.
+     * @return groupquiz_attempt[] The attempts keyed by attempt id.
+     */
     public function getall_attempts($open = 'all', $groupid = null) {
         global $DB;
 
@@ -437,6 +448,12 @@ class groupquiz {
         return $attempts;
     }
 
+    /**
+     * Get the open attempt of a group.
+     *
+     * @param int $groupid The group id.
+     * @return groupquiz_attempt|bool The latest attempt that is in progress or not started, or false when there is none.
+     */
     public function get_open_attempt_for_group($groupid) {
 
         // use the getall attempts with the specified options
@@ -452,6 +469,12 @@ class groupquiz {
         return $openAttempt;
     }
 
+    /**
+     * Load the open attempt of a group into this object.
+     *
+     * @param int|null $group The group id.
+     * @return bool True when the group has an open attempt, which is then set as the open attempt.
+     */
     public function get_group_attempt($group) {
         if (is_null($group)) {
             return false;
@@ -464,6 +487,13 @@ class groupquiz {
         return false;
     }
 
+    /**
+     * Load the open attempt of a group, or create a new attempt when there is none.
+     *
+     * @param bool $preview Whether this is a preview.
+     * @param int|null $group The group id.
+     * @return bool True when an attempt is loaded or created, false otherwise.
+     */
     public function init_attempt($preview, $group) {
         global $DB, $USER;
 
@@ -545,10 +575,21 @@ class groupquiz {
         }
     }
 
+    /**
+     * Get the quiz introduction.
+     *
+     * @param int $attemptid The attempt id; not used.
+     * @return string The introduction.
+     */
     public function get_intro($attemptid) {
         return $this->intro;
     }
 
+    /**
+     * Get whether the quiz is open, based on its open and close times.
+     *
+     * @return string "unopen", "open" or "closed".
+     */
     public function get_openclose_state() {
         $state = 'open';
         $timenow = time();
@@ -561,6 +602,13 @@ class groupquiz {
         return $state;
     }
 
+    /**
+     * Check whether marks can be reviewed in the given state.
+     *
+     * @param object $reviewoptions The quiz review options.
+     * @param string $state The open or closed state of the quiz.
+     * @return bool True when marks can be reviewed.
+     */
     public function canreviewmarks($reviewoptions, $state) {
         $canreviewmarks = false;
         if ($state == 'open') {
@@ -575,6 +623,13 @@ class groupquiz {
         return  $canreviewmarks;
     }
 
+    /**
+     * Check whether the attempt can be reviewed in the given state.
+     *
+     * @param object $reviewoptions The quiz review options.
+     * @param string $state The open or closed state of the quiz.
+     * @return bool True when the attempt can be reviewed.
+     */
     public function canreviewattempt($reviewoptions, $state) {
         $canreviewattempt = false;
         if ($state == 'open') {

@@ -39,6 +39,11 @@ defined('MOODLE_INTERNAL') || die;
   * Define the complete groupquiz structure for backup, with file and id annotations
   */
 class backup_groupquiz_activity_structure_step extends backup_questions_activity_structure_step {
+    /**
+     * Define the structure of the backup.
+     *
+     * @return backup_nested_element The activity structure.
+     */
     protected function define_structure() {
 
         $userinfo = $this->get_setting_value('userinfo');

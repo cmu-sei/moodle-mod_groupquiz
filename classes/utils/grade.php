@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Grading helper that calculates grades for group quiz attempts and sends them to the gradebook.
+ */
 class grade {
     /** @var \mod_groupquiz\groupquiz */
     protected $rtq;
@@ -125,10 +128,10 @@ class grade {
         $attempts = $this->rtq->getall_attempts($open = 'closed', $attempt->forgroupid);
 
         // check grading methods
-        if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT) {
+        if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::GROUPQUIZ_FIRSTATTEMPT) {
             // only grading first attempts.
             return $this->process_attempts([reset($attempts)], $attempt->forgroupid);
-        } else if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::groupquiz_LASTATTEMPT) {
+        } else if ($this->rtq->getRTQ()->grademethod == \mod_groupquiz\utils\scaletypes::GROUPQUIZ_LASTATTEMPT) {
             // only grading last attempts.
 
             return $this->process_attempts([end($attempts)], $attempt->forgroupid);
@@ -230,18 +233,18 @@ class grade {
      */
     protected function apply_grading_method($grades) {
         switch ($this->rtq->getRTQ()->grademethod) {
-            case \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT:
+            case \mod_groupquiz\utils\scaletypes::GROUPQUIZ_FIRSTATTEMPT:
                 // take the first record (as there should only be one since it was filtered out earlier)
                 reset($grades);
                 return current($grades);
 
                 break;
-            case \mod_groupquiz\utils\scaletypes::groupquiz_LASTATTEMPT:
+            case \mod_groupquiz\utils\scaletypes::GROUPQUIZ_LASTATTEMPT:
                 // take the last grade (there should only be one, as the last session was filtered out earlier)
                 return end($grades);
 
                 break;
-            case \mod_groupquiz\utils\scaletypes::groupquiz_ATTEMPTAVERAGE:
+            case \mod_groupquiz\utils\scaletypes::GROUPQUIZ_ATTEMPTAVERAGE:
                 // average the grades
                 $gradecount = count($grades);
                 $gradetotal = 0;
@@ -251,7 +254,7 @@ class grade {
                 return $gradetotal / $gradecount;
 
                 break;
-            case \mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE:
+            case \mod_groupquiz\utils\scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE:
                 // find the highest grade
                 $highestgrade = 0;
                 foreach ($grades as $grade) {
@@ -421,6 +424,11 @@ class grade {
         }
     }
 
+    /**
+     * Update the gradebook for the members of the group an attempt belongs to.
+     *
+     * @param object $attempt The attempt.
+     */
     public function update_gradebook_for_group($attempt) {
         $forgroupid = $attempt->forgroupid;
         $groupusers = $this->rtq->get_groupmanager()->get_group_members($forgroupid);

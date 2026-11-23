@@ -40,9 +40,15 @@ use mod_groupquiz\traits\renderer_base;
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Renderer for the group quiz reports page header.
+ */
 class report_renderer extends \plugin_renderer_base {
     use renderer_base;
 
+    /**
+     * Output the page header and the report selector.
+     */
     public function report_header() {
 
         $this->base_header('reports');

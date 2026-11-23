@@ -113,6 +113,11 @@ class edit_page_viewed extends \core\event\base {
         }
     }
 
+    /**
+     * Get the mapping of the other data for backup and restore.
+     *
+     * @return array The mapping.
+     */
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['groupquizid'] = ['db' => 'groupquiz', 'restore' => 'groupquiz'];

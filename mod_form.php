@@ -39,12 +39,25 @@ defined('MOODLE_INTERNAL') || die;
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
+/**
+ * Settings form for adding or editing a group quiz.
+ */
 class mod_groupquiz_mod_form extends moodleform_mod {
     /** @var array options to be used with date_time_selector fields in the quiz. */
     public static $datefieldoptions = ['optional' => true];
-    protected static $reviewfields = []; // Initialised in the constructor.
+    /** @var array The review settings and the language string of each; initialised in the constructor. */
+    protected static $reviewfields = [];
+    /** @var array The feedback records of the quiz. */
     protected $_feedbacks;
 
+    /**
+     * Create the form.
+     *
+     * @param stdClass $current The current instance data.
+     * @param int $section The section number.
+     * @param stdClass|null $cm The course module.
+     * @param stdClass $course The course.
+     */
     public function __construct($current, $section, $cm, $course) {
         self::$reviewfields = [
             'attempt'          => ['theattempt', 'groupquiz'],
@@ -59,6 +72,9 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         parent::__construct($current, $section, $cm, $course);
     }
 
+    /**
+     * Define the form.
+     */
     protected function definition() {
         global $COURSE, $CFG;
         $groupquizconfig = get_config('groupquiz');
@@ -263,6 +279,13 @@ class mod_groupquiz_mod_form extends moodleform_mod {
     }
 
 
+    /**
+     * Split a stored review setting into the form field for one time.
+     *
+     * @param array $toform The form data, updated in place.
+     * @param string $whenname The suffix of the field names for the time.
+     * @param int $when The bit of the time.
+     */
     protected function preprocessing_review_settings(&$toform, $whenname, $when) {
         foreach (self::$reviewfields as $field => $notused) {
             $fieldname = 'review' . $field;
@@ -272,6 +295,11 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         }
     }
 
+    /**
+     * Prepare the stored data for the form.
+     *
+     * @param array $toform The form data, updated in place.
+     */
     function data_preprocessing(&$toform) {
         if (isset($toform['grade'])) {
             // Convert to a real number, so we don't get 0.0000.
@@ -344,6 +372,11 @@ class mod_groupquiz_mod_form extends moodleform_mod {
         }
     }
 
+    /**
+     * Process the submitted data; the group quiz makes no changes.
+     *
+     * @param stdClass $data The submitted data.
+     */
     function data_postprocessing($data) {
     }
 }

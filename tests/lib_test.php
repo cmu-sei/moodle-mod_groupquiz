@@ -121,13 +121,13 @@ final class lib_test extends \advanced_testcase {
             'course' => $course->id,
             'name' => 'Add instance quiz',
             'grade' => 80,
-            'grademethod' => \mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE,
+            'grademethod' => \mod_groupquiz\utils\scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE,
         ]);
 
         $record = $DB->get_record('groupquiz', ['id' => $instance->id], '*', MUST_EXIST);
         $this->assertSame('Add instance quiz', $record->name);
         $this->assertEquals(80, $record->grade);
-        $this->assertEquals(\mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE, $record->grademethod);
+        $this->assertEquals(\mod_groupquiz\utils\scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE, $record->grademethod);
         $this->assertNotEquals(0, $record->timemodified);
         $this->assertNotEquals(0, $record->timecreated);
 
@@ -536,7 +536,7 @@ final class lib_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $instance = $this->getDataGenerator()->create_module('groupquiz', [
             'course' => $course->id,
-            'grademethod' => \mod_groupquiz\utils\scaletypes::groupquiz_FIRSTATTEMPT,
+            'grademethod' => \mod_groupquiz\utils\scaletypes::GROUPQUIZ_FIRSTATTEMPT,
         ]);
 
         $formdata = clone $instance;
@@ -549,7 +549,7 @@ final class lib_test extends \advanced_testcase {
         $this->assertTrue(groupquiz_update_instance($formdata, null));
         $this->assertDebuggingNotCalled();
 
-        $formdata->grademethod = \mod_groupquiz\utils\scaletypes::groupquiz_HIGHESTATTEMPTGRADE;
+        $formdata->grademethod = \mod_groupquiz\utils\scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE;
         $this->assertTrue(groupquiz_update_instance($formdata, null));
         $this->assertDebuggingCalled('cannot find group');
     }

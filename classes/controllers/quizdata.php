@@ -38,6 +38,9 @@ This Software includes and/or makes use of the following Third-Party Software su
 DM20-0197
  */
 
+/**
+ * Controller for the callbacks the quiz page's JavaScript makes to save question responses.
+ */
 class quizdata {
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;
