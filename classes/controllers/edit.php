@@ -276,7 +276,13 @@ class edit {
     protected function list_questions() {
 
         $this->groupquizhasattempts = groupquiz_has_attempts($this->groupquiz->getRTQ()->id);
-        $questionbankview = new \mod_groupquiz\question\bank\custom_view($this->contexts, $this->pageurl, $this->groupquiz->getCourse(), $this->groupquiz->getCM(), $this->pagevars);
+        $questionbankview = new \mod_groupquiz\question\bank\custom_view(
+            $this->contexts,
+            $this->pageurl,
+            $this->groupquiz->getCourse(),
+            $this->groupquiz->getCM(),
+            $this->pagevars
+        );
 
         $questions = $this->groupquiz->get_questionmanager()->get_questions();
 

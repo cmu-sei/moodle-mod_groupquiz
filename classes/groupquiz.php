@@ -383,7 +383,13 @@ class groupquiz {
                 // create reflection for it to validate action and params as well as implementing
                 $reflection = new \ReflectionClass('\mod_groupquiz\questionmodifiers\\' . $type);
                 if (!$reflection->implementsInterface('\mod_groupquiz\questionmodifiers\ibasequestionmodifier')) {
-                    throw new \moodle_exception('invlidimplementation', 'groupquiz', null, null, 'You question modifier does not implement the base modifier interface... ' . $type);
+                    throw new \moodle_exception(
+                        'invlidimplementation',
+                        'groupquiz',
+                        null,
+                        null,
+                        'You question modifier does not implement the base modifier interface... ' . $type
+                    );
                 } else {
                     $rmethod = $reflection->getMethod($action);
                     $fparams = array_slice($params, 2);

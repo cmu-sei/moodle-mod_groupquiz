@@ -96,8 +96,12 @@ class question_manually_graded extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', ['attempt' => $this->other['attemptid'],
-                                                                            'slot'    => $this->other['slot'], 'sessionid' => $this->other['sessionid'], 'action' => 'savecomment']);
+        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', [
+            'attempt' => $this->other['attemptid'],
+            'slot' => $this->other['slot'],
+            'sessionid' => $this->other['sessionid'],
+            'action' => 'savecomment',
+        ]);
     }
 
 

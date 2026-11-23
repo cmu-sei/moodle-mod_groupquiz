@@ -408,7 +408,6 @@ class questionmanager {
 
         /** @var \mod_groupquiz\groupquiz_question $qbankquestion */
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-
             if ($qbankquestion->getQuestion()->id == $qubaquestion->id) {
                 // set the slot on the qbank question as this is the actual id we're using for question number
                 $qbankquestion->set_slot($slots[$slotnum]);
@@ -436,7 +435,6 @@ class questionmanager {
         $questionids = [];
         /** @var groupquiz_question $qbankquestion */
         foreach ($this->qbankOrderedQuestions as $qbankquestion) {
-
             if (!in_array($qbankquestion->getQuestion()->id, $questionids)) {
                 $questionids[] = $qbankquestion->getQuestion()->id;
             }
