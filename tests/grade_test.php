@@ -97,19 +97,19 @@ final class grade_test extends \advanced_testcase {
 
         $this->assertEquals(
             30,
-            $this->apply_grading_method(scaletypes::GROUPQUIZ_FIRSTATTEMPT, $grades)
+            $this->apply_grading_method(scaletypes::groupquiz_FIRSTATTEMPT, $grades)
         );
         $this->assertEquals(
             60,
-            $this->apply_grading_method(scaletypes::GROUPQUIZ_LASTATTEMPT, $grades)
+            $this->apply_grading_method(scaletypes::groupquiz_LASTATTEMPT, $grades)
         );
         $this->assertEquals(
             60,
-            $this->apply_grading_method(scaletypes::GROUPQUIZ_ATTEMPTAVERAGE, $grades)
+            $this->apply_grading_method(scaletypes::groupquiz_ATTEMPTAVERAGE, $grades)
         );
         $this->assertEquals(
             90,
-            $this->apply_grading_method(scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE, $grades)
+            $this->apply_grading_method(scaletypes::groupquiz_HIGHESTATTEMPTGRADE, $grades)
         );
     }
 
@@ -130,7 +130,7 @@ final class grade_test extends \advanced_testcase {
     public function test_highest_attempt_with_a_single_grade(): void {
         $this->assertEquals(
             25,
-            $this->apply_grading_method(scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE, [25])
+            $this->apply_grading_method(scaletypes::groupquiz_HIGHESTATTEMPTGRADE, [25])
         );
     }
 
@@ -140,10 +140,10 @@ final class grade_test extends \advanced_testcase {
     public function test_scaletypes(): void {
         $types = scaletypes::get_types();
         $this->assertSame([
-            'firstattempt' => scaletypes::GROUPQUIZ_FIRSTATTEMPT,
-            'lastattempt' => scaletypes::GROUPQUIZ_LASTATTEMPT,
-            'average' => scaletypes::GROUPQUIZ_ATTEMPTAVERAGE,
-            'highestgrade' => scaletypes::GROUPQUIZ_HIGHESTATTEMPTGRADE,
+            'firstattempt' => scaletypes::groupquiz_FIRSTATTEMPT,
+            'lastattempt' => scaletypes::groupquiz_LASTATTEMPT,
+            'average' => scaletypes::groupquiz_ATTEMPTAVERAGE,
+            'highestgrade' => scaletypes::groupquiz_HIGHESTATTEMPTGRADE,
         ], $types);
 
         $displaytypes = scaletypes::get_display_types();

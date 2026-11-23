@@ -168,7 +168,9 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
     }
 
     /**
-     * Restore an attempt, once its question usage has been restored.
+     * Hold an attempt from the backup until its question usage has been restored.
+     *
+     * The attempt is saved by inform_new_usage_id(); an attempt of a user that cannot be mapped is skipped.
      *
      * @param array $data The record from the backup.
      */

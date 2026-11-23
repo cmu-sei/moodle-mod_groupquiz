@@ -50,13 +50,13 @@ DM20-0197
  */
 class scaletypes {
     /** @var int Grading scale type: the grade of the first attempt. */
-    const GROUPQUIZ_FIRSTATTEMPT = 1;
+    const groupquiz_FIRSTATTEMPT = 1; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     /** @var int Grading scale type: the grade of the last attempt. */
-    const GROUPQUIZ_LASTATTEMPT = 2;
+    const groupquiz_LASTATTEMPT = 2; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     /** @var int Grading scale type: the average of the attempt grades. */
-    const GROUPQUIZ_ATTEMPTAVERAGE = 3;
+    const groupquiz_ATTEMPTAVERAGE = 3; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
     /** @var int Grading scale type: the highest attempt grade. */
-    const GROUPQUIZ_HIGHESTATTEMPTGRADE = 4;
+    const groupquiz_HIGHESTATTEMPTGRADE = 4; // phpcs:ignore Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase
 
 
     /**
@@ -67,10 +67,10 @@ class scaletypes {
     public static function get_types() {
 
         return [
-            'firstattempt' => self::GROUPQUIZ_FIRSTATTEMPT,
-            'lastattempt'  => self::GROUPQUIZ_LASTATTEMPT,
-            'average'      => self::GROUPQUIZ_ATTEMPTAVERAGE,
-            'highestgrade' => self::GROUPQUIZ_HIGHESTATTEMPTGRADE,
+            'firstattempt' => self::groupquiz_FIRSTATTEMPT,
+            'lastattempt'  => self::groupquiz_LASTATTEMPT,
+            'average'      => self::groupquiz_ATTEMPTAVERAGE,
+            'highestgrade' => self::groupquiz_HIGHESTATTEMPTGRADE,
         ];
     }
 
@@ -83,10 +83,10 @@ class scaletypes {
     public static function get_display_types() {
 
         return [
-            self::GROUPQUIZ_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
-            self::GROUPQUIZ_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
-            self::GROUPQUIZ_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
-            self::GROUPQUIZ_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
+            self::groupquiz_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
+            self::groupquiz_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
+            self::groupquiz_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
+            self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
         ];
     }
 }

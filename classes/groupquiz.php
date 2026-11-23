@@ -464,7 +464,7 @@ class groupquiz {
      * Get the open attempt of a group.
      *
      * @param int $groupid The group id.
-     * @return groupquiz_attempt|bool The latest attempt that is in progress or not started, or false when there is none.
+     * @return groupquiz_attempt|bool The last attempt in the list that is in progress or not started, or false when there is none.
      */
     public function get_open_attempt_for_group($groupid) {
 
@@ -485,7 +485,8 @@ class groupquiz {
      * Load the open attempt of a group into this object.
      *
      * @param int|null $group The group id.
-     * @return bool True when the group has an open attempt, which is then set as the open attempt.
+     * @return bool False when the group is null. Otherwise true, with the open attempt set to the open attempt
+     *              of the group, or to false when the group has none.
      */
     public function get_group_attempt($group) {
         if (is_null($group)) {
@@ -591,7 +592,7 @@ class groupquiz {
      * Get the quiz introduction.
      *
      * @param int $attemptid The attempt id; not used.
-     * @return string The introduction.
+     * @return mixed The value of the intro property.
      */
     public function get_intro($attemptid) {
         return $this->intro;
