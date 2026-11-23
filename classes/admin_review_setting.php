@@ -125,7 +125,7 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
     /**
      * Combine the submitted checkboxes into one bitmask.
      *
-     * @param array|int $data The submitted data, or an existing value.
+     * @param array|int|null $data The submitted checkbox values keyed by time bit, or an empty value.
      * @return int The bitmask.
      */
     protected function normalise_data($data) {

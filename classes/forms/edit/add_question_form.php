@@ -77,7 +77,6 @@ class add_question_form extends \moodleform {
 
         $mform = $this->_form;
         $rtq = $this->_customdata['rtq'];
-        ;
 
         $mform->addElement('static', 'questionid', get_string('question', 'groupquiz'), $this->_customdata['questionname']);
 
