@@ -64,7 +64,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_update_grades')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_add_question_reference')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_delete_question_references')]
-class lib_test extends \advanced_testcase {
+final class lib_test extends \advanced_testcase {
     /**
      * Feature support is what the course module chooser and the gradebook read; a flipped answer here
      * silently changes how the activity behaves everywhere.

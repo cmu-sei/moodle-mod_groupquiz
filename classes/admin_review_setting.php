@@ -22,7 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 defined('MOODLE_INTERNAL') || die();
 
 
@@ -58,7 +57,7 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
     const AFTER_CLOSE       = 0x00010;
 
     /**
-     * @var boolean|null forced checked / disabled attributes for the during time.
+     * @var bool|null forced checked / disabled attributes for the during time.
      */
     protected $duringstate;
 
@@ -68,7 +67,7 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
      * @return array
      */
     public static function fields() {
-        return array(
+        return [
             'attempt'          => get_string('theattempt', 'groupquiz'),
             'correctness'      => get_string('whethercorrect', 'question'),
             'marks'            => get_string('marks', 'question'),
@@ -77,7 +76,7 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
             'rightanswer'      => get_string('rightanswer', 'question'),
             'overallfeedback'  => get_string('overallfeedback', 'groupquiz'),
             'manualcomment'    => get_string('manualcomment', 'groupquiz'),
-        );
+        ];
     }
 
     /**
@@ -90,8 +89,13 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
      * @param mixed $defaultsetting string or array depending on implementation
      * @param bool|null $duringstate
      */
-    public function __construct($name, $visiblename, $description,
-            $defaultsetting, $duringstate = null) {
+    public function __construct(
+        $name,
+        $visiblename,
+        $description,
+        $defaultsetting,
+        $duringstate = null
+    ) {
         $this->duringstate = $duringstate;
         parent::__construct($name, $visiblename, $description, $defaultsetting);
     }
@@ -110,12 +114,12 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
      * @return array an array of time constant => lang string.
      */
     protected static function times() {
-        return array(
+        return [
             self::DURING            => get_string('reviewduring', 'groupquiz'),
             self::IMMEDIATELY_AFTER => get_string('reviewimmediately', 'groupquiz'),
             self::LATER_WHILE_OPEN  => get_string('reviewopen', 'groupquiz'),
             self::AFTER_CLOSE       => get_string('reviewclosed', 'groupquiz'),
-        );
+        ];
     }
 
     protected function normalise_data($data) {
@@ -153,7 +157,7 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
         $return = '<div class="group"><input type="hidden" name="' .
                     $this->get_full_name() . '[' . self::DURING . ']" value="0" />';
         foreach (self::times() as $timemask => $namestring) {
-            $id = $this->get_id(). '_' . $timemask;
+            $id = $this->get_id() . '_' . $timemask;
             $state = '';
             if ($data & $timemask) {
                 $state = 'checked="checked" ';
@@ -171,7 +175,15 @@ class mod_groupquiz_admin_review_setting extends admin_setting {
         }
         $return .= "</div>\n";
 
-        return format_admin_setting($this, $this->visiblename, $return,
-                $this->description, true, '', get_string('everythingon', 'groupquiz'), $query);
+        return format_admin_setting(
+            $this,
+            $this->visiblename,
+            $return,
+            $this->description,
+            true,
+            '',
+            get_string('everythingon', 'groupquiz'),
+            $query
+        );
     }
 }

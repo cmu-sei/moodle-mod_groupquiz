@@ -51,5 +51,3 @@ $quizinfo = new \mod_groupquiz\controllers\quizinfo();
 
 $quizinfo->setup_page();
 $quizinfo->handle_request();
-
-

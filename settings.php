@@ -35,30 +35,37 @@ DM20-0197
 // This line protects the file from being accessed by a URL directly.
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/mod/groupquiz/locallib.php');
+require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
 
 // Create the quiz settings page.
 $pagetitle = get_string('modulename', 'groupquiz');
 $groupsettings = new admin_settingpage('modsettinggroupquiz', $pagetitle, 'moodle/site:config');
 
 if ($ADMIN->fulltree) {
-    //--- general settings -----------------------------------------------------------------------------------
+    // --- general settings -----------------------------------------------------------------------------------
 
     // Introductory explanation that all the settings are defaults for the add quiz form.
     $groupsettings->add(new admin_setting_heading('groupquizintro', '', get_string('configintro', 'groupquiz')));
 
     // Time limit.
-    $groupsettings->add(new admin_setting_configduration_with_advanced('groupquiz/timelimit',
-            get_string('timelimit', 'groupquiz'), get_string('configtimelimitsec', 'groupquiz'),
-            array('value' => '0', 'adv' => false), 60));
+    $groupsettings->add(new admin_setting_configduration_with_advanced(
+        'groupquiz/timelimit',
+        get_string('timelimit', 'groupquiz'),
+        get_string('configtimelimitsec', 'groupquiz'),
+        ['value' => '0', 'adv' => false],
+        60
+    ));
 
     // Shuffle within questions.
-    $groupsettings->add(new admin_setting_configcheckbox_with_advanced('groupquiz/shuffleanswers',
-            get_string('shufflewithin', 'groupquiz'), get_string('configshufflewithin', 'groupquiz'),
-            array('value' => 1, 'adv' => false)));
+    $groupsettings->add(new admin_setting_configcheckbox_with_advanced(
+        'groupquiz/shuffleanswers',
+        get_string('shufflewithin', 'groupquiz'),
+        get_string('configshufflewithin', 'groupquiz'),
+        ['value' => 1, 'adv' => false]
+    ));
 
-    $choices = array();
-    $defaults = array();
+    $choices = [];
+    $defaults = [];
     foreach (question_bank::get_creatable_qtypes() as $qtypename => $qtype) {
         $fullpluginname = $qtype->plugin_name();
         $qtypepluginname = explode('_', $fullpluginname)[1];
@@ -71,17 +78,24 @@ if ($ADMIN->fulltree) {
         get_string('enabledquestiontypes', 'groupquiz'),
         get_string('enabledquestiontypes_info', 'groupquiz'),
         $defaults,
-        $choices));
+        $choices
+    ));
 
     $options = groupquiz_get_user_image_options();
-    $settings->add(new admin_setting_configselect('groupquiz/showuserpicture',
+    $settings->add(new admin_setting_configselect(
+        'groupquiz/showuserpicture',
         get_string('showuserpicture', 'groupquiz'),
-	get_string('showuserpicture_help', 'groupquiz'),
-	1, $options));
+        get_string('showuserpicture_help', 'groupquiz'),
+        1,
+        $options
+    ));
 
     // Review options.
-    $settings->add(new admin_setting_heading('reviewheading',
-            get_string('reviewoptionsheading', 'groupquiz'), ''));
+    $settings->add(new admin_setting_heading(
+        'reviewheading',
+        get_string('reviewoptionsheading', 'groupquiz'),
+        ''
+    ));
     foreach (mod_groupquiz_admin_review_setting::fields() as $field => $name) {
         $default = mod_groupquiz_admin_review_setting::all_on();
         $forceduring = null;
@@ -91,8 +105,12 @@ if ($ADMIN->fulltree) {
             $default = $default ^ mod_groupquiz_admin_review_setting::DURING;
             $forceduring = false;
         }
-        $settings->add(new mod_groupquiz_admin_review_setting('groupquiz/review' . $field,
-                $name, '', $default, $forceduring));
+        $settings->add(new mod_groupquiz_admin_review_setting(
+            'groupquiz/review' . $field,
+            $name,
+            '',
+            $default,
+            $forceduring
+        ));
     }
-
 }

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - https://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 //
 // Capability definitions for the groupquiz module.
 //
@@ -14,19 +28,19 @@
 //
 // It is important that capability names are unique. The naming convention
 // for capabilities that are specific to modules and blocks is as follows:
-//   [mod/block]/<component_name>:<capabilityname>
+// [mod/block]/<component_name>:<capabilityname>
 //
 // component_name should be the same as the directory name of the mod or block.
 //
 // Core moodle capabilities are defined thus:
-//    moodle/<capabilityclass>:<capabilityname>
+// moodle/<capabilityclass>:<capabilityname>
 //
 // Examples: mod/forum:viewpost
-//           block/recent_activity:view
-//           moodle/site:deleteuser
+// block/recent_activity:view
+// moodle/site:deleteuser
 //
 // The variable name for the capability definitions array follows the format
-//   $<componenttype>_<component_name>_capabilities
+// $<componenttype>_<component_name>_capabilities
 //
 // For the core capabilities, the variable is $moodle_capabilities.
 
@@ -55,11 +69,11 @@ require_once("lib.php");
 
 $id = required_param('id', PARAM_INT);   // course
 
-if (!$course = $DB->get_record('course', array('id' => $id))) {
+if (!$course = $DB->get_record('course', ['id' => $id])) {
     error("Course ID is incorrect");
 }
 
-$PAGE->set_url(new moodle_url('/mod/groupquiz/index.php', array('id' => $course->id)));
+$PAGE->set_url(new moodle_url('/mod/groupquiz/index.php', ['id' => $course->id]));
 require_course_login($course);
 $PAGE->set_pagelayout('incourse');
 
@@ -71,7 +85,7 @@ $strgroupquiz = get_string("modulename", "groupquiz");
 
 $PAGE->navbar->add($strgroupquizzes);
 $PAGE->set_title(strip_tags($course->shortname . ': ' . $strgroupquizzes));
-//$PAGE->set_heading($course->fullname);
+// $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 /// Get all the appropriate data
@@ -91,30 +105,30 @@ $strtopic = get_string("topic");
 $table = new html_table();
 
 if ($course->format == "weeks") {
-    $table->head = array($strweek, $strname);
-    $table->align = array("center", "left");
+    $table->head = [$strweek, $strname];
+    $table->align = ["center", "left"];
 } else if ($course->format == "topics") {
-    $table->head = array($strtopic, $strname);
-    $table->align = array("center", "left");
+    $table->head = [$strtopic, $strname];
+    $table->align = ["center", "left"];
 } else {
-    $table->head = array($strname);
-    $table->align = array("left", "left");
+    $table->head = [$strname];
+    $table->align = ["left", "left"];
 }
 
 foreach ($groupquizs as $groupquiz) {
-    $url = new moodle_url('/mod/groupquiz/view.php', array('id' => $groupquiz->coursemodule));
+    $url = new moodle_url('/mod/groupquiz/view.php', ['id' => $groupquiz->coursemodule]);
     if (!$groupquiz->visible) {
-        //Show dimmed if the mod is hidden
+        // Show dimmed if the mod is hidden
         $link = '<a class="dimmed" href="' . $url . '">' . $groupquiz->name . '</a>';
     } else {
-        //Show normal if the mod is visible
+        // Show normal if the mod is visible
         $link = '<a href="' . $url . '">' . $groupquiz->name . '</a>';
     }
 
     if ($course->format == 'weeks' or $course->format == 'topics') {
-        $table->data[] = array($groupquiz->section, $link);
+        $table->data[] = [$groupquiz->section, $link];
     } else {
-        $table->data[] = array($link);
+        $table->data[] = [$link];
     }
 }
 
@@ -123,4 +137,3 @@ echo html_writer::table($table);
 /// Finish the page
 
 echo $OUTPUT->footer();
-

@@ -76,7 +76,7 @@ class edit {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $pageurl = new \moodle_url($baseurl);
         $pageurl->remove_all_params();
@@ -90,11 +90,11 @@ class edit {
         // get necessary records from the DB.
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->cm = $cm;
@@ -106,9 +106,9 @@ class edit {
         } else {
             $this->context = \context_module::instance($cm->id);
         }
-        
+
         // set up question lib.
-        list($this->pageurl, $this->contexts, $cmid, $cm, $quiz, $pagevars) =
+        [$this->pageurl, $this->contexts, $cmid, $cm, $quiz, $pagevars] =
             question_edit_setup('editq', '/mod/groupquiz/edit.php');
 
         $PAGE->set_url($this->pageurl);
@@ -131,9 +131,8 @@ class edit {
     public function handle_action() {
         global $PAGE, $DB;
 
-        //TODO determine id we need to prevent reorder
+        // TODO determine id we need to prevent reorder
         switch ($this->action) {
-
             case 'dragdrop': // this is a javascript callack case for the drag and drop of questions using ajax.
                 $jsonlib = new \mod_groupquiz\utils\jsonlib();
 
@@ -155,7 +154,6 @@ class edit {
                 break;
 
             case 'moveup':
-
                 $questionid = required_param('questionid', PARAM_INT);
 
                 if ($this->groupquiz->get_questionmanager()->move_question('up', $questionid)) {
@@ -173,7 +171,6 @@ class edit {
 
                 break;
             case 'movedown':
-
                 $questionid = required_param('questionid', PARAM_INT);
 
                 if ($this->groupquiz->get_questionmanager()->move_question('down', $questionid)) {
@@ -191,14 +188,12 @@ class edit {
 
                 break;
             case 'addquestion':
-
                 $questionid = required_param('questionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->add_question($questionid);
 
                 break;
 
             case 'addquestionlist':
-
                 require_sesskey();
 
                 // The bank posts one q<questionid> field per ticked question.
@@ -220,13 +215,11 @@ class edit {
 
                 break;
             case 'editquestionlist':
-
                 $questionid = required_param('rtqquestionid', PARAM_INT);
                 $this->groupquiz->get_questionmanager()->edit_question($questionid);
 
                 break;
             case 'deletequestion':
-
                 $questionid = required_param('questionid', PARAM_INT);
                 if ($this->groupquiz->get_questionmanager()->delete_question($questionid)) {
                     $type = 'success';
@@ -285,8 +278,5 @@ class edit {
         if ($addquestionlist) {
             $this->action = 'addquestionlist';
         }
-
     }
-
 }
-

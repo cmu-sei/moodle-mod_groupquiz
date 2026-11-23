@@ -53,7 +53,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 #[\PHPUnit\Framework\Attributes\CoversFunction('xmldb_groupquiz_upgrade')]
-class upgrade_test extends \advanced_testcase {
+final class upgrade_test extends \advanced_testcase {
     /**
      * The 2026060200 step moved attempt state from the numeric codes of the original schema to the string
      * values core quiz uses. Sites that skip it read every attempt as being in an unknown state.

@@ -48,7 +48,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 #[\PHPUnit\Framework\Attributes\CoversNothing]
-class lang_strings_test extends \basic_testcase {
+final class lang_strings_test extends \basic_testcase {
     /**
      * Strings core requires of every activity module: without them the module chooser, the activity
      * header and the capability overview render placeholders.

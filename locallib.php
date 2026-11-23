@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -62,20 +61,20 @@ class mod_groupquiz_display_options extends question_display_options {
      * @var integer bits used to indicate various times in relation to a
      * quiz attempt.
      */
-    const DURING =            0x10000;
+    const DURING = 0x10000;
     const IMMEDIATELY_AFTER = 0x01000;
-    const LATER_WHILE_OPEN =  0x00100;
-    const AFTER_CLOSE =       0x00010;
+    const LATER_WHILE_OPEN = 0x00100;
+    const AFTER_CLOSE = 0x00010;
     /**#@-*/
 
     /**
-     * @var boolean if this is false, then the student is not allowed to review
+     * @var bool if this is false, then the student is not allowed to review
      * anything about the attempt.
      */
     public $attempt = true;
 
     /**
-     * @var boolean if this is false, then the student is not allowed to review
+     * @var bool if this is false, then the student is not allowed to review
      * anything about the attempt.
      */
     public $overallfeedback = self::VISIBLE;
@@ -87,21 +86,25 @@ class mod_groupquiz_display_options extends question_display_options {
      * {@link LATER_WHILE_OPEN} or {@link AFTER_CLOSE} constants.
      * @return mod_groupquiz_display_options set up appropriately.
      */
-	// TODO remove if not used
+    // TODO remove if not used
     public static function make_from_groupquiz($groupquiz, $when) {
         $options = new self();
 
         $options->attempt = self::extract($groupquiz->reviewattempt, $when, true, false);
         $options->correctness = self::extract($groupquiz->reviewcorrectness, $when);
-        $options->marks = self::extract($groupquiz->reviewmarks, $when,
-                self::MARK_AND_MAX, self::MAX_ONLY);
+        $options->marks = self::extract(
+            $groupquiz->reviewmarks,
+            $when,
+            self::MARK_AND_MAX,
+            self::MAX_ONLY
+        );
         $options->feedback = self::extract($groupquiz->reviewspecificfeedback, $when);
         $options->generalfeedback = self::extract($groupquiz->reviewgeneralfeedback, $when);
         $options->rightanswer = self::extract($groupquiz->reviewrightanswer, $when);
         $options->overallfeedback = self::extract($groupquiz->reviewoverallfeedback, $when);
         $options->numpartscorrect = $options->feedback;
-	$options->manualcomment = $options->feedback;
-	//$options->manualcomment = self::extract($groupquiz->reviewmanualcomment, $when);
+        $options->manualcomment = $options->feedback;
+        // $options->manualcomment = self::extract($groupquiz->reviewmanualcomment, $when);
 
         if ($groupquiz->questiondecimalpoints != -1) {
             $options->markdp = $groupquiz->questiondecimalpoints;
@@ -112,8 +115,12 @@ class mod_groupquiz_display_options extends question_display_options {
         return $options;
     }
 
-    protected static function extract($bitmask, $bit,
-            $whenset = self::VISIBLE, $whennotset = self::HIDDEN) {
+    protected static function extract(
+        $bitmask,
+        $bit,
+        $whenset = self::VISIBLE,
+        $whennotset = self::HIDDEN
+    ) {
         if ($bitmask & $bit) {
             return $whenset;
         } else {
@@ -131,8 +138,7 @@ function groupquiz_has_attempts($groupquizid) {
     if (empty($groupquizid)) {
         return false;
     }
-    return $DB->record_exists('groupquiz_attempts', array('groupquizid' => $groupquizid));
-
+    return $DB->record_exists('groupquiz_attempts', ['groupquizid' => $groupquizid]);
 }
 
 /**
@@ -162,13 +168,12 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
     $transaction = $DB->start_delegated_transaction();
 
     // Update the quiz table.
-    $DB->set_field('groupquiz', 'grade', $newgrade, array('id' => $groupquiz->instance));
+    $DB->set_field('groupquiz', 'grade', $newgrade, ['id' => $groupquiz->instance]);
 
     if ($oldgrade < 1) {
         // If the old grade was zero, we cannot rescale, we have to recompute.
         // We also recompute if the old grade was too small to avoid underflow problems.
-        //quiz_update_all_final_grades($quiz);
-
+        // quiz_update_all_final_grades($quiz);
     } else {
         // We can rescale the grades efficiently.
         $timemodified = time();
@@ -176,12 +181,12 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
                 UPDATE {groupquiz_grades}
                 SET grade = ? * grade, timemodified = ?
                 WHERE groupquizid = ?
-        ", array($newgrade/$oldgrade, $timemodified, $groupquiz->id));
+        ", [$newgrade / $oldgrade, $timemodified, $groupquiz->id]);
     }
 
     // Update grade item and send all grades to gradebook.
-    //groupquiz_grade_item_update($quiz);
-    //groupquiz_update_grades($quiz);
+    // groupquiz_grade_item_update($quiz);
+    // groupquiz_update_grades($quiz);
 
     $transaction->allow_commit();
     return true;
@@ -197,19 +202,19 @@ function groupquiz_set_grade($newgrade, $groupquiz) {
  * @return string HTML string of the tabs
  */
 function groupquiz_view_tabs($RTQ, $currenttab) {
-    $tabs = array();
-    $row = array();
-    $ingroup = array();
-    $activated = array();
+    $tabs = [];
+    $row = [];
+    $ingroup = [];
+    $activated = [];
 
     if ($RTQ->has_capability('mod/groupquiz:attempt')) {
-        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', array('id' => $RTQ->getCM()->id)), get_string('view', 'groupquiz'));
+        $row[] = new tabobject('view', new moodle_url('/mod/groupquiz/view.php', ['id' => $RTQ->getCM()->id]), get_string('view', 'groupquiz'));
     }
     if ($RTQ->has_capability('mod/groupquiz:editquestions')) {
-        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', array('cmid' => $RTQ->getCM()->id)), get_string('edit', 'groupquiz'));
+        $row[] = new tabobject('edit', new moodle_url('/mod/groupquiz/edit.php', ['cmid' => $RTQ->getCM()->id]), get_string('edit', 'groupquiz'));
     }
     if ($RTQ->has_capability('mod/groupquiz:manage')) {
-        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', array('id' => $RTQ->getCM()->id)), get_string('responses', 'groupquiz'));
+        $row[] = new tabobject('reports', new moodle_url('/mod/groupquiz/reports.php', ['id' => $RTQ->getCM()->id]), get_string('responses', 'groupquiz'));
     }
 
     if ($currenttab == 'view' && count($row) == 1) {
@@ -239,10 +244,10 @@ function groupquiz_view_tabs($RTQ, $currenttab) {
  * @return array string => lang string the options for whether to display the user's picture.
  */
 function groupquiz_get_user_image_options() {
-    return array(
+    return [
         SHOWIMAGE_NONE  => get_string('shownoimage', 'quiz'),
         SHOWIMAGE_SMALL => get_string('showsmallimage', 'quiz'),
-    );
+    ];
 }
 
 /**
@@ -252,19 +257,18 @@ function groupquiz_get_user_image_options() {
 function groupquiz_get_js_module() {
     global $PAGE;
 
-    return array(
+    return [
         'name' => 'mod_groupquiz',
         'fullpath' => '/mod/groupquiz/module.js',
-        'requires' => array('base', 'dom', 'event-delegate', 'event-key',
-                'core_question_engine', 'moodle-core-formchangechecker'),
-        'strings' => array(
-            array('cancel', 'moodle'),
-            array('flagged', 'question'),
-            array('functiondisabledbysecuremode', 'groupquiz'),
-            array('startattempt', 'groupquiz'),
-            array('timesup', 'groupquiz'),
-            array('changesmadereallygoaway', 'moodle'),
-        ),
-    );
+        'requires' => ['base', 'dom', 'event-delegate', 'event-key',
+                'core_question_engine', 'moodle-core-formchangechecker'],
+        'strings' => [
+            ['cancel', 'moodle'],
+            ['flagged', 'question'],
+            ['functiondisabledbysecuremode', 'groupquiz'],
+            ['startattempt', 'groupquiz'],
+            ['timesup', 'groupquiz'],
+            ['changesmadereallygoaway', 'moodle'],
+        ],
+    ];
 }
-

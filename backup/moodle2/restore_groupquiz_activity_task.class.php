@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -42,7 +41,6 @@ require_once($CFG->dirroot . '/mod/groupquiz/backup/moodle2/restore_groupquiz_st
  * complete restore of the activity
  */
 class restore_groupquiz_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -62,10 +60,10 @@ class restore_groupquiz_activity_task extends restore_activity_task {
      * Define the contents in the activity that must be
      * processed by the link decoder
      */
-    static public function define_decode_contents() {
-        $contents = array();
+    public static function define_decode_contents() {
+        $contents = [];
 
-        $contents[] = new restore_decode_content('groupquiz', array('intro'), 'groupquiz');
+        $contents[] = new restore_decode_content('groupquiz', ['intro'], 'groupquiz');
 
         return $contents;
     }
@@ -74,14 +72,13 @@ class restore_groupquiz_activity_task extends restore_activity_task {
      * Define the decoding rules for links belonging
      * to the activity to be executed by the link decoder
      */
-    static public function define_decode_rules() {
-        $rules = array();
+    public static function define_decode_rules() {
+        $rules = [];
 
         $rules[] = new restore_decode_rule('GROUPQUIZVIEWBYID', '/mod/groupquiz/view.php?id=$1', 'course_module');
         $rules[] = new restore_decode_rule('GROUPQUIZINDEX', '/mod/groupquiz/index.php?id=$1', 'course');
 
         return $rules;
-
     }
 
     /**
@@ -90,13 +87,13 @@ class restore_groupquiz_activity_task extends restore_activity_task {
      * groupquiz logs. It must return one array
      * of {@link restore_log_rule} objects
      */
-    static public function define_restore_log_rules() {
-        $rules = array();
+    public static function define_restore_log_rules() {
+        $rules = [];
 
         $rules[] = new restore_log_rule('groupquiz', 'add', 'view.php?id={course_module}', '{groupquiz}');
         $rules[] = new restore_log_rule('groupquiz', 'update', 'view.php?id={course_module}', '{groupquiz}');
         $rules[] = new restore_log_rule('groupquiz', 'view', 'view.php?id={course_module}', '{groupquiz}');
-	//TODO add all other events such as event start, event end, review page viewed, etc
+        // TODO add all other events such as event start, event end, review page viewed, etc
         return $rules;
     }
 
@@ -110,8 +107,8 @@ class restore_groupquiz_activity_task extends restore_activity_task {
      * by the restore final task, but are defined here at
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
-    static public function define_restore_log_rules_for_course() {
-        $rules = array();
+    public static function define_restore_log_rules_for_course() {
+        $rules = [];
 
         $rules[] = new restore_log_rule('groupquiz', 'view all', 'index.php?id={course}', null);
 

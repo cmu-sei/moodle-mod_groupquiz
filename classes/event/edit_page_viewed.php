@@ -53,7 +53,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class edit_page_viewed extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -87,7 +86,7 @@ class edit_page_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/groupquiz/edit.php', array('cmid' => $this->contextinstanceid));
+        return new \moodle_url('/mod/groupquiz/edit.php', ['cmid' => $this->contextinstanceid]);
     }
 
     /**
@@ -96,8 +95,8 @@ class edit_page_viewed extends \core\event\base {
      * @return array
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'groupquiz', 'editquestions', 'view.php?id=' . $this->contextinstanceid,
-            $this->other['groupquizid'], $this->contextinstanceid);
+        return [$this->courseid, 'groupquiz', 'editquestions', 'view.php?id=' . $this->contextinstanceid,
+            $this->other['groupquizid'], $this->contextinstanceid];
     }
 
     /**
@@ -115,8 +114,8 @@ class edit_page_viewed extends \core\event\base {
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['groupquizid'] = array('db' => 'groupquiz', 'restore' => 'groupquiz');
+        $othermapped = [];
+        $othermapped['groupquizid'] = ['db' => 'groupquiz', 'restore' => 'groupquiz'];
 
         return $othermapped;
     }

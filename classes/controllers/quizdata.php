@@ -39,7 +39,6 @@ DM20-0197
  */
 
 class quizdata {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;
 
@@ -53,7 +52,7 @@ class quizdata {
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars = array();
+    protected $pagevars = [];
 
     /** @var \mod_groupquiz\utils\jsonlib $jsonlib The jsonlib for returning json */
     protected $jsonlib;
@@ -69,7 +68,6 @@ class quizdata {
         // no page url as this is just a callback.
         $this->pageurl = null;
         $this->jsonlib = new \mod_groupquiz\utils\jsonlib();
-
 
         // first check if this is a jserror, if so, log it and end execution so we're not wasting time.
         $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
@@ -90,14 +88,14 @@ class quizdata {
             $this->pagevars['inquesetion'] = optional_param('inquestion', '', PARAM_ALPHAEXT);
 
             // only load things asked for, don't assume that we're loading whatever.
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
 
             require_login($course->id, false, $cm, false, true);
-        } catch(\moodle_exception $e) {
+        } catch (\moodle_exception $e) {
             if (debugging()) { // if debugging throw error as normal.
-                throw new $e;
+                throw new $e();
             } else {
                 $this->jsonlib->send_error('invalid request');
             }
@@ -109,7 +107,7 @@ class quizdata {
 
         $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
 
-	// TODO clean this up
+        // TODO clean this up
         $groups = $this->RTQ->get_groupmanager()->get_user_groups();
 
         if ($this->RTQ->is_instructor()) {
@@ -126,7 +124,6 @@ class quizdata {
         if ($this->RTQ->openAttempt->getState() != 'inprogress') {
             $this->jsonlib->send_error('invalidattempt');
         }
-
     }
 
     /**
@@ -149,7 +146,7 @@ class quizdata {
                     $this->jsonlib->set('status', 'successfully saved ');
                     // next we need to send back the updated sequence check for javascript to update
                     // the sequence check on the question form.  this allows the question to be resubmitted again
-                    list($seqname, $seqvalue) = $qattempt->get_sequence_check($jscurrentquestion);
+                    [$seqname, $seqvalue] = $qattempt->get_sequence_check($jscurrentquestion);
 
                     $this->jsonlib->set('seqcheckname', $seqname);
                     $this->jsonlib->set('seqcheckval', $seqvalue);
@@ -160,11 +157,11 @@ class quizdata {
 
                 break;
             case 'submitquiz':
-		// TODO this will complete the attempt
-		echo "this will end the attempt";
-                //$this->jsonlib->send_error('not implemented');//
+                // TODO this will complete the attempt
+                echo "this will end the attempt";
+                // $this->jsonlib->send_error('not implemented');//
 
-                $studentstartformparams = array('rtq' => $this->RTQ, 'group' => $groupid);
+                $studentstartformparams = ['rtq' => $this->RTQ, 'group' => $groupid];
                 $studentstartform = new \mod_groupquiz\forms\view\student_start_form($this->pageurl, $studentstartformparams);
 
                 $this->RTQ->openAttempt->close_attempt($this->RTQ);
@@ -179,4 +176,3 @@ class quizdata {
         }
     }
 }
-

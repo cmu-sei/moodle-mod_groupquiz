@@ -56,7 +56,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class question_manually_graded extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -91,8 +90,8 @@ class question_manually_graded extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', array('attempt' => $this->other['attemptid'],
-                                                                            'slot'    => $this->other['slot'], 'sessionid' => $this->other['sessionid'], 'action' => 'savecomment'));
+        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', ['attempt' => $this->other['attemptid'],
+                                                                            'slot'    => $this->other['slot'], 'sessionid' => $this->other['sessionid'], 'action' => 'savecomment']);
     }
 
 
@@ -108,6 +107,5 @@ class question_manually_graded extends \core\event\base {
         if (!isset($this->other['attemptid'])) {
             throw new \coding_exception('The \'attemptid\' value must be set in other.');
         }
-
     }
 }

@@ -39,7 +39,6 @@ DM20-0197
  */
 
 class groupquiz_question {
-
     /** @var int $id The RTQ question id */
     protected $id;
 
@@ -77,7 +76,6 @@ class groupquiz_question {
         // to make sue of the is function on json_encode, this class also needs to implement JsonSerializable
 
         // TODO: This will be supported if Moodle moves to only supporting php 5.4 and higher
-
     }
 
     /**
@@ -124,7 +122,4 @@ class groupquiz_question {
     public function get_slot() {
         return $this->slot;
     }
-
-
 }
-

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -37,37 +36,42 @@ DM20-0197
 defined('MOODLE_INTERNAL') || die;
 
  /**
- * Define the complete groupquiz structure for backup, with file and id annotations
- */
+  * Define the complete groupquiz structure for backup, with file and id annotations
+  */
 class backup_groupquiz_activity_structure_step extends backup_questions_activity_structure_step {
-
     protected function define_structure() {
 
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated
-        $groupquiz = new backup_nested_element('groupquiz', array('id'), array(
+        $groupquiz = new backup_nested_element('groupquiz', ['id'], [
             'name', 'intro', 'introformat', 'timeopen', 'timeclose', 'timelimit',
             'grade', 'grademethod', 'reviewattempt', 'reviewcorrectness', 'reviewmarks',
             'reviewspecificfeedback', 'reviewgeneralfeedback', 'reviewrightanswer',
             'reviewoverallfeedback', 'reviewmanualcomment', 'grouping', 'questionorder',
             'shuffleanswers', 'showuserpicture', 'requireallmemberssubmit',
-            'timecreated', 'timemodified'));
+            'timecreated', 'timemodified']);
 
         $qinstances = new backup_nested_element('question_instances');
-        $qinstance = new backup_nested_element('question_instance', array('id'),
-            array('questionid', 'points'));
+        $qinstance = new backup_nested_element(
+            'question_instance',
+            ['id'],
+            ['questionid', 'points']
+        );
         $this->add_question_references($qinstance, 'mod_groupquiz', 'slot');
 
         $grades = new backup_nested_element('grades');
-        $grade = new backup_nested_element('grade', array('id'),
-            array('userid', 'grade', 'timemodified'));
+        $grade = new backup_nested_element(
+            'grade',
+            ['id'],
+            ['userid', 'grade', 'timemodified']
+        );
 
         $attempts = new backup_nested_element('attempts');
-        $attempt = new backup_nested_element('attempt', array('id'), array(
+        $attempt = new backup_nested_element('attempt', ['id'], [
             'userid', 'userstart', 'userstop', 'attemptnum', 'uniqueid', 'forgroupid',
             'layout', 'sumgrades', 'state', 'timestart', 'timefinish', 'timemodified',
-            'preview'));
+            'preview']);
         // The question usage holding each attempt's responses.
         $this->add_question_usages($attempt, 'uniqueid');
 
@@ -80,13 +84,19 @@ class backup_groupquiz_activity_structure_step extends backup_questions_activity
         $attempts->add_child($attempt);
 
         // Define sources
-        $groupquiz->set_source_table('groupquiz', array('id' => backup::VAR_ACTIVITYID));
-        $qinstance->set_source_table('groupquiz_questions',
-            array('groupquizid' => backup::VAR_PARENTID), 'id ASC');
+        $groupquiz->set_source_table('groupquiz', ['id' => backup::VAR_ACTIVITYID]);
+        $qinstance->set_source_table(
+            'groupquiz_questions',
+            ['groupquizid' => backup::VAR_PARENTID],
+            'id ASC'
+        );
         if ($userinfo) {
-            $grade->set_source_table('groupquiz_grades', array('groupquizid' => backup::VAR_PARENTID));
-            $attempt->set_source_table('groupquiz_attempts',
-                array('groupquizid' => backup::VAR_PARENTID), 'id ASC');
+            $grade->set_source_table('groupquiz_grades', ['groupquizid' => backup::VAR_PARENTID]);
+            $attempt->set_source_table(
+                'groupquiz_attempts',
+                ['groupquizid' => backup::VAR_PARENTID],
+                'id ASC'
+            );
         }
 
         // Define id annotations
@@ -102,6 +112,5 @@ class backup_groupquiz_activity_structure_step extends backup_questions_activity
 
         // Return the root element (groupquiz), wrapped into standard activity structure
         return $this->prepare_activity_structure($groupquiz);
-
     }
 }

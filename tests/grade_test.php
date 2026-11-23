@@ -52,7 +52,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_groupquiz\utils\grade::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_groupquiz\utils\scaletypes::class)]
-class grade_test extends \advanced_testcase {
+final class grade_test extends \advanced_testcase {
     /**
      * Build a grader over an instance whose only relevant setting is the grading method.
      *

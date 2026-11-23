@@ -52,7 +52,7 @@ class groupquiz_disabled_condition extends condition {
 
         $config = get_config('groupquiz');
         $enabledtypes = explode(',', $config->enabledqtypes);
-        list($sql, $params) = $DB->get_in_or_equal($enabledtypes, SQL_PARAMS_NAMED, 'aqdc');
+        [$sql, $params] = $DB->get_in_or_equal($enabledtypes, SQL_PARAMS_NAMED, 'aqdc');
 
         $this->where = 'q.qtype ' . $sql;
         $this->params = $params;

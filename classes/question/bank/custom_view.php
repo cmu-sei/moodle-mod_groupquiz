@@ -18,7 +18,7 @@ namespace mod_groupquiz\question\bank;
 
 defined('MOODLE_INTERNAL') || die();
 
-//use mod_groupquiz\question\bank\add_action_column;
+// use mod_groupquiz\question\bank\add_action_column;
 
 /**
  * Subclass of the question bank view class to change the way it works/looks
@@ -41,7 +41,6 @@ DM20-0197
  */
 
 class custom_view extends \core_question\local\bank\view {
-
     /** @var bool whether the groupquiz this is used by has been attemptd. */
     protected $groupquizhasattempts = false;
 
@@ -81,7 +80,7 @@ class custom_view extends \core_question\local\bank\view {
             'question_status_column',
             'version_number_column',
             'creator_name_column',
-            'modifier_name_column'
+            'modifier_name_column',
         ];
 
         if (question_get_display_preference('qbshowtext', 0, PARAM_BOOL, new \moodle_url(''))) {
@@ -151,8 +150,8 @@ class custom_view extends \core_question\local\bank\view {
      * displayoptions Sets display options
      */
     public function render($pagevars, $tabname): string {
-	ob_start();
-        $this->display($pagevars); 
+        ob_start();
+        $this->display($pagevars);
         $out = ob_get_contents();
         ob_end_clean();
         return $out;
@@ -174,7 +173,6 @@ class custom_view extends \core_question\local\bank\view {
         $params['sesskey'] = sesskey();
 
         return new \moodle_url('/mod/groupquiz/edit.php', $params);
-
     }
 
     /*
@@ -189,8 +187,11 @@ class custom_view extends \core_question\local\bank\view {
         global $CFG;
         echo \html_writer::start_tag('div', ['class' => 'createnewquestion']);
         if ($canadd) {
-            $this->create_new_question_button($category->id, $this->editquestionurl->params(),
-                get_string('createnewquestion', 'question'));
+            $this->create_new_question_button(
+                $category->id,
+                $this->editquestionurl->params(),
+                get_string('createnewquestion', 'question')
+            );
         } else {
             print_string('nopermissionadd', 'question');
         }
@@ -279,5 +280,4 @@ class custom_view extends \core_question\local\bank\view {
     public function preview_question_url() {
         return groupquiz_question_preview_url($this->groupquiz, $question);
     }
-
 }

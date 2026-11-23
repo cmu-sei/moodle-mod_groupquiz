@@ -44,8 +44,7 @@ $userid = optional_param('userid', 0, PARAM_INT);
 
 $gradeid = optional_param('gradeid', 0, PARAM_INT);
 
-//TODO show the attempts that were used to generate this grade for the user
+// TODO show the attempts that were used to generate this grade for the user
 
 // In the simplest case just redirect to the view page.
-redirect('reports.php?id='.$id);
-
+redirect('reports.php?id=' . $id);

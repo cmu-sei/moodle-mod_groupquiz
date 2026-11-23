@@ -54,7 +54,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class attempt_viewed extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -89,7 +88,7 @@ class attempt_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', array('attemptid' => $this->objectid));
+        return new \moodle_url('/mod/groupquiz/viewquizattempt.php', ['attemptid' => $this->objectid]);
     }
 
 
@@ -109,6 +108,5 @@ class attempt_viewed extends \core\event\base {
         if (!isset($this->other['groupquizid'])) {
             throw new \coding_exception('The \'groupquizid\' value must be set in other.');
         }
-
     }
 }

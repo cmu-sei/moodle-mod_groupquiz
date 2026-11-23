@@ -39,7 +39,6 @@ DM20-0197
  */
 
 class reports {
-
     /** @var \mod_groupquiz\groupquiz Active quiz class */
     protected $groupquiz;
 
@@ -61,7 +60,7 @@ class reports {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
         $this->pageurl->remove_all_params();
@@ -72,11 +71,11 @@ class reports {
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $quiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else {
-            $quiz = $DB->get_record('groupquiz', array('id' => $quizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $quiz->course), '*', MUST_EXIST);
+            $quiz = $DB->get_record('groupquiz', ['id' => $quizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $quiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $quiz->id, $course->id, false, MUST_EXIST);
         }
         $this->get_parameters(); // get the rest of the parameters and set them in the class
@@ -95,7 +94,6 @@ class reports {
         $this->groupquiz->require_capability('mod/groupquiz:manage');
 
         $this->renderer = $this->groupquiz->get_renderer();
-
 
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->groupquiz->getContext());
@@ -117,7 +115,6 @@ class reports {
             $this->renderer->report_header($this->pageurl, $this->pagevars);
             $report->handle_request($this->pageurl, $this->pagevars);
             $this->renderer->report_footer();
-
     }
 
     /**
@@ -138,13 +135,12 @@ class reports {
      */
     protected function resolve_report_class() {
 
-        if(class_exists('\\mod_groupquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'])){
+        if (class_exists('\\mod_groupquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'])) {
             $class = '\\mod_groupquiz\\reports\\' . $this->pagevars['report_type'] . '\\report_' . $this->pagevars['report_type'];
             return new $class($this->groupquiz);
         } else {
-echo "Error"; exit;
-	}
-
+            echo "Error";
+            exit;
+        }
     }
 }
-

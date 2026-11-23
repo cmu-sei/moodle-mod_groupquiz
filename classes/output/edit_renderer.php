@@ -1,6 +1,4 @@
 <?php
-namespace mod_groupquiz\output;
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,6 +13,8 @@ namespace mod_groupquiz\output;
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace mod_groupquiz\output;
 
 /**
  * Renderer outputting the quiz editing UI.
@@ -41,7 +41,6 @@ use mod_groupquiz\traits\renderer_base;
 defined('MOODLE_INTERNAL') || die();
 
 class edit_renderer extends \plugin_renderer_base {
-
     use renderer_base;
 
     /**
@@ -70,18 +69,18 @@ class edit_renderer extends \plugin_renderer_base {
         $this->hasattempts = $groupquizhasattempts;
 
         // Question List
-        echo \html_writer::start_div('row', array('id' => 'questionrow'));
+        echo \html_writer::start_div('row', ['id' => 'questionrow']);
         echo \html_writer::start_div('inline-block col-sm-4');
         echo \html_writer::tag('h2', get_string('questionlist', 'groupquiz'));
-        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', array('id' => 'editstatus'));
+        echo \html_writer::div('', 'rtqstatusbox rtqhiddenstatus', ['id' => 'editstatus']);
 
         if (count($questions) == 0) {
             echo \html_writer::tag('p', get_string('noquestions', 'groupquiz'));
         }
 
         echo $this->show_questionlist($questions);
-        echo \html_writer::end_div(); //inline-block-span6 questionlist
- 
+        echo \html_writer::end_div(); // inline-block-span6 questionlist
+
         // Question Bank
         if ($this->hasattempts) {
             \core\notification::warning(get_string('cannoteditafterattempts', 'groupquiz'));
@@ -152,10 +151,9 @@ class edit_renderer extends \plugin_renderer_base {
 
         $controlHTML = '';
 
-        $spacericon = new \pix_icon('spacer', 'space', null, array('class' => 'smallicon space'));
+        $spacericon = new \pix_icon('spacer', 'space', null, ['class' => 'smallicon space']);
         $controlHTML .= \html_writer::start_tag('noscript');
         if ($qnum > 1) { // if we're on a later question than the first one add the move up control
-
             $moveupurl = clone($this->pageurl);
             $moveupurl->param('action', 'moveup');
             $moveupurl->param('questionid', $question->getId()); // add the rtqqid so that the question manager handles the translation
@@ -168,7 +166,6 @@ class edit_renderer extends \plugin_renderer_base {
             $controlHTML .= $this->output->render($spacericon);
         }
         if ($qnum < $qcount) { // if we're not on the last question add the move down control
-
             $movedownurl = clone($this->pageurl);
             $movedownurl->param('action', 'movedown');
             $movedownurl->param('questionid', $question->getId());
@@ -177,7 +174,6 @@ class edit_renderer extends \plugin_renderer_base {
 
             $downicon = new \pix_icon('t/down', $alt);
             $controlHTML .= \html_writer::link($movedownurl, $this->output->render($downicon));
-
         } else {
             $controlHTML .= $this->output->render($spacericon);
         }
@@ -200,16 +196,15 @@ class edit_renderer extends \plugin_renderer_base {
             $controlHTML .= \html_writer::link($deleteurl, $this->output->render($deleteicon));
         }
         $previewurl = \qbank_previewquestion\helper::question_preview_url($question->getQuestion()->id);
-        //$previewurl = question_preview_url($question->getQuestion()->id);
+        // $previewurl = question_preview_url($question->getQuestion()->id);
         $previewicon = new \pix_icon('t/preview', get_string('preview'));
         $options = ['height' => 800, 'width' => 900];
         $popup = new \popup_action('click', $previewurl, 'preview', $options);
-        $actionlink = new \action_link($previewurl, '', $popup, array('target' => '_blank'), $previewicon);
+        $actionlink = new \action_link($previewurl, '', $popup, ['target' => '_blank'], $previewicon);
         $controlHTML .= $this->output->render($actionlink);
         $return .= \html_writer::div($controlHTML, 'controls');
 
         return $return;
-
     }
 
     /**
@@ -220,13 +215,11 @@ class edit_renderer extends \plugin_renderer_base {
     public function addquestionform($mform) {
 
         echo $mform->display();
-
     }
 
-    public function opensession(){
+    public function opensession() {
 
         echo \html_writer::tag('h3', get_string('editpage_opensession_error', 'groupquiz'));
-
     }
 
     /**
@@ -238,6 +231,4 @@ class edit_renderer extends \plugin_renderer_base {
         echo $this->output->box_end();
         $this->base_footer();
     }
-
-
 }

@@ -61,7 +61,6 @@ function xmldb_groupquiz_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     if ($oldversion < 2021111702) {
-
         // Define field reviewmanualcomment to be added to groupquiz.
         $table = new xmldb_table('groupquiz');
         $field = new xmldb_field('reviewmanualcomment', XMLDB_TYPE_INTEGER, '6', null, XMLDB_NOTNULL, null, '0', 'reviewoverallfeedback');
@@ -76,7 +75,6 @@ function xmldb_groupquiz_upgrade($oldversion) {
     }
 
     if ($oldversion < 2021111805) {
-
         // Changing the default of field grademethod on table groupquiz to 1.
         $table = new xmldb_table('groupquiz');
         $field = new xmldb_field('grademethod', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '1', 'grade');
@@ -89,7 +87,6 @@ function xmldb_groupquiz_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025112001) {
-
         // Define field preview to be added to groupquiz_attempts.
         $table = new xmldb_table('groupquiz_attempts');
         $field = new xmldb_field('preview', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timemodified');
@@ -140,4 +137,3 @@ function xmldb_groupquiz_upgrade($oldversion) {
 
     return true;
 }
-

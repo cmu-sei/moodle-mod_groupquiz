@@ -47,5 +47,3 @@ $editlib = new \mod_groupquiz\controllers\edit();
 // set up the edit page
 $editlib->setup_page('/mod/groupquiz/edit.php');
 $editlib->handle_action();
-
-

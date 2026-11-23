@@ -1,6 +1,4 @@
 <?php
-namespace mod_groupquiz\output;
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,6 +13,8 @@ namespace mod_groupquiz\output;
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace mod_groupquiz\output;
 
 /**
  * Renderer outputting the quiz editing UI.
@@ -41,7 +41,6 @@ use mod_groupquiz\traits\renderer_base;
 defined('MOODLE_INTERNAL') || die();
 
 class report_closed_renderer extends \plugin_renderer_base {
-
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;
 
@@ -59,7 +58,7 @@ class report_closed_renderer extends \plugin_renderer_base {
      * @param moodle_url                 $pageurl Always require the page url
      * @param array                      $pagevars (optional)
      */
-    public function init($RTQ, $pageurl, $pagevars = array()) {
+    public function init($RTQ, $pageurl, $pagevars = []) {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
         $this->rtq = $RTQ;
@@ -75,5 +74,4 @@ class report_closed_renderer extends \plugin_renderer_base {
         $viewownattemptstable->set_data('closed');
         $viewownattemptstable->finish_output();
     }
-
 }

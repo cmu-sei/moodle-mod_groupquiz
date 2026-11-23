@@ -1,6 +1,4 @@
 <?php
-namespace mod_groupquiz\output;
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,6 +13,8 @@ namespace mod_groupquiz\output;
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace mod_groupquiz\output;
 
 /**
  * Renderer outputting the quiz editing UI.
@@ -41,8 +41,6 @@ use mod_groupquiz\traits\renderer_base;
 defined('MOODLE_INTERNAL') || die();
 
 class report_renderer extends \plugin_renderer_base {
-
-
     use renderer_base;
 
     public function report_header() {
@@ -51,13 +49,12 @@ class report_renderer extends \plugin_renderer_base {
 
         $options = [
             'overview' => 'Overview Report',
-	    'open'     => 'Open Attempts',
-	    'closed'   => 'Closed Attempts'
+        'open'     => 'Open Attempts',
+        'closed'   => 'Closed Attempts',
         ];
 
         $this->pageurl->remove_params('report_type');
         echo $this->output->single_select($this->pageurl, 'report_type', $options, $this->pagevars['report_type']);
-
     }
 
     /**
@@ -67,5 +64,4 @@ class report_renderer extends \plugin_renderer_base {
     public function report_footer() {
         $this->base_footer();
     }
-
 }

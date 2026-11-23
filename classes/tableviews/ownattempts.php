@@ -40,8 +40,6 @@ DM20-0197
  */
 
 class ownattempts extends \flexible_table {
-
-
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;
 
@@ -58,7 +56,7 @@ class ownattempts extends \flexible_table {
 
         $this->rtq = $rtq;
         $this->baseurl = $pageurl;
-	$this->attempts = $attempts;
+        $this->attempts = $attempts;
 
         parent::__construct($uniqueid);
     }
@@ -79,20 +77,20 @@ class ownattempts extends \flexible_table {
         $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
         $canreviewattempt = $this->rtq->canreviewattempt($reviewoptions, $state);
 
-        $columns = array(
-	    // user submitted name
-	    'user'	 => 'Submitted By',
+        $columns = [
+        // user submitted name
+        'user'   => 'Submitted By',
             'group'      => get_string('group'),
             'timestart'  => get_string('timestarted', 'groupquiz'),
-            'timefinish' => get_string('timecompleted', 'groupquiz')
-        );
+            'timefinish' => get_string('timecompleted', 'groupquiz'),
+        ];
 
-	// only if canreviewmarks
+        // only if canreviewmarks
         if ($canreviewmarks) {
             $columns['grade'] = get_string('grade', 'groupquiz');
         }
 
-	// only if canreviewattempt
+        // only if canreviewattempt
         if ($canreviewattempt) {
             $columns['attemptview'] = get_string('attemptview', 'groupquiz');
         }
@@ -100,8 +98,8 @@ class ownattempts extends \flexible_table {
         $this->define_columns(array_keys($columns));
         $this->define_headers(array_values($columns));
 
-        //$this->sortable(true, 'timestart');
-	$this->sortable(false);
+        // $this->sortable(true, 'timestart');
+        $this->sortable(false);
         $this->collapsible(false);
 
         $this->set_attribute('cellspacing', '0');
@@ -124,43 +122,41 @@ class ownattempts extends \flexible_table {
         $download = $this->is_downloading();
         $tabledata = $this->get_data();
 
-	$state = $this->rtq->get_openclose_state();
-	$reviewoptions = $this->rtq->get_review_options();
-	$canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
+        $state = $this->rtq->get_openclose_state();
+        $reviewoptions = $this->rtq->get_review_options();
+        $canreviewmarks = $this->rtq->canreviewmarks($reviewoptions, $state);
         $canreviewattempt = $this->rtq->canreviewattempt($reviewoptions, $state);
 
         foreach ($tabledata as $item) {
+            $row = [];
 
-            $row = array();
-
-	    $row[] = $item->userstop;
+            $row[] = $item->userstop;
             $row[] = $item->group;
             $row[] = userdate($item->timestart);
             $row[] = userdate($item->timefinish);
-	    // only if allowed
-	    if ($canreviewmarks) {
-	        $row[] = $item->grade;
-	    }
+            // only if allowed
+            if ($canreviewmarks) {
+                $row[] = $item->grade;
+            }
 
-	    // view attempt only if allowed
-	    if ($canreviewattempt) {
+            // view attempt only if allowed
+            if ($canreviewattempt) {
                 $viewattempturl = new \moodle_url('/mod/groupquiz/viewquizattempt.php');
                 $viewattempturl->param('groupquizid', $this->rtq->getRTQ()->id);
                 $viewattempturl->param('attemptid', $item->attemptid);
 
                 $viewattemptpix = new \pix_icon('t/preview', 'preview');
-	        //$params = array('fullscreen'=>1);
-	        $params = array('width'=>1000,'height'=>600);
-	        $popup = new \popup_action('click', $viewattempturl, 'viewquizattempt', $params);
+                // $params = array('fullscreen'=>1);
+                $params = ['width' => 1000, 'height' => 600];
+                $popup = new \popup_action('click', $viewattempturl, 'viewquizattempt', $params);
 
-                $actionlink = new \action_link($viewattempturl, '', $popup, array('target' => '_blank'), $viewattemptpix);
+                $actionlink = new \action_link($viewattempturl, '', $popup, ['target' => '_blank'], $viewattemptpix);
 
-            	$row[] = $OUTPUT->render($actionlink);
-	    }
+                $row[] = $OUTPUT->render($actionlink);
+            }
 
             $this->add_data($row);
         }
-
     }
 
 
@@ -172,24 +168,23 @@ class ownattempts extends \flexible_table {
     protected function get_data() {
         global $USER;
 
-        $data = array();
+        $data = [];
 
         foreach ($this->attempts as $attempt) {
             $ditem = new \stdClass();
             $ditem->userstop = \mod_groupquiz\groupquiz_attempt::get_userstop_label($attempt->userstop, $attempt->timefinish);
-	    $ditem->attemptid  = $attempt->id;
-            //$ditem->attemptnum = $attempt->attempnum;
+            $ditem->attemptid  = $attempt->id;
+            // $ditem->attemptnum = $attempt->attempnum;
             $ditem->group = $this->rtq->get_groupmanager()->get_group_name($attempt->forgroupid);
             $ditem->timestart = $attempt->timestart;
             $ditem->timefinish = $attempt->timefinish;
-            //$ditem->grade = number_format($this->rtq->get_grader()->calculate_attempt_grade($attempt), 2);
-	    $ditem->grade = number_format($attempt->sumgrades, 2);
+            // $ditem->grade = number_format($this->rtq->get_grader()->calculate_attempt_grade($attempt), 2);
+            $ditem->grade = number_format($attempt->sumgrades, 2);
             $ditem->totalgrade = number_format($this->rtq->getRTQ()->grade, 2);
 
-            $data[ $attempt->id ] = $ditem;
+            $data[$attempt->id] = $ditem;
         }
 
         return $data;
     }
-
 }

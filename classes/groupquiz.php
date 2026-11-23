@@ -41,20 +41,19 @@ DM20-0197
  */
 
 class groupquiz {
-
     /**
      * @var array $review fields Static review fields to add as options
      */
-    public static $reviewfields = array(
-        'attempt'          => array('theattempt', 'groupquiz'),
-        'correctness'      => array('whethercorrect', 'question'),
-        'marks'            => array('marks', 'groupquiz'),
-        'specificfeedback' => array('specificfeedback', 'question'),
-        'generalfeedback'  => array('generalfeedback', 'question'),
-        'rightanswer'      => array('rightanswer', 'question'),
-	'overallfeedback'  => array('overallfeedback', 'question'),
-        'manualcomment'    => array('manualcomment', 'groupquiz')
-    );
+    public static $reviewfields = [
+        'attempt'          => ['theattempt', 'groupquiz'],
+        'correctness'      => ['whethercorrect', 'question'],
+        'marks'            => ['marks', 'groupquiz'],
+        'specificfeedback' => ['specificfeedback', 'question'],
+        'generalfeedback'  => ['generalfeedback', 'question'],
+        'rightanswer'      => ['rightanswer', 'question'],
+    'overallfeedback'  => ['overallfeedback', 'question'],
+        'manualcomment'    => ['manualcomment', 'groupquiz'],
+    ];
 
     /** @var \stdClass $cm */
     protected $cm;
@@ -103,8 +102,8 @@ class groupquiz {
         $formoptionsgrp = $whenname . 'optionsgrp';
         $formreviewoptions = $formgroupquiz->$formoptionsgrp;
         $reviewoptions = new \stdClass();
-        foreach (\mod_groupquiz\groupquiz::$reviewfields as $field => $notused) {
-            $reviewoptions->$field = $formreviewoptions[ $field ];
+        foreach (self::$reviewfields as $field => $notused) {
+            $reviewoptions->$field = $formreviewoptions[$field];
         }
 
         return $reviewoptions;
@@ -122,7 +121,7 @@ class groupquiz {
      * @param string $renderer_subtype Renderer sub-type to load if requested
      *
      */
-    public function __construct($cm, $course, $groupquiz, $pageurl, $pagevars = array(), $renderer_subtype = null) {
+    public function __construct($cm, $course, $groupquiz, $pageurl, $pagevars = [], $renderer_subtype = null) {
         global $CFG, $PAGE;
 
         $this->cm = $cm;
@@ -307,7 +306,7 @@ class groupquiz {
     public function get_review_options() {
 
         $reviewoptions = new \stdClass();
-	    $reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
+        $reviewoptions->reviewattempt = $this->groupquiz->reviewattempt;
         $reviewoptions->reviewcorrectness = $this->groupquiz->reviewcorrectness;
         $reviewoptions->reviewmarks = $this->groupquiz->reviewmarks;
         $reviewoptions->reviewspecificfeedback = $this->groupquiz->reviewspecificfeedback;
@@ -344,19 +343,17 @@ class groupquiz {
 
         // next get the question types we're going to be invoking question modifiers for
         if (!empty($params[1])) {
-
             if ($params[1] instanceof \mod_groupquiz\groupquiz_question) {
                 /** @var \mod_groupquiz\groupquiz_question $question */
                 $question = $params[1];
                 // we have a question defined, so we'll use it's question type
-                $questiontypes = array($question->getQuestion()->qtype);
+                $questiontypes = [$question->getQuestion()->qtype];
             } else {
-                $questiontypes = array();
+                $questiontypes = [];
             }
-
         } else {
             // we're going through all question types defined by the instance
-            $questiontypes = array();
+            $questiontypes = [];
             $questions = $this->get_questionmanager()->get_questions();
             foreach ($questions as $question) {
                 /** @var \mod_groupquiz\groupquiz_question $question */
@@ -371,10 +368,8 @@ class groupquiz {
         // next we'll try to invoke the methods
         $return = null;
         foreach ($questiontypes as $type) {
-
             // first check to make sure the class exists
             if (class_exists("\\mod_groupquiz\\questionmodifiers\\" . $type)) {
-
                 // create reflection for it to validate action and params as well as implementing
                 $reflection = new \ReflectionClass('\mod_groupquiz\questionmodifiers\\' . $type);
                 if (!$reflection->implementsInterface('\mod_groupquiz\questionmodifiers\ibasequestionmodifier')) {
@@ -387,11 +382,10 @@ class groupquiz {
                     if ($rMethod->getNumberOfRequiredParameters() != count($fparams)) {
                         throw new \moodle_exception('invalidnumberofparams', 'groupquiz', null, null, 'Invalid number of parameters passed to question modifiers call');
                     } else {
-
                         // now just call and return the method's return
                         $class = '\mod_groupquiz\questionmodifiers\\' . $type;
                         $typemodifier = new $class();
-                        $return .= call_user_func_array(array($typemodifier, $action), $fparams);
+                        $return .= call_user_func_array([$typemodifier, $action], $fparams);
                     }
                 }
             }
@@ -403,8 +397,8 @@ class groupquiz {
     public function getall_attempts($open = 'all', $groupid = null) {
         global $DB;
 
-        $sqlparams = array();
-        $where = array();
+        $sqlparams = [];
+        $where = [];
 
         $where[] = 'groupquizid = ?';
         $sqlparams[] = $this->groupquiz->id;
@@ -432,13 +426,15 @@ class groupquiz {
         $sql = "SELECT * FROM {groupquiz_attempts} WHERE $wherestring ORDER BY timefinish ASC";
         $dbattempts = $DB->get_records_sql($sql, $sqlparams);
 
-        $attempts = array();
+        $attempts = [];
         foreach ($dbattempts as $dbattempt) {
-            $attempts[ $dbattempt->id ] = new groupquiz_attempt($this->get_questionmanager(), $dbattempt,
-                $this->getContext());
+            $attempts[$dbattempt->id] = new groupquiz_attempt(
+                $this->get_questionmanager(),
+                $dbattempt,
+                $this->getContext()
+            );
         }
         return $attempts;
-
     }
 
     public function get_open_attempt_for_group($groupid) {
@@ -452,9 +448,8 @@ class groupquiz {
                 $openAttempt = $attempt;
             }
         }
-	// returns most recent one?
+        // returns most recent one?
         return $openAttempt;
-
     }
 
     public function get_group_attempt($group) {
@@ -464,7 +459,7 @@ class groupquiz {
         $openAttempt = $this->get_open_attempt_for_group($group);
         if (!is_null($openAttempt)) {
             $this->openAttempt = $openAttempt;
-	        return true;
+            return true;
         }
         return false;
     }
@@ -494,12 +489,12 @@ class groupquiz {
                 $this->openAttempt = $openAttempt;
                 return true;
             }
-         }
+        }
 
         // create a new attempt
         $attempt = new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager());
         $attempt->userid = $USER->id;
-	    $attempt->userstart = $USER->id;
+        $attempt->userstart = $USER->id;
         $attempt->forgroupid  = $group;
         $attempt->state = \mod_groupquiz\groupquiz_attempt::NOTSTARTED;
         $attempt->timemodified = time();
@@ -520,13 +515,13 @@ class groupquiz {
             return false;
         }
 
-        $params = array(
+        $params = [
             'objectid'      => $this->groupquiz->id,
             'context'       => $this->context,
-            'relateduserid' => $USER->id
-        );
+            'relateduserid' => $USER->id,
+        ];
         $event = \mod_groupquiz\event\attempt_started::create($params);
-	    // TODO figure out what is sending a null object
+        // TODO figure out what is sending a null object
         $event->add_record_snapshot('groupquiz_attempts', $this->openAttempt->get_attempt());
         $event->trigger();
 
@@ -542,8 +537,8 @@ class groupquiz {
      */
     public function get_user_attempt($attemptid) {
         global $DB;
-        if ($DB->record_exists('groupquiz_attempts', array('id' => $attemptid))) {
-            $dbattempt = $DB->get_record('groupquiz_attempts', array('id' => $attemptid));
+        if ($DB->record_exists('groupquiz_attempts', ['id' => $attemptid])) {
+            $dbattempt = $DB->get_record('groupquiz_attempts', ['id' => $attemptid]);
             return new \mod_groupquiz\groupquiz_attempt($this->get_questionmanager(), $dbattempt, $this->getContext());
         } else {
             return null;
@@ -551,7 +546,7 @@ class groupquiz {
     }
 
     public function get_intro($attemptid) {
-	    return $this->intro;
+        return $this->intro;
     }
 
     public function get_openclose_state() {
@@ -567,7 +562,7 @@ class groupquiz {
     }
 
     public function canreviewmarks($reviewoptions, $state) {
-	$canreviewmarks = false;
+        $canreviewmarks = false;
         if ($state == 'open') {
             if ($reviewoptions->reviewmarks & \mod_groupquiz_display_options::LATER_WHILE_OPEN) {
                 $canreviewmarks = true;
@@ -577,7 +572,7 @@ class groupquiz {
                 $canreviewmarks = true;
             }
         }
-	    return  $canreviewmarks;
+        return  $canreviewmarks;
     }
 
     public function canreviewattempt($reviewoptions, $state) {
@@ -593,7 +588,4 @@ class groupquiz {
         }
         return  $canreviewattempt;
     }
-
 }
-
-

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -37,73 +36,71 @@ DM20-0197
 
 defined('MOODLE_INTERNAL') || die;
 
-$capabilities = array(
-    'mod/groupquiz:view' => array(
+$capabilities = [
+    'mod/groupquiz:view' => [
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'guest' => CAP_ALLOW,
             'user' => CAP_ALLOW,
-        )
-    ),
+        ],
+    ],
 
-    'mod/groupquiz:addinstance' => array(
+    'mod/groupquiz:addinstance' => [
         'riskbitmask' => RISK_XSS,
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-        'clonepermissionsfrom' => 'moodle/course:manageactivities'
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/course:manageactivities',
+    ],
 
-    'mod/groupquiz:grade' => array(
+    'mod/groupquiz:grade' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
     // Can add / delete / update questions
-    'mod/groupquiz:editquestions'   => array(
+    'mod/groupquiz:editquestions'   => [
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'editingteacher' => CAP_ALLOW,
-            'manager'        => CAP_ALLOW
-        )
-    ),
+            'manager'        => CAP_ALLOW,
+        ],
+    ],
 
     // Can try to answer the quiz
-    'mod/groupquiz:attempt'         => array(
+    'mod/groupquiz:attempt'         => [
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => array(
+        'legacy'       => [
             'student'        => CAP_ALLOW,
             'teacher'        => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager'        => CAP_ALLOW
-        )
-    ),
+            'manager'        => CAP_ALLOW,
+        ],
+    ],
     // Edit the quiz settings, add and remove questions.
-    'mod/groupquiz:manage' => array(
+    'mod/groupquiz:manage' => [
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'archetypes' => array(
+        'archetypes' => [
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
-    ),
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 
-);
-
-
+];

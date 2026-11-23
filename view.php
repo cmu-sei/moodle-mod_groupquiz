@@ -53,4 +53,3 @@ $viewlib = new \mod_groupquiz\controllers\view();
 $viewlib->setup_page(me());
 
 $viewlib->handle_request();
-

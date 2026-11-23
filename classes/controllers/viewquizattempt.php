@@ -39,7 +39,6 @@ DM20-0197
  */
 
 class viewquizattempt {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;
 
@@ -57,7 +56,7 @@ class viewquizattempt {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
         $this->pageurl->remove_all_params();
@@ -68,11 +67,11 @@ class viewquizattempt {
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else {
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         }
 
@@ -86,7 +85,7 @@ class viewquizattempt {
 
         $this->RTQ = new \mod_groupquiz\groupquiz($cm, $course, $groupquiz, $this->pageurl, $this->pagevars);
 
-        //$this->RTQ->require_capability('mod/groupquiz:viewownattempts');
+        // $this->RTQ->require_capability('mod/groupquiz:viewownattempts');
 
         $PAGE->set_pagelayout('popup');
         $PAGE->set_context($this->RTQ->getContext());
@@ -106,7 +105,6 @@ class viewquizattempt {
         $renderer = $this->RTQ->get_renderer();
 
         switch ($this->pagevars['action']) {
-
             // TODO who can add a comment?
             case 'savecomment':
                 // save a comment for a particular attempt
@@ -127,7 +125,6 @@ class viewquizattempt {
                 }
                 break;
             default:
-
                 // default is to show the attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
                 if (!$attempt) {
@@ -143,14 +140,14 @@ class viewquizattempt {
                 $hascapability = true;
 
                 if ($hascapability) {
-                    $params = array(
+                    $params = [
                         'relateduserid' => $USER->id,
-			            'objectid'      => $this->pagevars['attemptid'],
+                        'objectid'      => $this->pagevars['attemptid'],
                         'context'       => $this->RTQ->getContext(),
-                        'other'         => array(
-                        'groupquizid'   => $this->RTQ->getRTQ()->id
-                        )
-                    );
+                        'other'         => [
+                        'groupquizid'   => $this->RTQ->getRTQ()->id,
+                        ],
+                    ];
                     $event = \mod_groupquiz\event\attempt_viewed::create($params);
                     $event->add_record_snapshot('groupquiz_attempts', $attempt->get_attempt());
                     $event->trigger();
@@ -163,7 +160,6 @@ class viewquizattempt {
                 }
                 break;
         }
-
     }
 
     /**
@@ -177,5 +173,4 @@ class viewquizattempt {
         $this->pagevars['slot'] = optional_param('slot', '', PARAM_INT);
         $this->pagevars['id'] = optional_param('id', '', PARAM_INT);
     }
-
 }

@@ -39,7 +39,6 @@ namespace mod_groupquiz\event;
 defined('MOODLE_INTERNAL') || die();
 
 class attempt_started extends \core\event\base {
-
     /**
      * Init method.
      */
@@ -74,7 +73,6 @@ class attempt_started extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/groupquiz/view.php', array('id' => $this->contextinstanceid));
+        return new \moodle_url('/mod/groupquiz/view.php', ['id' => $this->contextinstanceid]);
     }
-
 }

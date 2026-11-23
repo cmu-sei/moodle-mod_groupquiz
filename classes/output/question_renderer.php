@@ -38,26 +38,28 @@ namespace mod_groupquiz\output;
 
 defined('MOODLE_INTERNAL') || die();
 
-//require_once($CFG->dirroot . '/question/engine/renderer.php');
+// require_once($CFG->dirroot . '/question/engine/renderer.php');
 
 
 class question_renderer extends \core_question_renderer{
-
-
-    protected function response_history(\question_attempt $qa, \qbehaviour_renderer $behaviouroutput,
-            \qtype_renderer $qtoutput, \question_display_options $options) {
+    protected function response_history(
+        \question_attempt $qa,
+        \qbehaviour_renderer $behaviouroutput,
+        \qtype_renderer $qtoutput,
+        \question_display_options $options
+    ) {
 
         if (!$options->history) {
             return '';
         }
 
         $table = new \html_table();
-        $table->head  = array (
+        $table->head  = [
             get_string('step', 'question'),
             get_string('time'),
             get_string('action', 'question'),
             get_string('state', 'question'),
-        );
+        ];
         if ($options->marks >= \question_display_options::MARK_AND_MAX) {
             $table->head[] = get_string('marks', 'question');
         }
@@ -70,41 +72,55 @@ class question_renderer extends \core_question_renderer{
             if ($stepno == $qa->get_num_steps()) {
                 $rowclass = 'current';
             } else if (!empty($options->questionreviewlink)) {
-                $url = new moodle_url($options->questionreviewlink,
-                        array('slot' => $qa->get_slot(), 'step' => $i));
-                $stepno = $this->output->action_link($url, $stepno,
-                        new popup_action('click', $url, 'reviewquestion',
-                                array('width' => 450, 'height' => 650)),
-                        array('title' => get_string('reviewresponse', 'question')));
+                $url = new moodle_url(
+                    $options->questionreviewlink,
+                    ['slot' => $qa->get_slot(), 'step' => $i]
+                );
+                $stepno = $this->output->action_link(
+                    $url,
+                    $stepno,
+                    new popup_action(
+                        'click',
+                        $url,
+                        'reviewquestion',
+                        ['width' => 450, 'height' => 650]
+                    ),
+                    ['title' => get_string('reviewresponse', 'question')]
+                );
             }
 
             $restrictedqa = new \question_attempt_with_restricted_history($qa, $i, null);
 
             $user = new \stdClass();
             $user->id = $step->get_user_id();
-            $row = array(
+            $row = [
                 $stepno,
                 userdate($step->get_timecreated()),
                 s($qa->summarise_action($step)),
                 $restrictedqa->get_state_string($options->correctness),
-            );
+            ];
 
             if ($options->marks >= \question_display_options::MARK_AND_MAX) {
                 $row[] = $qa->format_fraction_as_mark($step->get_fraction(), $options->markdp);
             }
             global $DB;
-            $userobj =  $DB->get_record("user", array('id' => $user->id));
+            $userobj = $DB->get_record("user", ['id' => $user->id]);
             $row[] = fullname($userobj);
 
             $table->rowclasses[] = $rowclass;
             $table->data[] = $row;
         }
 
-        return \html_writer::tag('h4', get_string('responsehistory', 'question'),
-                        array('class' => 'responsehistoryheader')) .
+        return \html_writer::tag(
+            'h4',
+            get_string('responsehistory', 'question'),
+            ['class' => 'responsehistoryheader']
+        ) .
                 $options->extrahistorycontent .
-                \html_writer::tag('div', \html_writer::table($table, true),
-                        array('class' => 'responsehistoryheader'));
+                \html_writer::tag(
+                    'div',
+                    \html_writer::table($table, true),
+                    ['class' => 'responsehistoryheader']
+                );
     }
-
 }

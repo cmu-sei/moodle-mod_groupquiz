@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -41,7 +40,6 @@ DM20-0197
  * Structure step to restore one groupquiz activity
  */
 class restore_groupquiz_activity_structure_step extends restore_questions_activity_structure_step {
-
     /** @var stdClass|null the attempt being restored, inserted once its question usage is. */
     protected $currentattempt = null;
 
@@ -52,11 +50,13 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
 
         $userinfo = $this->get_setting_value('userinfo');
 
-        $paths = array();
+        $paths = [];
         $paths[] = new restore_path_element('groupquiz', '/activity/groupquiz');
 
-        $qinstance = new restore_path_element('groupquiz_question_instance',
-            '/activity/groupquiz/question_instances/question_instance');
+        $qinstance = new restore_path_element(
+            'groupquiz_question_instance',
+            '/activity/groupquiz/question_instances/question_instance'
+        );
         $paths[] = $qinstance;
         $this->add_question_references($qinstance, $paths);
 
@@ -183,13 +183,17 @@ class restore_groupquiz_activity_structure_step extends restore_questions_activi
         // Add groupquiz related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_groupquiz', 'intro', null);
 
-        $neworder = array();
+        $neworder = [];
         foreach (explode(',', $this->oldquestionorder) as $oldid) {
             if ($newid = $this->get_mappingid('groupquiz_question_instance', $oldid)) {
                 $neworder[] = $newid;
             }
         }
-        $DB->set_field('groupquiz', 'questionorder', implode(',', $neworder),
-            array('id' => $this->get_new_parentid('groupquiz')));
+        $DB->set_field(
+            'groupquiz',
+            'questionorder',
+            implode(',', $neworder),
+            ['id' => $this->get_new_parentid('groupquiz')]
+        );
     }
 }

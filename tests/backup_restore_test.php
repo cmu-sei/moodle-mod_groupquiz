@@ -56,7 +56,6 @@ require_once($CFG->dirroot . '/mod/groupquiz/lib.php');
 #[\PHPUnit\Framework\Attributes\CoversClass(\backup_groupquiz_activity_structure_step::class)]
 #[\PHPUnit\Framework\Attributes\CoversClass(\restore_groupquiz_activity_structure_step::class)]
 final class backup_restore_test extends \advanced_testcase {
-
     /**
      * A restored quiz keeps its questions, in their order, registered with the question bank,
      * and points at the restored course's copy of its grouping.
@@ -69,8 +68,12 @@ final class backup_restore_test extends \advanced_testcase {
         [$course, $grouping, $instance, $questions] = $this->create_quiz_with_questions();
         // Reverse the order so restoring in insertion order would show up.
         $slots = $DB->get_records_menu('groupquiz_questions', ['groupquizid' => $instance->id], 'id', 'questionid, id');
-        $DB->set_field('groupquiz', 'questionorder',
-            $slots[$questions[1]->id] . ',' . $slots[$questions[0]->id], ['id' => $instance->id]);
+        $DB->set_field(
+            'groupquiz',
+            'questionorder',
+            $slots[$questions[1]->id] . ',' . $slots[$questions[0]->id],
+            ['id' => $instance->id]
+        );
 
         $newcourseid = $this->backup_and_restore($course, false);
 
@@ -90,8 +93,10 @@ final class backup_restore_test extends \advanced_testcase {
         }
         $this->assertSame([$questions[1]->name, $questions[0]->name], $names);
 
-        $references = $DB->get_records('question_references',
-            ['component' => 'mod_groupquiz', 'questionarea' => 'slot', 'itemid' => $order[0]]);
+        $references = $DB->get_records(
+            'question_references',
+            ['component' => 'mod_groupquiz', 'questionarea' => 'slot', 'itemid' => $order[0]]
+        );
         $this->assertCount(1, $references);
         $reference = reset($references);
         $this->assertEquals(\context_module::instance($restoredcm->id)->id, $reference->usingcontextid);
@@ -127,8 +132,11 @@ final class backup_restore_test extends \advanced_testcase {
         foreach ($copied as $slot) {
             $this->assertEquals($copy->id, $slot->groupquizid);
         }
-        $this->assertEquals(2, $DB->count_records_select('question_references',
-            "component = 'mod_groupquiz' AND usingcontextid = ?", [\context_module::instance($newcm->id)->id]));
+        $this->assertEquals(2, $DB->count_records_select(
+            'question_references',
+            "component = 'mod_groupquiz' AND usingcontextid = ?",
+            [\context_module::instance($newcm->id)->id]
+        ));
         // The original keeps its own.
         $this->assertEquals(2, $DB->count_records('groupquiz_questions', ['groupquizid' => $instance->id]));
     }
@@ -191,7 +199,8 @@ final class backup_restore_test extends \advanced_testcase {
 
         $qbank = $generator->create_module('qbank', ['course' => $course->id]);
         $category = $questiongenerator->create_question_category(
-            ['contextid' => \context_module::instance($qbank->cmid)->id]);
+            ['contextid' => \context_module::instance($qbank->cmid)->id]
+        );
         $questions = [
             $questiongenerator->create_question('truefalse', null, ['category' => $category->id, 'name' => 'First']),
             $questiongenerator->create_question('truefalse', null, ['category' => $category->id, 'name' => 'Second']),
@@ -246,16 +255,28 @@ final class backup_restore_test extends \advanced_testcase {
         global $CFG, $USER;
 
         $CFG->keeptempdirectoriesonbackup = true;
-        $bc = new \backup_controller(\backup::TYPE_1COURSE, $course->id, \backup::FORMAT_MOODLE,
-            \backup::INTERACTIVE_NO, \backup::MODE_GENERAL, $USER->id);
+        $bc = new \backup_controller(
+            \backup::TYPE_1COURSE,
+            $course->id,
+            \backup::FORMAT_MOODLE,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id
+        );
         $bc->get_plan()->get_setting('users')->set_value($users);
         $bc->execute_plan();
         $backupid = $bc->get_backupid();
         $bc->destroy();
 
         $newcourseid = \restore_dbops::create_new_course('Restored', 'RESTORED', $course->category);
-        $rc = new \restore_controller($backupid, $newcourseid, \backup::INTERACTIVE_NO,
-            \backup::MODE_GENERAL, $USER->id, \backup::TARGET_NEW_COURSE);
+        $rc = new \restore_controller(
+            $backupid,
+            $newcourseid,
+            \backup::INTERACTIVE_NO,
+            \backup::MODE_GENERAL,
+            $USER->id,
+            \backup::TARGET_NEW_COURSE
+        );
         $rc->get_plan()->get_setting('users')->set_value($users);
         $this->assertTrue($rc->execute_precheck());
         $rc->execute_plan();

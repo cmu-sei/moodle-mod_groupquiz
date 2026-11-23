@@ -39,12 +39,11 @@ DM20-0197
  */
 
 class jsonlib {
-
     /** @var stdClass $response class to hold resonse information */
     protected $response;
 
     /** @var array $status codes Array to hold different status codes to return with response */
-    protected $status_codes = array(
+    protected $status_codes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
@@ -94,8 +93,8 @@ class jsonlib {
         506 => 'Variant Also Negotiates',
         507 => 'Insufficient Storage',
         509 => 'Bandwidth Limit Exceeded',
-        510 => 'Not Extended'
-    );
+        510 => 'Not Extended',
+    ];
 
 
     /**
@@ -106,7 +105,6 @@ class jsonlib {
 
         $this->response = new \stdClass();
         $this->response->status = "OK";
-
     }
 
     /**
@@ -133,7 +131,6 @@ class jsonlib {
 
         $response = json_encode($this->response);
         if ($response === false) { // check for error
-
             $message = $this->get_json_error();
             $this->send_headers(500);
             die($message);
@@ -153,7 +150,6 @@ class jsonlib {
 
         $response = json_encode($this->response);
         if ($response === false) { // check for error
-
             $response = $this->get_json_error(); // return error as bare text since json_encode isn't working
             $this->send_headers(500);
         }
@@ -208,14 +204,12 @@ class jsonlib {
      */
     private function send_headers($status) {
 
-        if (!empty($this->status_codes[ $status ])) {
-            $status_string = $status . ' ' . $this->status_codes[ $status ];
+        if (!empty($this->status_codes[$status])) {
+            $status_string = $status . ' ' . $this->status_codes[$status];
             header($_SERVER['SERVER_PROTOCOL'] . ' ' . $status_string, true, $status);
             header('cache-control: private, max-age=0, no-cache');
             header('pragma: no-cache');
             header('Content-Type: application/json; charset=utf-8');
         }
-
     }
-
 }

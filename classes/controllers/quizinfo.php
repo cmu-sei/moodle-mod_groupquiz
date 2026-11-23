@@ -47,7 +47,6 @@ DM20-0197
  */
 
 class quizinfo {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;
 
@@ -61,7 +60,7 @@ class quizinfo {
     protected $pageurl;
 
     /** @var array $this ->pagevars An array of page options for the page load */
-    protected $pagevars = array();
+    protected $pagevars = [];
 
     /** @var \mod_groupquiz\utils\jsonlib $jsonlib The jsonlib for returning json */
     protected $jsonlib;
@@ -81,7 +80,6 @@ class quizinfo {
         $this->pageurl = null;
         $this->jsonlib = new \mod_groupquiz\utils\jsonlib();
 
-
         // first check if this is a jserror, if so, log it and end execution so we're not wasting time.
         $jserror = optional_param('jserror', '', PARAM_ALPHANUMEXT);
         if (!empty($jserror)) {
@@ -99,14 +97,14 @@ class quizinfo {
             $attemptid = required_param('attemptid', PARAM_INT);
 
             // only load things asked for, don't assume that we're loading whatever.
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
 
             require_login($course->id, false, $cm, false, true);
-        } catch(\moodle_exception $e) {
+        } catch (\moodle_exception $e) {
             if (debugging()) { // if debugging throw error as normal.
-                throw new $e;
+                throw new $e();
             } else {
                 $this->jsonlib->send_error('invalid request');
             }
@@ -122,12 +120,11 @@ class quizinfo {
             // Student view
             $groupid = array_values($groups)[0]->id;
             $this->RTQ->get_group_attempt($groupid);
-
         } else {
             // Instructor view
             $attempt = $DB->get_record('groupquiz_attempts', [
                 'id'         => $jscurrentattempt,
-                'groupquizid'=> $groupquiz->id,
+                'groupquizid' => $groupquiz->id,
             ], '*', IGNORE_MISSING);
 
             if (!$attempt) {
@@ -149,7 +146,6 @@ class quizinfo {
             $this->jsonlib->send_error('invalidattempt');
             exit;
         }
-
     }
 
     /**
@@ -158,50 +154,49 @@ class quizinfo {
      */
     public function handle_request() {
 
-	global $DB;
-	$questions = $this->RTQ->openAttempt->get_questions();
-	$quba = $this->RTQ->openAttempt->get_quba();
+        global $DB;
+        $questions = $this->RTQ->openAttempt->get_questions();
+        $quba = $this->RTQ->openAttempt->get_quba();
 
-        $responses = array();
-	$attempt = $this->RTQ->openAttempt;
+        $responses = [];
+        $attempt = $this->RTQ->openAttempt;
         foreach ($attempt->getSlots() as $slot) {
             // render question form.
             $response = new \stdClass();
             $response->qnum = $slot;
-	    $response->html = $this->RTQ->get_renderer()->render_question_form($slot, $attempt);
-            list($seqname, $seqvalue) = $attempt->get_sequence_check($slot);
+            $response->html = $this->RTQ->get_renderer()->render_question_form($slot, $attempt);
+            [$seqname, $seqvalue] = $attempt->get_sequence_check($slot);
             $response->seqcheckname = $seqname;
             $response->seqcheckval = $seqvalue;
 
             array_push($responses, $response);
         }
 
-	// get openclose state
+        // get openclose state
         $state = $this->RTQ->get_openclose_state();
 
         // get timeleft
         $timenow = time();
         $timeleft = $attempt->get_time_left_display($timenow, $this->RTQ->getRTQ());
 
-	// check if we need to end quiz
-	if ((!$timeleft) || ($state == 'closed')) {
+        // check if we need to end quiz
+        if ((!$timeleft) || ($state == 'closed')) {
             $this->RTQ->openAttempt->close_attempt($this->RTQ, false);
             $this->RTQ->get_grader()->calculate_attempt_grade($attempt);
             $this->RTQ->get_grader()->save_group_grade($attempt);
 
             $this->jsonlib->send_error('attemptclosed');
-	}
+        }
 
-	if ($timeleft > 0) {
+        if ($timeleft > 0) {
             $this->jsonlib->set('timeleft', json_encode($timeleft));
-	}
+        }
 
         if ($this->RTQ->openAttempt) {
             $this->jsonlib->set('status', json_encode($responses));
-	    $this->jsonlib->send_response();
-	} else {
+            $this->jsonlib->send_response();
+        } else {
             $this->jsonlib->send_error('unknown');
-	}
+        }
     }
 }
-

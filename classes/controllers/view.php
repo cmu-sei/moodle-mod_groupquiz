@@ -45,7 +45,6 @@ DM20-0197
  */
 
 class view {
-
     /** @var \mod_groupquiz\groupquiz Realtime quiz class */
     protected $RTQ;
 
@@ -75,7 +74,7 @@ class view {
     public function setup_page($baseurl) {
         global $PAGE, $CFG, $DB;
 
-        $this->pagevars = array();
+        $this->pagevars = [];
 
         $this->pageurl = new \moodle_url($baseurl);
 
@@ -85,11 +84,11 @@ class view {
         // get necessary records from the DB
         if ($id) {
             $cm = get_coursemodule_from_id('groupquiz', $id, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $cm->instance], '*', MUST_EXIST);
         } else if ($groupquizid) {
-            $groupquiz = $DB->get_record('groupquiz', array('id' => $groupquizid), '*', MUST_EXIST);
-            $course = $DB->get_record('course', array('id' => $groupquiz->course), '*', MUST_EXIST);
+            $groupquiz = $DB->get_record('groupquiz', ['id' => $groupquizid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $groupquiz->course], '*', MUST_EXIST);
             $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
         } else {
             throw new moodle_exception('invalidquizid', 'mod_groupquiz');
@@ -109,7 +108,7 @@ class view {
         $this->pagevars['isinstructor'] = $this->RTQ->is_instructor(); // set this up in the page vars so it can be passed to things like the renderer
 
         // finally set up the question manager and the possible groupquiz session
-        //$this->session = new \mod_groupquiz\groupquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
+        // $this->session = new \mod_groupquiz\groupquiz_session($this->RTQ, $this->pageurl, $this->pagevars);
 
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_context($this->RTQ->getContext());
@@ -118,7 +117,6 @@ class view {
                 format_string($groupquiz->name, true)));
         $PAGE->set_heading($course->fullname);
         $PAGE->set_url($this->pageurl);
-
     }
 
     /**
@@ -233,10 +231,10 @@ class view {
                 break;
             default:
                 // trigger event for course module viewed
-                $event = \mod_groupquiz\event\course_module_viewed::create(array(
+                $event = \mod_groupquiz\event\course_module_viewed::create([
                     'objectid' => $PAGE->cm->instance,
                     'context'  => $PAGE->context,
-                ));
+                ]);
 
                 $event->add_record_snapshot('course', $this->RTQ->getCourse());
                 $event->add_record_snapshot($PAGE->cm->modname, $this->RTQ->getRTQ());
@@ -267,5 +265,4 @@ class view {
         $this->pagevars['groupid'] = optional_param('groupid', '0', PARAM_INT);
         $this->pagevars['attemptid'] = optional_param('attemptid', '0', PARAM_INT);
     }
-
 }

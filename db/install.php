@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -46,6 +45,4 @@ function xmldb_groupquiz_install() {
     global $CFG;
 
     echo "<p>This activity provides collaborative group mode quizzes.</p>";
-
 }
-

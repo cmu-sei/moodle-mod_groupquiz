@@ -20,7 +20,7 @@ namespace mod_groupquiz\reports;
  * Class groupquiz_report_base
  *
  *
- * @package mod_groupquiz\reports
+ * @package mod_groupquiz
  * @copyright 2020 Carnegie Mellon University
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,20 +38,13 @@ DM20-0197
  */
 
 class groupquiz_report_base {
-
-
     /**
      * @var \mod_groupquiz\groupquiz $active quiz
      */
     protected $groupquiz;
 
 
-    public function __construct(\mod_groupquiz\groupquiz $groupquiz)
-    {
+    public function __construct(\mod_groupquiz\groupquiz $groupquiz) {
         $this->groupquiz = $groupquiz;
     }
-
-
-
-
 }

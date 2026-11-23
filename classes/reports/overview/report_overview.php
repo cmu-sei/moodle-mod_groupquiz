@@ -39,7 +39,6 @@ use mod_groupquiz\reports\ireport;
 use mod_groupquiz\tableviews\overallgradesview;
 
 class report_overview extends \mod_groupquiz\reports\groupquiz_report_base implements ireport {
-
     /**
      * The tableview for the current request.  is added by the handle request function.
      *
@@ -75,29 +74,23 @@ class report_overview extends \mod_groupquiz\reports\groupquiz_report_base imple
         $this->renderer->init($this->groupquiz, $pageurl, $pagevars);
 
         // switch the action
-        switch($pagevars['action']) {
+        switch ($pagevars['action']) {
             case 'regradeall':
-
-                if($this->groupquiz->get_grader()->save_all_grades(true)) {
-                    $this->renderer->setMessage('success',  get_string('successregrade', 'groupquiz'));
-                }else {
-                    $this->renderer->setMessage('error',  get_string('errorregrade', 'groupquiz'));
+                if ($this->groupquiz->get_grader()->save_all_grades(true)) {
+                    $this->renderer->setMessage('success', get_string('successregrade', 'groupquiz'));
+                } else {
+                    $this->renderer->setMessage('error', get_string('errorregrade', 'groupquiz'));
                 }
 
                 $this->renderer->showMessage();
-                //$this->renderer->select_session($sessions);
+                // $this->renderer->select_session($sessions);
                 $this->renderer->home();
 
                 break;
             default:
-
                 $this->renderer->show_all_attempts();
 
                 break;
         }
-
     }
-
-
-
 }

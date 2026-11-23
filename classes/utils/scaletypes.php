@@ -40,7 +40,6 @@ DM20-0197
  */
 
 class scaletypes {
-
     /** Define grading scale types */
     const groupquiz_FIRSTATTEMPT = 1;
     const groupquiz_LASTATTEMPT = 2;
@@ -55,12 +54,12 @@ class scaletypes {
      */
     public static function get_types() {
 
-        return array(
+        return [
             'firstattempt' => self::groupquiz_FIRSTATTEMPT,
             'lastattempt'  => self::groupquiz_LASTATTEMPT,
             'average'      => self::groupquiz_ATTEMPTAVERAGE,
             'highestgrade' => self::groupquiz_HIGHESTATTEMPTGRADE,
-        );
+        ];
     }
 
     /**
@@ -71,14 +70,11 @@ class scaletypes {
      */
     public static function get_display_types() {
 
-        return array(
+        return [
             self::groupquiz_FIRSTATTEMPT        => get_string('firstattempt', 'groupquiz'),
             self::groupquiz_LASTATTEMPT        => get_string('lastattempt', 'groupquiz'),
             self::groupquiz_ATTEMPTAVERAGE      => get_string('attemptaverage', 'groupquiz'),
             self::groupquiz_HIGHESTATTEMPTGRADE => get_string('highestattempt', 'groupquiz'),
-        );
+        ];
     }
-
 }
-
-

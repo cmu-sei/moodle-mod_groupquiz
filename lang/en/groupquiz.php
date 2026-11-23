@@ -51,11 +51,11 @@ $string['modulename_help'] = '<p>Group mode collabortive quiz.</p>
 <p>Group Quizzes may be used as a vehicle for delivering Team Based Learning inside Moodle.</p>` ';
 $string['modulename_link'] = 'mod/groupquiz/view';
 $string['modulenameplural'] = 'Group Quizzes';
-$string['pluginname'] = 'Group Quiz';
-$string['timing'] = 'Timing';
 $string['pluginadministration'] = 'Group Quiz administration';
-$string['shuffleanswers'] = 'Shuffle answers';
+$string['pluginname'] = 'Group Quiz';
 $string['questionbehaviour'] = 'Question behaviour';
+$string['shuffleanswers'] = 'Shuffle answers';
+$string['timing'] = 'Timing';
 
 // Time options
 $string['quizopen'] = 'Start Quiz';

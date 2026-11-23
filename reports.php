@@ -49,4 +49,3 @@ $reports = new \mod_groupquiz\controllers\reports();
 
 $reports->setup_page('/mod/groupquiz/reports.php');
 $reports->handle_request();
-

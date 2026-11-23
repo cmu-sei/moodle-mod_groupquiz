@@ -52,7 +52,7 @@ require_once($CFG->dirroot . '/mod/groupquiz/locallib.php');
  */
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_has_attempts')]
 #[\PHPUnit\Framework\Attributes\CoversFunction('groupquiz_set_grade')]
-class locallib_test extends \advanced_testcase {
+final class locallib_test extends \advanced_testcase {
     /**
      * Whether an instance has attempts gates the settings that cannot be changed after the fact.
      */

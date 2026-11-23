@@ -39,8 +39,6 @@ DM20-0197
  */
 
 class groupmanager {
-
-
     /** @var \mod_groupquiz\groupquiz $rtq */
     protected $rtq;
 
@@ -52,7 +50,6 @@ class groupmanager {
      */
     public function __construct($rtq) {
         $this->rtq = $rtq;
-
     }
 
 
@@ -74,7 +71,7 @@ class groupmanager {
         if (!empty($this->rtq->getRTQ()->grouping)) {
             return groups_get_all_groups($this->rtq->getCourse()->id, $userid, $this->rtq->getRTQ()->grouping);
         } else {
-            return array(); // return empty array when there is no grouping
+            return []; // return empty array when there is no grouping
         }
     }
 
@@ -88,14 +85,14 @@ class groupmanager {
     public function get_user_groups_name_array($userid = null, $withdots = false) {
 
         $groups = $this->get_user_groups($userid);
-        $retgroups = array();
+        $retgroups = [];
 
         if ($withdots) {
             $retgroups[''] = get_string('choosedots');
         }
 
         foreach ($groups as $group) {
-            $retgroups[ $group->id ] = $group->name;
+            $retgroups[$group->id] = $group->name;
         }
 
         return $retgroups;
@@ -143,8 +140,6 @@ class groupmanager {
         }
         $groupid = array_values($groups)[0]->id;
 
-	return $groupid;
+        return $groupid;
     }
-
 }
-

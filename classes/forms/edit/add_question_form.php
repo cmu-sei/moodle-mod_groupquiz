@@ -42,7 +42,6 @@ DM20-0197
  */
 
 class add_question_form extends \moodleform {
-
     /**
      * Overriding parent function to account for namespace in the class name
      * so that client validation works
@@ -64,7 +63,8 @@ class add_question_form extends \moodleform {
     public function definition() {
 
         $mform = $this->_form;
-        $rtq = $this->_customdata['rtq'];;
+        $rtq = $this->_customdata['rtq'];
+        ;
 
         $mform->addElement('static', 'questionid', get_string('question', 'groupquiz'), $this->_customdata['questionname']);
 
@@ -82,7 +82,6 @@ class add_question_form extends \moodleform {
         }
 
         $this->add_action_buttons(true, $savestring);
-
     }
 
     /**
@@ -95,7 +94,7 @@ class add_question_form extends \moodleform {
      */
     public function validation($data, $files) {
 
-        $errors = array();
+        $errors = [];
 
         if (!filter_var($data['points'], FILTER_VALIDATE_FLOAT) && filter_var($data['points'], FILTER_VALIDATE_FLOAT) != 0) {
             $errors['points'] = get_string('invalid_points', 'groupquiz');
@@ -105,6 +104,4 @@ class add_question_form extends \moodleform {
 
         return $errors;
     }
-
 }
-

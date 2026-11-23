@@ -39,7 +39,6 @@ namespace mod_groupquiz\question\bank;
 defined('MOODLE_INTERNAL') || die();
 
 class add_action_column extends \core_question\local\bank\question_action_base {
-
     protected $stradd;
 
     public function init(): void {
@@ -59,9 +58,6 @@ class add_action_column extends \core_question\local\bank\question_action_base {
     }
 
     public function get_required_fields(): array {
-        return array('q.id');
+        return ['q.id'];
     }
-
-
 }
-

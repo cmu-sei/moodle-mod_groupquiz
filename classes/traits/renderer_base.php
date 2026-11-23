@@ -21,7 +21,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 /**
 Group Quiz Plugin for Moodle
 Copyright 2020 Carnegie Mellon University.
@@ -38,8 +37,6 @@ namespace mod_groupquiz\traits;
 
 
 trait renderer_base {
-
-
     /** @var array $pagevars Includes other page information needed for rendering functions */
     protected $pagevars;
 
@@ -57,9 +54,8 @@ trait renderer_base {
      * @param string $type
      * @param string $message
      */
-    public function setMessage($type, $message)
-    {
-        $this->pageMessage = array($type, $message);
+    public function setMessage($type, $message) {
+        $this->pageMessage = [$type, $message];
     }
 
     /**
@@ -67,8 +63,7 @@ trait renderer_base {
      *
      * @param string $tab the current tab to show as group
      */
-    public function base_header($tab = 'view')
-    {
+    public function base_header($tab = 'view') {
         echo $this->output->header();
         echo groupquiz_view_tabs($this->groupquiz, $tab);
         $this->showMessage(); // shows a message if there is one
@@ -78,8 +73,7 @@ trait renderer_base {
      * Base footer function to do basic footer rendering
      *
      */
-    public function base_footer()
-    {
+    public function base_footer() {
         echo $this->output->footer();
     }
 
@@ -87,14 +81,13 @@ trait renderer_base {
      * shows a message if there is one
      *
      */
-    public function showMessage()
-    {
+    public function showMessage() {
 
-        if ( empty($this->pageMessage) ) {
+        if (empty($this->pageMessage)) {
             return; // return if there is no message
         }
 
-        if ( !is_array($this->pageMessage) ) {
+        if (!is_array($this->pageMessage)) {
             return; // return if it's not an array
         }
 
@@ -119,8 +112,7 @@ trait renderer_base {
      *
      * @param string $message
      */
-    public function render_popup_error($message)
-    {
+    public function render_popup_error($message) {
 
         $this->setMessage('error', $message);
         echo $this->output->header();
@@ -135,11 +127,9 @@ trait renderer_base {
      * @param \moodle_url $pageurl Always require the page url
      * @param array $pagevars (optional)
      */
-    public function init($groupquiz, $pageurl, $pagevars = array())
-    {
+    public function init($groupquiz, $pageurl, $pagevars = []) {
         $this->pagevars = $pagevars;
         $this->pageurl = $pageurl;
         $this->groupquiz = $groupquiz;
     }
-
 }
