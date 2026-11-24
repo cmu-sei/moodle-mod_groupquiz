@@ -203,12 +203,12 @@ final class viewquizattempt_test extends \advanced_testcase {
         $events = $sink->get_events();
         $sink->close();
 
-        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
-        $this->assertEquals(1, $qa->get_current_manual_mark());
-        $this->assertStringContainsString('Well reasoned', $qa->get_manual_comment()[0]);
-
         $graded = array_values(array_filter($events, fn($e) => $e instanceof event\question_manually_graded));
-        $this->assertCount(1, $graded);
+        $this->assertCount(1, $graded, 'The event for the manual grade was not logged.');
+
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertStringContainsString('Well reasoned', (string)$qa->get_manual_comment()[0]);
+        $this->assertEquals(1, $qa->get_mark());
         $this->assertEquals($attempt->id, $graded[0]->other['attemptid']);
         $this->assertEquals(1, $graded[0]->other['slot']);
     }
