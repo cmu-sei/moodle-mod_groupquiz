@@ -120,6 +120,10 @@ class viewquizattempt {
 
                 // save a comment for a particular attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
+                if (!$attempt || $attempt->get_attempt()->groupquizid != $this->RTQ->getRTQ()->id) {
+                    // No such attempt, or one that belongs to another quiz.
+                    throw new \moodle_exception('noattempt', 'groupquiz');
+                }
                 $success = $attempt->process_comment($this->RTQ, $this->pagevars['slot']);
                 if ($success) {
                     // if successful recalculate the grade for the attempt's userid as the grader can update grades on the questions

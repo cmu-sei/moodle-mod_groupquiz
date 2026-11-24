@@ -196,4 +196,44 @@ final class viewquizattempt_test extends \advanced_testcase {
         $this->assertEquals($attempt->id, $graded[0]->other['attemptid']);
         $this->assertEquals(1, $graded[0]->other['slot']);
     }
+
+    /**
+     * An attempt id that does not exist gives a not-found error, not a null dereference.
+     */
+    public function test_save_comment_for_missing_attempt(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $this->setUser($teacher);
+        $missing = (int)$DB->get_field_sql('SELECT MAX(id) FROM {groupquiz_attempts}') + 1000;
+        $this->post_comment($groupquiz, $missing, $usageid);
+
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('noattempt', 'groupquiz'));
+        $this->save_comment();
+    }
+
+    /**
+     * An attempt that belongs to another quiz is treated as not found, and nothing is written.
+     */
+    public function test_save_comment_for_attempt_of_another_quiz(): void {
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $other = $this->getDataGenerator()->create_module('groupquiz', ['course' => $course->id]);
+        $this->setUser($teacher);
+        $this->post_comment($other, $attempt->id, $usageid);
+
+        try {
+            $this->save_comment();
+            $this->fail('Expected the attempt of another quiz to be refused.');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('noattempt', $e->errorcode);
+        }
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertNull($qa->get_current_manual_mark());
+    }
 }
