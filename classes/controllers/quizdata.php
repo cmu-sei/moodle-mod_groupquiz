@@ -105,7 +105,7 @@ class quizdata {
         } catch (\moodle_exception $e) {
             // if debugging throw error as normal.
             if (debugging()) {
-                throw new $e();
+                throw $e;
             } else {
                 $this->jsonlib->send_error('invalid request');
             }

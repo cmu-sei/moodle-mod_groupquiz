@@ -80,7 +80,7 @@ $capabilities = [
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => [
+        'archetypes'   => [
             'editingteacher' => CAP_ALLOW,
             'manager'        => CAP_ALLOW,
         ],
@@ -91,7 +91,7 @@ $capabilities = [
 
         'captype'      => 'write',
         'contextlevel' => CONTEXT_MODULE,
-        'legacy'       => [
+        'archetypes'   => [
             'student'        => CAP_ALLOW,
             'teacher'        => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,

@@ -485,15 +485,15 @@ class groupquiz {
      * Load the open attempt of a group into this object.
      *
      * @param int|null $group The group id.
-     * @return bool False when the group is null. Otherwise true, with the open attempt set to the open attempt
-     *              of the group, or to false when the group has none.
+     * @return bool True when the group has an open attempt, which is then set as the open attempt of this object.
+     *              False when the group is null or has no open attempt, and the open attempt is left as it was.
      */
     public function get_group_attempt($group) {
         if (is_null($group)) {
             return false;
         }
         $openattempt = $this->get_open_attempt_for_group($group);
-        if (!is_null($openattempt)) {
+        if ($openattempt !== false) {
             $this->openAttempt = $openattempt;
             return true;
         }
