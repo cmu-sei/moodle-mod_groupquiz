@@ -541,6 +541,16 @@ class groupquiz_attempt {
     public function save_question() {
         global $DB;
 
+        // The question engine takes a manual mark and comment from the same request that carries a response,
+        // so a request that carries one is grading, and takes the grade capability like saving a comment.
+        foreach ($this->get_slots_in_request() as $slot) {
+            $submitted = $this->quba->extract_responses($slot);
+            if (array_key_exists('-comment', $submitted) || array_key_exists('-mark', $submitted)) {
+                require_capability('mod/groupquiz:grade', $this->questionmanager->getRTQ()->getContext());
+                break;
+            }
+        }
+
         $timenow = time();
         $transaction = $DB->start_delegated_transaction();
         $this->quba->process_all_actions($timenow);

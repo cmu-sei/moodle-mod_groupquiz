@@ -254,4 +254,69 @@ final class viewquizattempt_test extends \advanced_testcase {
         $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
         $this->assertEmpty($qa->get_current_manual_mark());
     }
+
+    /**
+     * Loads the attempt the way the response saving page does.
+     *
+     * @param \stdClass $groupquiz The group quiz.
+     * @param int $attemptid The attempt id.
+     * @return groupquiz_attempt The attempt.
+     */
+    private function load_attempt(\stdClass $groupquiz, int $attemptid): groupquiz_attempt {
+        global $DB;
+        $record = $DB->get_record('groupquiz', ['id' => $groupquiz->id], '*', MUST_EXIST);
+        $course = get_course($record->course);
+        $cm = get_coursemodule_from_instance('groupquiz', $record->id, $course->id, false, MUST_EXIST);
+        $rtq = new groupquiz($cm, $course, $record, new \moodle_url('/mod/groupquiz/quizdata.php'), []);
+        return $rtq->get_user_attempt($attemptid);
+    }
+
+    /**
+     * Saving a response with a manual mark and comment in the request takes the grade capability.
+     */
+    public function test_save_question_refuses_manual_grade_without_grade_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $student = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+        $this->setUser($student);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+        $stepsbefore = $DB->count_records('question_attempt_steps');
+
+        try {
+            $this->load_attempt($groupquiz, $attempt->id)->save_question();
+            $this->fail('Expected the missing capability to be refused.');
+        } catch (\required_capability_exception $e) {
+            $this->assertSame('nopermissions', $e->errorcode);
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+
+        $this->assertSame($stepsbefore, $DB->count_records('question_attempt_steps'));
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEmpty($qa->get_current_manual_mark());
+    }
+
+    /**
+     * A request without a manual mark or comment is saved for a user without the grade capability.
+     */
+    public function test_save_question_without_manual_grade_needs_no_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $student = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+        $this->setUser($student);
+        $_POST = ['sesskey' => sesskey(), 'slots' => '1'];
+        $_REQUEST = $_POST;
+
+        try {
+            $this->assertTrue($this->load_attempt($groupquiz, $attempt->id)->save_question());
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+    }
 }
