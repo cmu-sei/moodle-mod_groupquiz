@@ -182,7 +182,7 @@ $string['previewmode'] = 'You are viewing this quiz in preview mode.';
 
 // review page
 $string['noreview'] = 'You are not able to review the quiz attempt at this time.';
-$string['noattempt'] = 'attempid is invalid';
+$string['noattempt'] = 'The attempt id is invalid.';
 
 // attempts table.
 $string['timestarted'] = 'Time Started';
