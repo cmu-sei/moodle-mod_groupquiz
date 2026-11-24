@@ -397,6 +397,9 @@ final class viewquizattempt_test extends \advanced_testcase {
             try {
                 $controller->handle_request();
                 $this->assertTrue($allowed, 'The attempt of another group was shown.');
+                $this->assertNotSame('', ob_get_contents(), 'The attempt was not shown to its owner.');
+                $viewed = array_filter($sink->get_events(), fn($e) => $e instanceof event\attempt_viewed);
+                $this->assertCount(1, $viewed, 'The view was not logged.');
             } catch (\moodle_exception $e) {
                 $this->assertFalse($allowed, 'The owner was refused.');
                 $this->assertSame('noattempt', $e->errorcode);
