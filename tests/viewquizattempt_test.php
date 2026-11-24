@@ -392,6 +392,7 @@ final class viewquizattempt_test extends \advanced_testcase {
             $PAGE = new \moodle_page();
             $controller = new controllers\viewquizattempt();
             $controller->setup_page('/mod/groupquiz/viewquizattempt.php');
+            $sink = $this->redirectEvents();
             ob_start();
             try {
                 $controller->handle_request();
@@ -399,8 +400,11 @@ final class viewquizattempt_test extends \advanced_testcase {
             } catch (\moodle_exception $e) {
                 $this->assertFalse($allowed, 'The owner was refused.');
                 $this->assertSame('noattempt', $e->errorcode);
+                $this->assertSame('', ob_get_contents(), 'Nothing is shown before the refusal.');
+                $this->assertEmpty($sink->get_events(), 'A refused view is not logged as a view.');
             } finally {
                 ob_end_clean();
+                $sink->close();
             }
         }
     }
