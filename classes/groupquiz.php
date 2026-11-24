@@ -589,6 +589,32 @@ class groupquiz {
     }
 
     /**
+     * Whether a user may look at an attempt.
+     *
+     * The attempt has to belong to this quiz. Beyond that it is open to the people who can grade the quiz, to the
+     * user the attempt is recorded for, and to the members of the group it was made for.
+     *
+     * @param \stdClass $dbattempt The attempt record.
+     * @param int $userid The user, or 0 for the current user.
+     * @return bool True when the user may view the attempt.
+     */
+    public function can_view_attempt($dbattempt, $userid = 0) {
+        global $USER;
+
+        if ($dbattempt->groupquizid != $this->groupquiz->id) {
+            return false;
+        }
+        $userid = $userid ?: $USER->id;
+        if (has_capability('mod/groupquiz:grade', $this->context, $userid)) {
+            return true;
+        }
+        if ($dbattempt->userid == $userid) {
+            return true;
+        }
+        return !empty($dbattempt->forgroupid) && groups_is_member($dbattempt->forgroupid, $userid);
+    }
+
+    /**
      * Intended to return the quiz introduction.
      *
      * It reads an intro property that this class does not declare, so it returns null; the introduction is held in

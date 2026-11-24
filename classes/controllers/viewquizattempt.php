@@ -151,27 +151,29 @@ class viewquizattempt {
                     break;
                 }
 
-                $hascapability = true;
-
-                if ($hascapability) {
-                    $params = [
-                        'relateduserid' => $USER->id,
-                        'objectid'      => $this->pagevars['attemptid'],
-                        'context'       => $this->RTQ->getContext(),
-                        'other'         => [
-                        'groupquizid'   => $this->RTQ->getRTQ()->id,
-                        ],
-                    ];
-                    $event = \mod_groupquiz\event\attempt_viewed::create($params);
-                    $event->add_record_snapshot('groupquiz_attempts', $attempt->get_attempt());
-                    $event->trigger();
-
-                    global $PAGE;
-                    $PAGE->set_pagelayout('base');
-                    $renderer->view_header(true);
-                    $renderer->render_attempt($attempt);
-                    $renderer->view_footer();
+                // Anyone enrolled can reach this page with any attempt id, so check the attempt is one this
+                // user may see: one of this quiz, theirs or their group's, unless they can grade.
+                if (!$this->RTQ->can_view_attempt($attempt->get_attempt())) {
+                    throw new \moodle_exception('noattempt', 'groupquiz');
                 }
+
+                $params = [
+                    'relateduserid' => $USER->id,
+                    'objectid'      => $this->pagevars['attemptid'],
+                    'context'       => $this->RTQ->getContext(),
+                    'other'         => [
+                    'groupquizid'   => $this->RTQ->getRTQ()->id,
+                    ],
+                ];
+                $event = \mod_groupquiz\event\attempt_viewed::create($params);
+                $event->add_record_snapshot('groupquiz_attempts', $attempt->get_attempt());
+                $event->trigger();
+
+                global $PAGE;
+                $PAGE->set_pagelayout('base');
+                $renderer->view_header(true);
+                $renderer->render_attempt($attempt);
+                $renderer->view_footer();
                 break;
         }
     }

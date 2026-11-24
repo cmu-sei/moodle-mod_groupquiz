@@ -373,4 +373,35 @@ final class viewquizattempt_test extends \advanced_testcase {
         $saved = \question_engine::load_questions_usage_by_activity($quba->get_id())->get_question_attempt($slot);
         $this->assertSame('frog', $saved->get_last_qt_var('answer'));
     }
+
+    /**
+     * Opening an attempt of someone else's group is refused; the owner can open their own.
+     */
+    public function test_view_attempt_is_limited_to_its_users(): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt] = $this->create_attempt_awaiting_grade();
+        $outsider = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $owner = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+
+        foreach ([[$outsider, false], [$owner, true]] as [$user, $allowed]) {
+            $this->setUser($user);
+            $_GET = ['attemptid' => $attempt->id, 'groupquizid' => $groupquiz->id];
+            $_REQUEST = $_GET;
+            $PAGE = new \moodle_page();
+            $controller = new controllers\viewquizattempt();
+            $controller->setup_page('/mod/groupquiz/viewquizattempt.php');
+            ob_start();
+            try {
+                $controller->handle_request();
+                $this->assertTrue($allowed, 'The attempt of another group was shown.');
+            } catch (\moodle_exception $e) {
+                $this->assertFalse($allowed, 'The owner was refused.');
+                $this->assertSame('noattempt', $e->errorcode);
+            } finally {
+                ob_end_clean();
+            }
+        }
+    }
 }
