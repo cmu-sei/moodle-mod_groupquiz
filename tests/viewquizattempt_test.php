@@ -61,7 +61,7 @@ final class viewquizattempt_test extends \advanced_testcase {
      * @return array The course, the group quiz, the attempt record and the usage id of the attempt.
      */
     private function create_attempt_awaiting_grade(): array {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot . '/question/engine/lib.php');
 
         $generator = $this->getDataGenerator();
@@ -73,6 +73,14 @@ final class viewquizattempt_test extends \advanced_testcase {
         $questiongenerator = $generator->get_plugin_generator('core_question');
         $category = $questiongenerator->create_question_category(['contextid' => \context_module::instance($cm->id)->id]);
         $question = $questiongenerator->create_question('essay', 'plain', ['category' => $category->id]);
+
+        // The quiz lists the question, as the question bank dialog would have added it.
+        $rtqquestionid = $DB->insert_record('groupquiz_questions', [
+            'groupquizid' => $groupquiz->id,
+            'questionid' => $question->id,
+            'points' => 1,
+        ]);
+        $DB->set_field('groupquiz', 'questionorder', (string)$rtqquestionid, ['id' => $groupquiz->id]);
 
         $quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz', \context_module::instance($cm->id));
         $quba->set_preferred_behaviour('immediatefeedback');
@@ -176,7 +184,7 @@ final class viewquizattempt_test extends \advanced_testcase {
         $this->assertEmpty($sink->get_events());
         $sink->close();
         $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
-        $this->assertNull($qa->get_current_manual_mark());
+        $this->assertEmpty($qa->get_current_manual_mark());
     }
 
     /**
@@ -242,6 +250,6 @@ final class viewquizattempt_test extends \advanced_testcase {
             $this->assertSame('noattempt', $e->errorcode);
         }
         $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
-        $this->assertNull($qa->get_current_manual_mark());
+        $this->assertEmpty($qa->get_current_manual_mark());
     }
 }
