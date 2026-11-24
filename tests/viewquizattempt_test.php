@@ -120,6 +120,8 @@ final class viewquizattempt_test extends \advanced_testcase {
             'submit' => 'Save',
             $prefix . ':sequencecheck' => $qa->get_sequence_check_count(),
             $prefix . '-comment' => 'Well reasoned',
+            // The comment is a rich text field, so the form also sends the draft area of its files.
+            $prefix . '-comment:itemid' => file_get_unused_draft_itemid(),
             $prefix . '-commentformat' => FORMAT_HTML,
             $prefix . '-mark' => '1',
             $prefix . '-maxmark' => '1',
