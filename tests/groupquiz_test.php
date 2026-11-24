@@ -149,4 +149,44 @@ final class groupquiz_test extends \advanced_testcase {
         $this->assertFalse($rtq->get_group_attempt(456));
         $this->assertEquals($attempt->id, $rtq->openAttempt->id);
     }
+
+    /**
+     * Only graders, the attempt's user and the members of its group may view an attempt, and only one of this quiz.
+     */
+    public function test_can_view_attempt(): void {
+        global $DB;
+        $this->resetAfterTest();
+        [$rtq, $instance, $generator] = $this->make_groupquiz();
+        $course = $DB->get_record('course', ['id' => $instance->course], '*', MUST_EXIST);
+        $owner = $generator->create_and_enrol($course, 'student');
+        $teammate = $generator->create_and_enrol($course, 'student');
+        $outsider = $generator->create_and_enrol($course, 'student');
+        $teacher = $generator->create_and_enrol($course, 'editingteacher');
+        $group = $generator->create_group(['courseid' => $course->id]);
+        $generator->create_group_member(['groupid' => $group->id, 'userid' => $owner->id]);
+        $generator->create_group_member(['groupid' => $group->id, 'userid' => $teammate->id]);
+
+        $plugin = $generator->get_plugin_generator('mod_groupquiz');
+        $attempt = $plugin->create_attempt($instance, $owner, ['forgroupid' => $group->id]);
+        $ungrouped = $plugin->create_attempt($instance, $owner);
+
+        $this->assertTrue($rtq->can_view_attempt($attempt, $owner->id));
+        $this->assertTrue($rtq->can_view_attempt($attempt, $teammate->id));
+        $this->assertTrue($rtq->can_view_attempt($attempt, $teacher->id));
+        $this->assertFalse($rtq->can_view_attempt($attempt, $outsider->id));
+        $this->assertFalse($rtq->can_view_attempt($ungrouped, $teammate->id));
+        $this->assertTrue($rtq->can_view_attempt($ungrouped, $owner->id));
+
+        // The current user is used when none is given.
+        $this->setUser($outsider);
+        $this->assertFalse($rtq->can_view_attempt($attempt));
+        $this->setUser($teammate);
+        $this->assertTrue($rtq->can_view_attempt($attempt));
+
+        // An attempt of another quiz is refused even to a grader.
+        $other = $generator->create_module('groupquiz', ['course' => $course->id]);
+        $foreign = $plugin->create_attempt($other, $owner);
+        $this->assertFalse($rtq->can_view_attempt($foreign, $teacher->id));
+        $this->assertFalse($rtq->can_view_attempt($foreign, $owner->id));
+    }
 }
