@@ -300,6 +300,28 @@ final class viewquizattempt_test extends \advanced_testcase {
     }
 
     /**
+     * A user with the grade capability can save a manual mark and comment through the response saving path.
+     */
+    public function test_save_question_with_manual_grade_and_grade_capability(): void {
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $this->setUser($teacher);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+
+        try {
+            $this->assertTrue($this->load_attempt($groupquiz, $attempt->id)->save_question());
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEquals(1, $qa->get_mark());
+    }
+
+    /**
      * A student's response, without a manual mark or comment, is saved without the grade capability.
      */
     public function test_save_question_without_manual_grade_needs_no_capability(): void {
