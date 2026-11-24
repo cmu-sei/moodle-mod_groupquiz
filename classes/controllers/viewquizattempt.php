@@ -114,11 +114,16 @@ class viewquizattempt {
         $renderer = $this->RTQ->get_renderer();
 
         switch ($this->pagevars['action']) {
-            // TODO who can add a comment?
             case 'savecomment':
-                // save a comment for a particular attempt
+                // Saving a comment or a manual mark is grading, so it takes the grade capability.
+                $this->RTQ->require_capability('mod/groupquiz:grade');
 
+                // save a comment for a particular attempt
                 $attempt = $this->RTQ->get_user_attempt($this->pagevars['attemptid']);
+                if (!$attempt || $attempt->get_attempt()->groupquizid != $this->RTQ->getRTQ()->id) {
+                    // No such attempt, or one that belongs to another quiz.
+                    throw new \moodle_exception('noattempt', 'groupquiz');
+                }
                 $success = $attempt->process_comment($this->RTQ, $this->pagevars['slot']);
                 if ($success) {
                     // if successful recalculate the grade for the attempt's userid as the grader can update grades on the questions

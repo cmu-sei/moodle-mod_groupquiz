@@ -1,0 +1,376 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Unit tests for the mod_groupquiz callback controllers.
+ *
+ * @package    mod_groupquiz
+ * @category   test
+ * @copyright  2020 Carnegie Mellon University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/*
+Group Quiz Plugin for Moodle
+Copyright 2020 Carnegie Mellon University.
+NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS"
+BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER
+INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM
+USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM
+PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+Released under a GNU GPL 3.0-style license, please see license.txt or contact permission@sei.cmu.edu for full terms.
+[DISTRIBUTION STATEMENT A] This material has been approved for public release and unlimited distribution.  Please see
+Copyright notice for non-US Government use and distribution.
+This Software includes and/or makes use of the following Third-Party Software subject to its own license:
+1. Moodle (https://docs.moodle.org/dev/License) Copyright 1999 Martin Dougiamas.
+2. mod_activequiz (https://github.com/jhoopes/moodle-mod_activequiz/blob/master/README.md) Copyright 2014 John Hoopes
+and the University of Wisconsin.
+DM20-0197
+ */
+
+namespace mod_groupquiz;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Unit tests for saving a comment on an attempt through the view attempt controller.
+ *
+ * @package    mod_groupquiz
+ * @category   test
+ * @copyright  2020 Carnegie Mellon University
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+#[\PHPUnit\Framework\Attributes\CoversClass(controllers\viewquizattempt::class)]
+final class viewquizattempt_test extends \advanced_testcase {
+    /**
+     * Creates a course with a group quiz, and an attempt on it whose one essay question awaits a manual grade.
+     *
+     * @return array The course, the group quiz, the attempt record and the usage id of the attempt.
+     */
+    private function create_attempt_awaiting_grade(): array {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . '/question/engine/lib.php');
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $groupquiz = $generator->create_module('groupquiz', ['course' => $course->id]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
+
+        $questiongenerator = $generator->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category(['contextid' => \context_module::instance($cm->id)->id]);
+        $question = $questiongenerator->create_question('essay', 'plain', ['category' => $category->id]);
+
+        // The quiz lists the question, as the question bank dialog would have added it.
+        $rtqquestionid = $DB->insert_record('groupquiz_questions', [
+            'groupquizid' => $groupquiz->id,
+            'questionid' => $question->id,
+            'points' => 1,
+        ]);
+        $DB->set_field('groupquiz', 'questionorder', (string)$rtqquestionid, ['id' => $groupquiz->id]);
+
+        $quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz', \context_module::instance($cm->id));
+        $quba->set_preferred_behaviour('immediatefeedback');
+        $slot = $quba->add_question(\question_bank::load_question($question->id), 1);
+        $quba->start_all_questions();
+        $quba->finish_all_questions();
+        \question_engine::save_questions_usage_by_activity($quba);
+
+        $attempt = $generator->get_plugin_generator('mod_groupquiz')->create_attempt($groupquiz, $student, [
+            'uniqueid' => $quba->get_id(),
+            'layout' => (string)$slot,
+            'state' => groupquiz_attempt::FINISHED,
+            'timefinish' => time(),
+        ]);
+
+        return [$course, $groupquiz, $attempt, $quba->get_id()];
+    }
+
+    /**
+     * Sets the request the comment form of an attempt would send.
+     *
+     * @param \stdClass $groupquiz The group quiz.
+     * @param int $attemptid The attempt to comment on.
+     * @param int $usageid The question usage of the attempt.
+     */
+    private function post_comment(\stdClass $groupquiz, int $attemptid, int $usageid): void {
+        $quba = \question_engine::load_questions_usage_by_activity($usageid);
+        $prefix = $quba->get_field_prefix(1);
+        $qa = $quba->get_question_attempt(1);
+
+        $_POST = [
+            'sesskey' => sesskey(),
+            'action' => 'savecomment',
+            'attemptid' => $attemptid,
+            'groupquizid' => $groupquiz->id,
+            'slot' => 1,
+            'submit' => 'Save',
+            $prefix . ':sequencecheck' => $qa->get_sequence_check_count(),
+            $prefix . '-comment' => 'Well reasoned',
+            // The comment is a rich text field, so the form also sends the draft area of its files.
+            $prefix . '-comment:itemid' => file_get_unused_draft_itemid(),
+            $prefix . '-commentformat' => FORMAT_HTML,
+            $prefix . '-mark' => '1',
+            $prefix . '-maxmark' => '1',
+            $prefix . ':minfraction' => '0',
+            $prefix . ':maxfraction' => '1',
+        ];
+        $_REQUEST = $_POST;
+    }
+
+    /**
+     * Sends the comment request through the controller, as view attempt does.
+     */
+    private function save_comment(): void {
+        global $PAGE;
+        // Building the fixtures formatted text, which set the theme up on the page of the test.
+        $PAGE = new \moodle_page();
+        $controller = new controllers\viewquizattempt();
+        $controller->setup_page('/mod/groupquiz/viewquizattempt.php');
+        ob_start();
+        try {
+            $controller->handle_request();
+        } finally {
+            ob_end_clean();
+            // The question attempt reads a mark from the request first, so read the stored one without it.
+            $_POST = [];
+            $_REQUEST = [];
+        }
+    }
+
+    /**
+     * Clears the request that a test set.
+     */
+    public function tearDown(): void {
+        $_POST = [];
+        $_GET = [];
+        $_REQUEST = [];
+        parent::tearDown();
+    }
+
+    /**
+     * A user without the grade capability is refused, and nothing is written.
+     */
+    public function test_save_comment_requires_grade_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $student = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+        $this->setUser($student);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+
+        $stepsbefore = $DB->count_records('question_attempt_steps');
+        $sink = $this->redirectEvents();
+        try {
+            $this->save_comment();
+            $this->fail('Expected the missing capability to be refused.');
+        } catch (\required_capability_exception $e) {
+            $this->assertSame('nopermissions', $e->errorcode);
+        }
+
+        $this->assertSame($stepsbefore, $DB->count_records('question_attempt_steps'));
+        $this->assertEmpty($sink->get_events());
+        $sink->close();
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEmpty($qa->get_current_manual_mark());
+    }
+
+    /**
+     * A user with the grade capability saves the comment and the mark, and the event is logged.
+     */
+    public function test_save_comment_with_grade_capability(): void {
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $this->setUser($teacher);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+
+        $sink = $this->redirectEvents();
+        $this->save_comment();
+        $events = $sink->get_events();
+        $sink->close();
+
+        $graded = array_values(array_filter($events, fn($e) => $e instanceof event\question_manually_graded));
+        $this->assertCount(1, $graded, 'The event for the manual grade was not logged.');
+
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertStringContainsString('Well reasoned', (string)$qa->get_manual_comment()[0]);
+        $this->assertEquals(1, $qa->get_mark());
+        $this->assertEquals($attempt->id, $graded[0]->other['attemptid']);
+        $this->assertEquals(1, $graded[0]->other['slot']);
+    }
+
+    /**
+     * An attempt id that does not exist gives a not-found error, not a null dereference.
+     */
+    public function test_save_comment_for_missing_attempt(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $this->setUser($teacher);
+        $missing = (int)$DB->get_field_sql('SELECT MAX(id) FROM {groupquiz_attempts}') + 1000;
+        $this->post_comment($groupquiz, $missing, $usageid);
+
+        $this->expectException(\moodle_exception::class);
+        $this->expectExceptionMessage(get_string('noattempt', 'groupquiz'));
+        $this->save_comment();
+    }
+
+    /**
+     * An attempt that belongs to another quiz is treated as not found, and nothing is written.
+     */
+    public function test_save_comment_for_attempt_of_another_quiz(): void {
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $other = $this->getDataGenerator()->create_module('groupquiz', ['course' => $course->id]);
+        $this->setUser($teacher);
+        $this->post_comment($other, $attempt->id, $usageid);
+
+        try {
+            $this->save_comment();
+            $this->fail('Expected the attempt of another quiz to be refused.');
+        } catch (\moodle_exception $e) {
+            $this->assertSame('noattempt', $e->errorcode);
+        }
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEmpty($qa->get_current_manual_mark());
+    }
+
+    /**
+     * Loads the attempt the way the response saving page does.
+     *
+     * @param \stdClass $groupquiz The group quiz.
+     * @param int $attemptid The attempt id.
+     * @return groupquiz_attempt The attempt.
+     */
+    private function load_attempt(\stdClass $groupquiz, int $attemptid): groupquiz_attempt {
+        global $DB;
+        $record = $DB->get_record('groupquiz', ['id' => $groupquiz->id], '*', MUST_EXIST);
+        $course = get_course($record->course);
+        $cm = get_coursemodule_from_instance('groupquiz', $record->id, $course->id, false, MUST_EXIST);
+        $rtq = new groupquiz($cm, $course, $record, new \moodle_url('/mod/groupquiz/quizdata.php'), []);
+        return $rtq->get_user_attempt($attemptid);
+    }
+
+    /**
+     * Saving a response with a manual mark and comment in the request takes the grade capability.
+     */
+    public function test_save_question_refuses_manual_grade_without_grade_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $student = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+        $this->setUser($student);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+        $stepsbefore = $DB->count_records('question_attempt_steps');
+
+        try {
+            $this->load_attempt($groupquiz, $attempt->id)->save_question();
+            $this->fail('Expected the missing capability to be refused.');
+        } catch (\required_capability_exception $e) {
+            $this->assertSame('nopermissions', $e->errorcode);
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+
+        $this->assertSame($stepsbefore, $DB->count_records('question_attempt_steps'));
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEmpty($qa->get_current_manual_mark());
+    }
+
+    /**
+     * A user with the grade capability can save a manual mark and comment through the response saving path.
+     */
+    public function test_save_question_with_manual_grade_and_grade_capability(): void {
+        $this->resetAfterTest();
+
+        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $this->setUser($teacher);
+        $this->post_comment($groupquiz, $attempt->id, $usageid);
+
+        try {
+            $this->assertTrue($this->load_attempt($groupquiz, $attempt->id)->save_question());
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+
+        $qa = \question_engine::load_questions_usage_by_activity($usageid)->get_question_attempt(1);
+        $this->assertEquals(1, $qa->get_mark());
+    }
+
+    /**
+     * A student's response, without a manual mark or comment, is saved without the grade capability.
+     */
+    public function test_save_question_without_manual_grade_needs_no_capability(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $groupquiz = $generator->create_module('groupquiz', ['course' => $course->id]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+
+        $questiongenerator = $generator->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category(['contextid' => $context->id]);
+        $question = $questiongenerator->create_question('shortanswer', null, ['category' => $category->id]);
+
+        // An attempt still in progress, whose question has not been finished.
+        $quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz', $context);
+        $quba->set_preferred_behaviour('immediatefeedback');
+        $slot = $quba->add_question(\question_bank::load_question($question->id), 1);
+        $quba->start_all_questions();
+        \question_engine::save_questions_usage_by_activity($quba);
+        $attempt = $generator->get_plugin_generator('mod_groupquiz')->create_attempt($groupquiz, $student, [
+            'uniqueid' => $quba->get_id(),
+            'layout' => (string)$slot,
+        ]);
+
+        $this->setUser($student);
+        $qa = \question_engine::load_questions_usage_by_activity($quba->get_id())->get_question_attempt($slot);
+        $prefix = $qa->get_field_prefix();
+        $_POST = [
+            'sesskey' => sesskey(),
+            'slots' => (string)$slot,
+            $prefix . ':sequencecheck' => $qa->get_sequence_check_count(),
+            $prefix . 'answer' => 'frog',
+        ];
+        $_REQUEST = $_POST;
+        $stepsbefore = $DB->count_records('question_attempt_steps');
+
+        try {
+            $this->assertTrue($this->load_attempt($groupquiz, $attempt->id)->save_question());
+        } finally {
+            $_POST = [];
+            $_REQUEST = [];
+        }
+
+        $this->assertGreaterThan($stepsbefore, $DB->count_records('question_attempt_steps'));
+        $saved = \question_engine::load_questions_usage_by_activity($quba->get_id())->get_question_attempt($slot);
+        $this->assertSame('frog', $saved->get_last_qt_var('answer'));
+    }
+}
