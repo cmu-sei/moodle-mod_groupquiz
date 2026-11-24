@@ -300,17 +300,45 @@ final class viewquizattempt_test extends \advanced_testcase {
     }
 
     /**
-     * A request without a manual mark or comment is saved for a user without the grade capability.
+     * A student's response, without a manual mark or comment, is saved without the grade capability.
      */
     public function test_save_question_without_manual_grade_needs_no_capability(): void {
         global $DB;
         $this->resetAfterTest();
 
-        [$course, $groupquiz, $attempt, $usageid] = $this->create_attempt_awaiting_grade();
-        $student = $DB->get_record('user', ['id' => $attempt->userid], '*', MUST_EXIST);
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $groupquiz = $generator->create_module('groupquiz', ['course' => $course->id]);
+        $student = $generator->create_and_enrol($course, 'student');
+        $cm = get_coursemodule_from_instance('groupquiz', $groupquiz->id, $course->id, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+
+        $questiongenerator = $generator->get_plugin_generator('core_question');
+        $category = $questiongenerator->create_question_category(['contextid' => $context->id]);
+        $question = $questiongenerator->create_question('shortanswer', null, ['category' => $category->id]);
+
+        // An attempt still in progress, whose question has not been finished.
+        $quba = \question_engine::make_questions_usage_by_activity('mod_groupquiz', $context);
+        $quba->set_preferred_behaviour('immediatefeedback');
+        $slot = $quba->add_question(\question_bank::load_question($question->id), 1);
+        $quba->start_all_questions();
+        \question_engine::save_questions_usage_by_activity($quba);
+        $attempt = $generator->get_plugin_generator('mod_groupquiz')->create_attempt($groupquiz, $student, [
+            'uniqueid' => $quba->get_id(),
+            'layout' => (string)$slot,
+        ]);
+
         $this->setUser($student);
-        $_POST = ['sesskey' => sesskey(), 'slots' => '1'];
+        $qa = \question_engine::load_questions_usage_by_activity($quba->get_id())->get_question_attempt($slot);
+        $prefix = $qa->get_field_prefix();
+        $_POST = [
+            'sesskey' => sesskey(),
+            'slots' => (string)$slot,
+            $prefix . ':sequencecheck' => $qa->get_sequence_check_count(),
+            $prefix . 'answer' => 'frog',
+        ];
         $_REQUEST = $_POST;
+        $stepsbefore = $DB->count_records('question_attempt_steps');
 
         try {
             $this->assertTrue($this->load_attempt($groupquiz, $attempt->id)->save_question());
@@ -318,5 +346,9 @@ final class viewquizattempt_test extends \advanced_testcase {
             $_POST = [];
             $_REQUEST = [];
         }
+
+        $this->assertGreaterThan($stepsbefore, $DB->count_records('question_attempt_steps'));
+        $saved = \question_engine::load_questions_usage_by_activity($quba->get_id())->get_question_attempt($slot);
+        $this->assertSame('frog', $saved->get_last_qt_var('answer'));
     }
 }
