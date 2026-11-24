@@ -115,6 +115,8 @@ final class viewquizattempt_test extends \advanced_testcase {
             $prefix . '-commentformat' => FORMAT_HTML,
             $prefix . '-mark' => '1',
             $prefix . '-maxmark' => '1',
+            $prefix . ':minfraction' => '0',
+            $prefix . ':maxfraction' => '1',
         ];
         $_REQUEST = $_POST;
     }
@@ -133,6 +135,9 @@ final class viewquizattempt_test extends \advanced_testcase {
             $controller->handle_request();
         } finally {
             ob_end_clean();
+            // The question attempt reads a mark from the request first, so read the stored one without it.
+            $_POST = [];
+            $_REQUEST = [];
         }
     }
 
