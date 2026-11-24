@@ -123,6 +123,9 @@ final class viewquizattempt_test extends \advanced_testcase {
      * Sends the comment request through the controller, as view attempt does.
      */
     private function save_comment(): void {
+        global $PAGE;
+        // Building the fixtures formatted text, which set the theme up on the page of the test.
+        $PAGE = new \moodle_page();
         $controller = new controllers\viewquizattempt();
         $controller->setup_page('/mod/groupquiz/viewquizattempt.php');
         ob_start();
